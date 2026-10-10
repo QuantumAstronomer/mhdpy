@@ -27,11 +27,20 @@ classifiers = [
 ## D01.6: runtime dependencies get the version current at the time they are added as lower bound, no upper bound.
 dependencies = []
 
+## D02.7: everything needed to run the tests that ship with the package: pip install "mhdpy[test]", then
+## pytest --pyargs mhdpy. The dev group below includes this extra, so a plain "uv sync" installs it for development.
+[project.optional-dependencies]
+test = [
+    "hypothesis>=6.168.5",
+    "pytest>=9.1.1",
+    "pytest-cov>=7.1.0",
+]
+
 ## D01.6: development tools live in dependency groups, which are never installed for users.
 [dependency-groups]
 dev = [
+    "mhdpy[test]",
     "pyright>=1.1.414",
-    "pytest>=9.1.1",
     "ruff>=0.17.0",
 ]
 
@@ -80,6 +89,25 @@ venv = ".venv"
 
 ## D01.9: pytest. Tests live next to the component they test, inside the package (D01.4). Every tests/ folder is a
 ## package with its own __init__.py, so test modules in different components may share a name, and an installed copy
-## can be tested with a plain "pytest --pyargs mhdpy".
+## can be tested with a plain "pytest --pyargs mhdpy". The test tiers of D02.5 are defined in src/mhdpy/conftest.py, which
+## pytest only loads at start-up if the test path points at the package directory itself.
 [tool.pytest.ini_options]
-testpaths = ["src"]
+testpaths = ["src/mhdpy"]
+
+## D02.8: 100 % line and branch coverage of the package code, measured on the fast tier. Tests and the test configuration
+## are not product code and are left out. Code that cannot be tested is excluded with "# pragma: no cover", followed on
+## the same line by the reason. In CI, the measurements of all test jobs are combined before the minimum is enforced, so
+## a platform-specific branch counts once it is covered on its own platform.
+[tool.coverage.run]
+branch = true
+source = ["mhdpy"]
+omit = ["*/tests/*", "*/conftest.py"]
+relative_files = true
+
+[tool.coverage.report]
+fail_under = 100
+show_missing = true
+skip_covered = true
+
+[tool.uv.sources]
+mhdpy = { workspace = true }

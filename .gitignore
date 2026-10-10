@@ -17,6 +17,7 @@ dist/
 .ruff_cache/
 .pytest_cache/
 .coverage
+.coverage.*
 htmlcov/
 
 ## Documentation build output
@@ -25,3 +26,6 @@ docs/_build/
 ## Editors and operating systems
 .DS_Store
 .idea/
+
+## Hypothesis example database
+.hypothesis/

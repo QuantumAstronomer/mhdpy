@@ -1,0 +1,32 @@
+## Full test tier of mhdpy (decision D02.5): high-resolution and three-dimensional convergence series and the complete
+## set of benchmark problems. Runs weekly, and is started by hand before every release, from the Actions tab on GitHub
+## or with "gh workflow run full-tier.yml".
+
+name: Full test tier
+
+on:
+  schedule:
+    - cron: "0 3 * * 1" ## every Monday at 03:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  full-tier:
+    name: Full tier (${{ matrix.os }}, Python ${{ matrix.python }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python: ["3.13", "3.14"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.3.0
+        with:
+          python-version: ${{ matrix.python }}
+      - run: uv sync --locked
+      - run: uv run pytest
+        env:
+          MHDPY_TEST_TIER: full

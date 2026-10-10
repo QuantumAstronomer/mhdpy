@@ -1,0 +1,8 @@
+gcc (Debian 12.2.0-14+deb12u1) 12.2.0
+Debian clang version 14.0.6
+C, gcc -O3                                    2.82e+06 cell updates/s (1 thread, 1024^2)
+C, gcc -O3 -fno-math-errno                    3.02e+06 cell updates/s (1 thread, 1024^2)
+C, gcc -O3 -march=native -fno-math-errno      2.86e+06 cell updates/s (1 thread, 1024^2)
+C, clang -O3                                  2.94e+06 cell updates/s (1 thread, 1024^2)
+JAX, default threading                        4.06e+06 cell updates/s (1024^2)
+JAX, one thread                               3.91e+06 cell updates/s (1024^2)

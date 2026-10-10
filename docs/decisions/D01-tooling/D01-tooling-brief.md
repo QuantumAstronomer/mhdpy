@@ -2,10 +2,10 @@
 
 | | |
 |---|---|
-| Status | Decided (frozen) |
+| Status | Decided (frozen); partly superseded |
 | Decided | 2026-10-10 |
 | Supersedes | — |
-| Superseded by | — |
+| Superseded by | D01.5 → D04.5 |
 
 ## 1. Introduction
 
@@ -188,6 +188,8 @@ src/mhdpy/
 Each component is thereby self-contained and easy to navigate: its code and its tests sit side by side. The tests **ship with the package**, as in NumPy, SciPy and Astropy, so users can see what has been tested and can verify their own installation with `pytest --pyargs mhdpy`. Large test data, such as stored reference solutions, is kept outside the package so it does not inflate the installed size. What that data is, and where it lives, follows from brief 02.
 
 ### D01.5 — Build backend and versioning
+
+> Superseded by D04.5 (2026-10-10): meson-python with cibuildwheel, because mhdpy's kernels are compiled with Cython.
 
 Which build backend turns the source into installable packages (wheels and sdists), and where does the version number come from? The answer depends on whether mhdpy will contain compiled code, which is decided in brief 04. This sub-decision is therefore explicitly provisional: it covers the period until brief 04, and may be superseded there.
 

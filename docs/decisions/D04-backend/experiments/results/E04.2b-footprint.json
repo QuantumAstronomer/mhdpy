@@ -1,0 +1,18 @@
+{
+ "NumPy (needed by every option)": {
+  "Linux x86-64": 16711928,
+  "macOS Apple Silicon": 5449793
+ },
+ "Numba": {
+  "Linux x86-64": 63545353,
+  "macOS Apple Silicon": 43294828
+ },
+ "JAX": {
+  "Linux x86-64": 93728096,
+  "macOS Apple Silicon": 68291829
+ },
+ "Cython / C (compiled into mhdpy's wheel)": {
+  "Linux x86-64": 0,
+  "macOS Apple Silicon": 0
+ }
+}

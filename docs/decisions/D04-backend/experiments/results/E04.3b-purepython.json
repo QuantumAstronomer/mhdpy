@@ -1,0 +1,26 @@
+{
+ "compiled": {
+  "bitwise_identical_to_numpy": true,
+  "throughput 1024^2, 1 thread, pure Python mode": 3584317.546557584,
+  "throughput 1024^2, 1 thread, .pyx": 2713579.070580691,
+  "throughput 1024^2, 4 threads, pure Python mode": 7592971.551215877,
+  "throughput 1024^2, 8 threads, pure Python mode": 7483439.542156785
+ },
+ "uncompiled_coverage": {
+  "line_coverage_percent": 97.0,
+  "branches_covered": "24 of 26",
+  "seconds_for_one_rhs_at_16x16": 0.61
+ },
+ "static_checks": {
+  "ruff_findings": [],
+  "pyright_errors": 24,
+  "pyright_first_messages": [
+   "Expected 1 more positional argument",
+   "Expected class but received \"slice[None, None, Literal[1]]\"",
+   "Expected class but received \"slice[None, None, None]\"",
+   "Import \"cython.cimports.libc.math\" could not be resolved",
+   "Import \"cython.parallel\" could not be resolved",
+   "Variable not allowed in type expression"
+  ]
+ }
+}

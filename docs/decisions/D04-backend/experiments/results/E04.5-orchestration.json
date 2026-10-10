@@ -1,0 +1,167 @@
+{
+ "bare_call_seconds": 1.5550459152831344e-07,
+ "sizes": {
+  "16": {
+   "kernel_seconds": 3.139769858731228e-05,
+   "variants": {
+    "NumPy": {
+     "step_seconds": 7.910985262285721e-05,
+     "orchestration_fraction": 0.6031126649041368,
+     "cell_updates_per_second": 3236006.5341094304,
+     "bitwise_identical_to_numpy_variant": true
+    },
+    "NumPy in place": {
+     "step_seconds": 7.31545306009493e-05,
+     "orchestration_fraction": 0.5708030886209412,
+     "cell_updates_per_second": 3499441.4959266786,
+     "bitwise_identical_to_numpy_variant": true
+    },
+    "compiled stages": {
+     "step_seconds": 4.9802738213617136e-05,
+     "orchestration_fraction": 0.36955878906418294,
+     "cell_updates_per_second": 5140279.614786403,
+     "bitwise_identical_to_numpy_variant": true
+    }
+   }
+  },
+  "32": {
+   "kernel_seconds": 0.00010519971283237847,
+   "variants": {
+    "NumPy": {
+     "step_seconds": 0.00018481355172177242,
+     "orchestration_fraction": 0.43077922667299096,
+     "cell_updates_per_second": 5540719.230057225,
+     "bitwise_identical_to_numpy_variant": true
+    },
+    "NumPy in place": {
+     "step_seconds": 0.0001784040576674672,
+     "orchestration_fraction": 0.4103289229639415,
+     "cell_updates_per_second": 5739779.763914703,
+     "bitwise_identical_to_numpy_variant": true
+    },
+    "compiled stages": {
+     "step_seconds": 0.00013057887902452137,
+     "orchestration_fraction": 0.19435889158902142,
+     "cell_updates_per_second": 7842003.29831062,
+     "bitwise_identical_to_numpy_variant": true
+    }
+   }
+  },
+  "64": {
+   "kernel_seconds": 0.00040730356444799613,
+   "variants": {
+    "NumPy": {
+     "step_seconds": 0.0005725374076254887,
+     "orchestration_fraction": 0.28859920937354067,
+     "cell_updates_per_second": 7154117.696846278,
+     "bitwise_identical_to_numpy_variant": true
+    },
+    "NumPy in place": {
+     "step_seconds": 0.000567844376184305,
+     "orchestration_fraction": 0.28271973531741423,
+     "cell_updates_per_second": 7213243.930535226,
+     "bitwise_identical_to_numpy_variant": true
+    },
+    "compiled stages": {
+     "step_seconds": 0.0005052855757630731,
+     "orchestration_fraction": 0.19391412701046595,
+     "cell_updates_per_second": 8106307.000381507,
+     "bitwise_identical_to_numpy_variant": true
+    }
+   }
+  },
+  "128": {
+   "kernel_seconds": 0.0017839449198566962,
+   "variants": {
+    "NumPy": {
+     "step_seconds": 0.0027126201261584815,
+     "orchestration_fraction": 0.34235357813146616,
+     "cell_updates_per_second": 6039916.847185844,
+     "bitwise_identical_to_numpy_variant": true
+    },
+    "NumPy in place": {
+     "step_seconds": 0.002417154072027188,
+     "orchestration_fraction": 0.2619647458547977,
+     "cell_updates_per_second": 6778219.141926387,
+     "bitwise_identical_to_numpy_variant": true
+    },
+    "compiled stages": {
+     "step_seconds": 0.0020143542617079707,
+     "orchestration_fraction": 0.11438372397113028,
+     "cell_updates_per_second": 8133623.916831793,
+     "bitwise_identical_to_numpy_variant": true
+    }
+   }
+  },
+  "256": {
+   "kernel_seconds": 0.007927749552580184,
+   "variants": {
+    "NumPy": {
+     "step_seconds": 0.013868182954452508,
+     "orchestration_fraction": 0.42834980050253035,
+     "cell_updates_per_second": 4725637.108714308,
+     "bitwise_identical_to_numpy_variant": true
+    },
+    "NumPy in place": {
+     "step_seconds": 0.01084927121441329,
+     "orchestration_fraction": 0.2692827567949315,
+     "cell_updates_per_second": 6040590.073270104,
+     "bitwise_identical_to_numpy_variant": true
+    },
+    "compiled stages": {
+     "step_seconds": 0.009100211000152151,
+     "orchestration_fraction": 0.12883892994924662,
+     "cell_updates_per_second": 7201591.259686646,
+     "bitwise_identical_to_numpy_variant": true
+    }
+   }
+  },
+  "512": {
+   "kernel_seconds": 0.03329114599986688,
+   "variants": {
+    "NumPy": {
+     "step_seconds": 0.054741337000450585,
+     "orchestration_fraction": 0.39184631168959483,
+     "cell_updates_per_second": 4788775.98473421,
+     "bitwise_identical_to_numpy_variant": true
+    },
+    "NumPy in place": {
+     "step_seconds": 0.04405188185774023,
+     "orchestration_fraction": 0.24427414684856674,
+     "cell_updates_per_second": 5950801.394740857,
+     "bitwise_identical_to_numpy_variant": true
+    },
+    "compiled stages": {
+     "step_seconds": 0.03762190925044706,
+     "orchestration_fraction": 0.11511279828332266,
+     "cell_updates_per_second": 6967854.774592146,
+     "bitwise_identical_to_numpy_variant": true
+    }
+   }
+  },
+  "1024": {
+   "kernel_seconds": 0.13250947320193518,
+   "variants": {
+    "NumPy": {
+     "step_seconds": 0.22322494849868235,
+     "orchestration_fraction": 0.40638591656918965,
+     "cell_updates_per_second": 4697396.088798692,
+     "bitwise_identical_to_numpy_variant": true
+    },
+    "NumPy in place": {
+     "step_seconds": 0.17672095099987928,
+     "orchestration_fraction": 0.25017677614225997,
+     "cell_updates_per_second": 5933512.659745229,
+     "bitwise_identical_to_numpy_variant": true
+    },
+    "compiled stages": {
+     "step_seconds": 0.1500419330004661,
+     "orchestration_fraction": 0.11685039940452147,
+     "cell_updates_per_second": 6988552.993360481,
+     "bitwise_identical_to_numpy_variant": true
+    }
+   }
+  }
+ },
+ "platform": "macOS-26.7.1-x86_64-i386-64bit-Mach-O"
+}

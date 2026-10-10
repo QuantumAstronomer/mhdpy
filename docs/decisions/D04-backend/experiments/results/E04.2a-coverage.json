@@ -1,0 +1,20 @@
+{
+ "Numba (NUMBA_DISABLE_JIT=1)": {
+  "measured": true,
+  "line_coverage_percent": 97.7,
+  "branches_covered": "24 of 26",
+  "seconds_for_one_step_at_16x16": 1.21
+ },
+ "Cython (line-tracing build)": {
+  "measured": true,
+  "line_coverage_percent": 96.1,
+  "branches_covered": "0 of 0",
+  "throughput_normal_build": 2221225.4756095135,
+  "throughput_tracing_build": 145505.34027211685,
+  "slowdown": 15.27
+ },
+ "C": {
+  "measured": false,
+  "note": "coverage.py cannot see compiled C"
+ }
+}

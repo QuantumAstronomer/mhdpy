@@ -39,19 +39,19 @@ Three arguments recur in the syntheses:
 
 **Question.** How do the two families of the reference codes compare on conservation, shock jumps, and the accuracy of the thermal state when kinetic energy dominates?
 
-**Method.** [`experiments/E03.1-fv-vs-fd.py`](experiments/E03.1-fv-vs-fd.py) (own lockfile; development machine) compares two minimal solvers on identical problems:
+**Method.** [`experiments/E03.1c-fv-vs-fd.py`](experiments/E03.1c-fv-vs-fd.py) (own lockfile; development machine) compares two minimal solvers on identical problems:
 
-- [`E03.1-godunov1d.py`](experiments/E03.1-godunov1d.py): finite volume, total energy, HLL, MC limiter, SSP-RK2 (the solver of E02.1);
-- [`E03.1-zeus1d.py`](experiments/E03.1-zeus1d.py): a sketch of the ZEUS-2D hydro algorithm. It has a staggered mesh, internal energy, von Neumann–Richtmyer artificial viscosity, implicit compressional heating, and consistent transport with van Leer interpolation.
+- [`E03.1a-godunov1d.py`](experiments/E03.1a-godunov1d.py): finite volume, total energy, HLL, MC limiter, SSP-RK2 (the solver of E02.1);
+- [`E03.1b-zeus1d.py`](experiments/E03.1b-zeus1d.py): a sketch of the ZEUS-2D hydro algorithm. It has a staggered mesh, internal energy, von Neumann–Richtmyer artificial viscosity, implicit compressional heating, and consistent transport with van Leer interpolation.
 
 The problems are:
 
 - the Sod shock tube and Toro's test 3 (pressure ratio 10⁵), against their exact solutions, at N = 128 … 1024;
 - an isentropic sound wave carried by a bulk flow at Mach 0 … 100. Its exact entropy stays uniform, and by Galilean invariance the physics is the same at every Mach number, so any growth of the entropy error with Mach number is numerical.
 
-Full output: [`experiments/results/E03.1-fv-vs-fd.md`](experiments/results/E03.1-fv-vs-fd.md).
+Full output: [`experiments/results/E03.1c-fv-vs-fd.md`](experiments/results/E03.1c-fv-vs-fd.md).
 
-![E03.1](experiments/results/E03.1-fv-vs-fd.png)
+![E03.1](experiments/results/E03.1d-fv-vs-fd.png)
 
 **Result 1: conservation and shock jumps.**
 
@@ -82,16 +82,16 @@ The total-energy scheme's error does grow with Mach number, but **linearly, not 
 
 **Question.** How do the candidate ways of keeping ∇·B = 0 behave on the test that Gardiner & Stone (2005) designed to expose them?
 
-**Method.** [`experiments/E03.2-field-loop.py`](experiments/E03.2-field-loop.py) runs the field-loop advection test exactly as Athena++ sets it up (`inputs/mhd/athinput.field_loop`). The domain is [−1, 1] × [−0.5, 0.5] with 128 × 64 cells, v = (2, 1), and a weak loop of field (plasma β ≈ 10⁶), evolved to t = 2, when the loop is back at its starting point. The solver is a minimal 2D ideal-MHD method of lines, [`E03.2-mhd2d.py`](experiments/E03.2-mhd2d.py): MC-limited PLM, HLL, SSP-RK2. Only the divergence treatment differs between runs:
+**Method.** [`experiments/E03.2b-field-loop.py`](experiments/E03.2b-field-loop.py) runs the field-loop advection test exactly as Athena++ sets it up (`inputs/mhd/athinput.field_loop`). The domain is [−1, 1] × [−0.5, 0.5] with 128 × 64 cells, v = (2, 1), and a weak loop of field (plasma β ≈ 10⁶), evolved to t = 2, when the loop is back at its starting point. The solver is a minimal 2D ideal-MHD method of lines, [`E03.2a-mhd2d.py`](experiments/E03.2a-mhd2d.py): MC-limited PLM, HLL, SSP-RK2. Only the divergence treatment differs between runs:
 
 1. **none:** a cell-centred field without any control;
 2. **GLM:** cell-centred, with hyperbolic-parabolic divergence cleaning (Dedner et al. 2002, mixed form of Mignone & Tzeferacos 2010);
 3. **CT, averaged EMFs:** face-centred field, edge EMFs averaged from the faces (Balsara & Spicer 1999);
 4. **CT, upwinded EMFs:** as Athena++ (`src/field/calculate_corner_e.cpp`), including its upwind weights.
 
-Full output: [`experiments/results/E03.2-field-loop.md`](experiments/results/E03.2-field-loop.md).
+Full output: [`experiments/results/E03.2b-field-loop.md`](experiments/results/E03.2b-field-loop.md).
 
-![E03.2](experiments/results/E03.2-field-loop.png)
+![E03.2](experiments/results/E03.2c-field-loop.png)
 
 **Result.**
 

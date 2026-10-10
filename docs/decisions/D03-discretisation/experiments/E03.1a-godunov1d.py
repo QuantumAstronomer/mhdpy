@@ -1,6 +1,6 @@
 """Minimal one-dimensional finite-volume Godunov solver for the Euler equations: input module of experiment E03.1.
 
-A copy (apart from this docstring) of ``docs/decisions/D02-verification/experiments/E02.1-hydro1d.py``, kept here so that the experiments of
+A copy (apart from this docstring) of ``docs/decisions/D02-verification/experiments/E02.1a-hydro1d.py``, kept here so that the experiments of
 brief D03 are self-contained. Second-order Godunov-type method of lines: piecewise-linear reconstruction of the primitive
 variables with a choice of slope limiter, the HLL Riemann solver, SSP-RK2, and an exact Riemann solver for comparison.
 It evolves total energy and is conservative by construction.

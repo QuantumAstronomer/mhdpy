@@ -4,7 +4,7 @@
 # ///
 """Experiment E02.2: are floating-point results bit-for-bit reproducible across environments?
 
-Runs ``E02.2-workload.py`` in several environments and compares every result bit for bit with a reference environment
+Runs ``E02.2a-workload.py`` in several environments and compares every result bit for bit with a reference environment
 (macOS, Python 3.14, NumPy 2.5.3: the current development environment). The environments vary:
 
 - the NumPy version (every minor release with wheels for the development machine, on Python 3.13 and 3.14);
@@ -23,7 +23,7 @@ official uv image named in DOCKER_IMAGE; its exact digest is recorded in the met
 
 Run from this directory with (Docker must be running):
 
-    uv run --locked --script E02.2-fp-reproducibility.py
+    uv run --locked --script E02.2b-fp-reproducibility.py
 
 Results are written to results/. The raw arrays are kept in a temporary directory only (they are tens of megabytes).
 """
@@ -39,7 +39,7 @@ import numpy as np
 
 HERE = Path(__file__).parent
 RESULTS = HERE / "results"
-WORKLOAD = "E02.2-workload.py"
+WORKLOAD = "E02.2a-workload.py"
 DOCKER_IMAGE = "ghcr.io/astral-sh/uv:python3.14-bookworm-slim"
 
 ## (platform, Python version, NumPy version, value of NPY_DISABLE_CPU_FEATURES or None). The platform is "macos" for
@@ -137,8 +137,8 @@ def main() -> None:
     for env in ENVIRONMENTS:
         simd = ", ".join(info[env]["simd"]) or "baseline only"
         md.append(f"| {label(env)} | {simd} | " + " | ".join(table[env][n] for n in names) + " |")
-    (RESULTS / "E02.2-fp-reproducibility.md").write_text("\n".join(md) + "\n")
-    (RESULTS / "E02.2-metadata.json").write_text(
+    (RESULTS / "E02.2b-fp-reproducibility.md").write_text("\n".join(md) + "\n")
+    (RESULTS / "E02.2b-metadata.json").write_text(
         json.dumps(
             {label(env): info[env] for env in ENVIRONMENTS} | {"host": platform.platform(), "docker_image": digest},
             indent=2,

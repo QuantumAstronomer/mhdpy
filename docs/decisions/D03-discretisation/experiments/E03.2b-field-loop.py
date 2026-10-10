@@ -6,7 +6,7 @@
 
 Runs the field-loop test of Gardiner & Stone (2005), as set up by Athena++ (``inputs/mhd/athinput.field_loop``: domain
 [-1, 1] x [-0.5, 0.5], 128 x 64 cells, v = (2, 1), CFL 0.4, until t = 2, when the loop is back at its starting point), with
-the four divergence treatments of ``E03.2-mhd2d.py``: none, GLM cleaning, and constrained transport with averaged or with
+the four divergence treatments of ``E03.2a-mhd2d.py``: none, GLM cleaning, and constrained transport with averaged or with
 upwinded (Gardiner & Stone) edge EMFs. Everything else (reconstruction, Riemann solver, integrator) is identical.
 
 Measured over time: magnetic energy relative to its initial value, and the largest discrete divergence of B, scaled by
@@ -16,9 +16,9 @@ pressure at the start and at the end are stored for the figure.
 
 Run from this directory with:
 
-    uv run --locked --script E03.2-field-loop.py
+    uv run --locked --script E03.2b-field-loop.py
 
-Results are written to results/; the figure is drawn from them by E03.2-figure.py.
+Results are written to results/; the figure is drawn from them by E03.2c-figure.py.
 """
 
 import importlib.util
@@ -32,7 +32,7 @@ import numpy as np
 
 HERE = Path(__file__).parent
 RESULTS = HERE / "results"
-_spec = importlib.util.spec_from_file_location("mhd2d", HERE / "E03.2-mhd2d.py")
+_spec = importlib.util.spec_from_file_location("mhd2d", HERE / "E03.2a-mhd2d.py")
 assert _spec is not None and _spec.loader is not None
 mhd = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(mhd)
@@ -110,12 +110,12 @@ def main() -> None:
            "otherwise), scaled by the cell size and the largest initial field strength. The cell-centred schemes start "
            "from a non-zero value because their divergence operator differs from the face-centred one the initial "
            "field was constructed with.",
-           "", "![E03.2](E03.2-field-loop.png)", ""]
+           "", "![E03.2](E03.2c-field-loop.png)", ""]
 
-    (RESULTS / "E03.2-field-loop.json").write_text(json.dumps(results, indent=1) + "\n")
-    np.savez_compressed(RESULTS / "E03.2-maps.npz", **{k: v.astype(np.float32) for k, v in maps.items()})
-    (RESULTS / "E03.2-field-loop.md").write_text("\n".join(md))
-    (RESULTS / "E03.2-metadata.json").write_text(
+    (RESULTS / "E03.2b-field-loop.json").write_text(json.dumps(results, indent=1) + "\n")
+    np.savez_compressed(RESULTS / "E03.2b-maps.npz", **{k: v.astype(np.float32) for k, v in maps.items()})
+    (RESULTS / "E03.2b-field-loop.md").write_text("\n".join(md))
+    (RESULTS / "E03.2b-metadata.json").write_text(
         json.dumps({"python": sys.version, "numpy": np.__version__, "platform": platform.platform()}, indent=2) + "\n"
     )
     print("\n".join(md))

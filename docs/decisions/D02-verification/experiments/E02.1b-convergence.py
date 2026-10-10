@@ -4,7 +4,7 @@
 # ///
 """Experiment E02.1: how convergence tests behave, and what they cost.
 
-Uses the solver in ``E02.1-hydro1d.py`` to answer the questions behind brief D02's sub-decisions on reference
+Uses the solver in ``E02.1a-hydro1d.py`` to answer the questions behind brief D02's sub-decisions on reference
 solutions, convergence criteria and test tiers:
 
 1. Linear sound wave (smooth, exact solution known): L1 and L-infinity errors and measured order of convergence for
@@ -17,9 +17,9 @@ solutions, convergence criteria and test tiers:
 
 Run from this directory with:
 
-    uv run --locked --script E02.1-convergence.py
+    uv run --locked --script E02.1b-convergence.py
 
-Results are written to results/. The figure is drawn from the results by E02.1-figure.py.
+Results are written to results/. The figure is drawn from the results by E02.1c-figure.py.
 """
 
 import importlib.util
@@ -35,7 +35,7 @@ HERE = Path(__file__).parent
 RESULTS = HERE / "results"
 
 ## Load the solver module by path: its file name is not a valid module name.
-_spec = importlib.util.spec_from_file_location("hydro1d", HERE / "E02.1-hydro1d.py")
+_spec = importlib.util.spec_from_file_location("hydro1d", HERE / "E02.1a-hydro1d.py")
 assert _spec is not None and _spec.loader is not None
 hydro = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(hydro)
@@ -240,9 +240,9 @@ def main() -> None:
             row.append(f"{seconds:.1f} s" if seconds < 120 else f"{seconds / 60:.0f} min")
         md.append(f"| {n_max} | " + " | ".join(row) + " |")
 
-    ## The measured errors are written to JSON; the figure is drawn from that file by E02.1-figure.py, so that its style
+    ## The measured errors are written to JSON; the figure is drawn from that file by E02.1c-figure.py, so that its style
     ## can be changed without rerunning (and re-timing) the experiment.
-    (RESULTS / "E02.1-errors.json").write_text(
+    (RESULTS / "E02.1b-errors.json").write_text(
         json.dumps(
             {
                 "wave_resolutions": WAVE_RESOLUTIONS,
@@ -257,10 +257,10 @@ def main() -> None:
         + "\n"
     )
 
-    md += ["", "![Convergence](E02.1-convergence.png)", ""]
-    (RESULTS / "E02.1-convergence.md").write_text("\n".join(md) + "\n")
-    (RESULTS / "E02.1-runs.json").write_text(json.dumps(runs, indent=2) + "\n")
-    (RESULTS / "E02.1-metadata.json").write_text(
+    md += ["", "![Convergence](E02.1c-convergence.png)", ""]
+    (RESULTS / "E02.1b-convergence.md").write_text("\n".join(md) + "\n")
+    (RESULTS / "E02.1b-runs.json").write_text(json.dumps(runs, indent=2) + "\n")
+    (RESULTS / "E02.1b-metadata.json").write_text(
         json.dumps(
             {"python": sys.version, "numpy": np.__version__, "platform": platform.platform()}, indent=2
         )

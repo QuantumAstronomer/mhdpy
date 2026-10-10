@@ -1,6 +1,6 @@
 """Workload of experiment E02.2: a fixed set of floating-point computations, run once per environment.
 
-Run by ``E02.2-fp-reproducibility.py`` in each Python / NumPy environment; not meant to be run by hand. Computes:
+Run by ``E02.2b-fp-reproducibility.py`` in each Python / NumPy environment; not meant to be run by hand. Computes:
 
 - reductions: a pairwise sum and a BLAS dot product over 10^6 elements;
 - elementwise functions on 100 001 points: sqrt (correctly rounded by IEEE 754) and sin, exp, log and power (not
@@ -20,7 +20,7 @@ from pathlib import Path
 import numpy as np
 
 HERE = Path(__file__).parent
-_spec = importlib.util.spec_from_file_location("hydro1d", HERE / "E02.1-hydro1d.py")
+_spec = importlib.util.spec_from_file_location("hydro1d", HERE / "E02.1a-hydro1d.py")
 assert _spec is not None and _spec.loader is not None
 hydro = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(hydro)

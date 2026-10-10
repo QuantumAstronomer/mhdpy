@@ -2,9 +2,9 @@
 # requires-python = ">=3.13"
 # dependencies = ["matplotlib"]
 # ///
-"""Figure of experiment E02.1: convergence of the minimal solver, drawn from ``results/E02.1-errors.json``.
+"""Figure of experiment E02.1: convergence of the minimal solver, drawn from ``results/E02.1b-errors.json``.
 
-Kept separate from ``E02.1-convergence.py`` so that the figure's style can be changed without rerunning the experiment.
+Kept separate from ``E02.1b-convergence.py`` so that the figure's style can be changed without rerunning the experiment.
 The style is a proposal for all figures of the decision briefs. Colours are black, red, darker reds and greys, taken in
 the order of the palette below, so lighter reds are a last resort. Series are told apart by colour and marker and drawn
 as solid lines; other line styles are used only where colour and marker are not enough. Reference lines are thin grey,
@@ -12,7 +12,7 @@ labelled at their end, and the frame is minimal.
 
 Run from this directory with:
 
-    uv run --locked --script E02.1-figure.py
+    uv run --locked --script E02.1c-figure.py
 """
 
 import json
@@ -79,7 +79,7 @@ def series(ax, ns, values, key, **overrides):
 
 
 def main() -> None:
-    data = json.loads((RESULTS / "E02.1-errors.json").read_text())
+    data = json.loads((RESULTS / "E02.1b-errors.json").read_text())
     plt.rcParams.update(STYLE)
     fig, (left, right) = plt.subplots(1, 2, figsize=(10, 3.9), constrained_layout=True)
 
@@ -109,7 +109,7 @@ def main() -> None:
         ax.minorticks_off()
         ax.set_xlim(right=ax.get_xlim()[1] * 1.35)  ## room for the slope labels
 
-    fig.savefig(RESULTS / "E02.1-convergence.png")
+    fig.savefig(RESULTS / "E02.1c-convergence.png")
 
 
 if __name__ == "__main__":

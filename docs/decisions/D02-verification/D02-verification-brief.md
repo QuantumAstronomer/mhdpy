@@ -36,13 +36,13 @@ The Athena synthesis adds a warning for test design. Apparent violations of Gali
 
 ## 2. Evidence
 
-Both experiments use a deliberately minimal one-dimensional solver, [`experiments/E02.1-hydro1d.py`](experiments/E02.1-hydro1d.py). It has piecewise-linear reconstruction of the primitive variables with a choice of limiter, the HLL Riemann solver, SSP-RK2 time integration (CFL 0.4, γ = 1.4) and an exact Riemann solver after Toro. It behaves like the schemes mhdpy will use, without being an early version of mhdpy.
+Both experiments use a deliberately minimal one-dimensional solver, [`experiments/E02.1a-hydro1d.py`](experiments/E02.1a-hydro1d.py). It has piecewise-linear reconstruction of the primitive variables with a choice of limiter, the HLL Riemann solver, SSP-RK2 time integration (CFL 0.4, γ = 1.4) and an exact Riemann solver after Toro. It behaves like the schemes mhdpy will use, without being an early version of mhdpy.
 
 ### E02.1 — How convergence tests behave, and what they cost
 
 **Question.** What do convergence measurements actually look like for a second-order scheme: with and without limiters, against exact solutions and by self-convergence, on smooth and discontinuous problems? What do they cost, and therefore what can CI afford?
 
-**Method.** [`experiments/E02.1-convergence.py`](experiments/E02.1-convergence.py) (NumPy 2.5.3, Python 3.14.8, own lockfile; development machine) runs the following:
+**Method.** [`experiments/E02.1b-convergence.py`](experiments/E02.1b-convergence.py) (NumPy 2.5.3, Python 3.14.8, own lockfile; development machine) runs the following:
 
 - a linear sound wave (amplitude 10⁻⁶, one period, exact solution = initial state) at N = 16 … 1024, with first-order reconstruction, and second-order reconstruction without limiter, with minmod and with MC;
 - the same problem measured by self-convergence, without the exact solution;
@@ -50,9 +50,9 @@ Both experiments use a deliberately minimal one-dimensional solver, [`experiment
 - the mirrored Sod problem, compared bit for bit with the original;
 - wall time and throughput of every run.
 
-Full output: [`experiments/results/E02.1-convergence.md`](experiments/results/E02.1-convergence.md).
+Full output: [`experiments/results/E02.1b-convergence.md`](experiments/results/E02.1b-convergence.md).
 
-![Convergence of the minimal solver](experiments/results/E02.1-convergence.png)
+![Convergence of the minimal solver](experiments/results/E02.1c-convergence.png)
 
 **Result 1: limiters and norms.** Measured order of the L1 density error, at the coarsest and at the finest doubling:
 
@@ -95,7 +95,7 @@ These numbers are rough. Per cell, a 2D or 3D update costs more (more directions
 
 **Question.** Pyro compares results bit for bit (or nearly so) with stored benchmarks. Does that approach survive the CI matrix of D01, which runs different Python and NumPy versions and different machines?
 
-**Method.** [`experiments/E02.2-fp-reproducibility.py`](experiments/E02.2-fp-reproducibility.py) runs [`experiments/E02.2-workload.py`](experiments/E02.2-workload.py) in thirteen environments. Each is created by uv with exactly pinned NumPy versions:
+**Method.** [`experiments/E02.2b-fp-reproducibility.py`](experiments/E02.2b-fp-reproducibility.py) runs [`experiments/E02.2a-workload.py`](experiments/E02.2a-workload.py) in thirteen environments. Each is created by uv with exactly pinned NumPy versions:
 
 - **On the development machine (macOS, Intel):** every NumPy minor release from 2.1 to 2.5 on Python 3.13, and from 2.3 to 2.5 on Python 3.14.
 - **Without SIMD:** two variants with NumPy's AVX2/FMA3 code paths switched off, imitating a CPU without them.
@@ -108,7 +108,7 @@ Every result is compared bit for bit with the reference environment (macOS, Pyth
 - sqrt, sin, exp, log and power on 10⁵ points;
 - the Sod and sound-wave runs of the E02.1 solver.
 
-Full output: [`experiments/results/E02.2-fp-reproducibility.md`](experiments/results/E02.2-fp-reproducibility.md).
+Full output: [`experiments/results/E02.2b-fp-reproducibility.md`](experiments/results/E02.2b-fp-reproducibility.md).
 
 **Result.** Differences are given in **ulp** (*unit in the last place*): the gap between a floating-point number and the next representable one at that magnitude, about 2.2 × 10⁻¹⁶ times the value in double precision. A difference of 1 ulp means two results are neighbouring floating-point numbers, differing only in their last bit; 8 ulp is a relative difference of about 2 × 10⁻¹⁵. Condensed (✓ = bit-for-bit identical to the reference):
 

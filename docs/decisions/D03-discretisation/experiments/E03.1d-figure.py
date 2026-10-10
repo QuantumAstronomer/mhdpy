@@ -2,11 +2,11 @@
 # requires-python = ">=3.13"
 # dependencies = ["matplotlib"]
 # ///
-"""Figure of experiment E03.1, drawn from ``results/E03.1-fv-vs-fd.json`` in the house figure style.
+"""Figure of experiment E03.1, drawn from ``results/E03.1c-fv-vs-fd.json`` in the house figure style.
 
 Run from this directory with:
 
-    uv run --locked --script E03.1-figure.py
+    uv run --locked --script E03.1d-figure.py
 """
 
 import json
@@ -56,7 +56,7 @@ def profile(ax, data, name, xlim, ylim, title):
 
 
 def main() -> None:
-    data = json.loads((RESULTS / "E03.1-fv-vs-fd.json").read_text())
+    data = json.loads((RESULTS / "E03.1c-fv-vs-fd.json").read_text())
     plt.rcParams.update(STYLE)
     fig, axes = plt.subplots(1, 3, figsize=(13, 3.8), constrained_layout=True)
 
@@ -76,7 +76,7 @@ def main() -> None:
     axes[2].set_xlim(right=machs[-1] * 2.0)
     axes[2].legend(loc="center left")
 
-    fig.savefig(RESULTS / "E03.1-fv-vs-fd.png")
+    fig.savefig(RESULTS / "E03.1d-fv-vs-fd.png")
 
 
 if __name__ == "__main__":

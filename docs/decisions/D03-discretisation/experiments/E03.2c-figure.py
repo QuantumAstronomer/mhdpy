@@ -2,11 +2,11 @@
 # requires-python = ">=3.13"
 # dependencies = ["numpy", "matplotlib"]
 # ///
-"""Figure of experiment E03.2, drawn from ``results/E03.2-field-loop.json`` and ``results/E03.2-maps.npz``.
+"""Figure of experiment E03.2, drawn from ``results/E03.2b-field-loop.json`` and ``results/E03.2b-maps.npz``.
 
 Run from this directory with:
 
-    uv run --locked --script E03.2-figure.py
+    uv run --locked --script E03.2c-figure.py
 """
 
 import json
@@ -54,8 +54,8 @@ SCHEMES = {
 
 
 def main() -> None:
-    data = json.loads((RESULTS / "E03.2-field-loop.json").read_text())
-    maps = np.load(RESULTS / "E03.2-maps.npz")
+    data = json.loads((RESULTS / "E03.2b-field-loop.json").read_text())
+    maps = np.load(RESULTS / "E03.2b-maps.npz")
     plt.rcParams.update(STYLE)
     fig = plt.figure(figsize=(13, 6.4), constrained_layout=True)
     top, bottom = fig.subfigures(2, 1, height_ratios=[1.0, 1.55])
@@ -89,7 +89,7 @@ def main() -> None:
     div_ax.set(xlabel="time", ylabel=r"max $|\nabla\cdot B|\,\Delta x\,/\,B_{max}$",
                title="Largest divergence of B", ylim=(1e-16, 2.0))
 
-    fig.savefig(RESULTS / "E03.2-field-loop.png")
+    fig.savefig(RESULTS / "E03.2c-field-loop.png")
 
 
 if __name__ == "__main__":

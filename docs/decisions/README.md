@@ -6,17 +6,18 @@ Each architectural topic gets one decision brief, and briefs are written one at 
 
 ```
 docs/
-├── architecture.md                       purpose, priorities and a summary of all briefs
+├── architecture.md                        purpose, priorities and a summary of all briefs
 └── decisions/
-    ├── README.md                         this file
-    └── DNN-topic/                        one folder per brief, e.g. D01-tooling/
-        ├── DNN-topic-brief.md            the decision brief, e.g. D01-tooling-brief.md
+    ├── README.md                          this file
+    └── DNN-topic/                         one folder per brief, e.g. D02-verification/
+        ├── DNN-topic-brief.md             the decision brief, e.g. D02-verification-brief.md
         └── experiments/
-            ├── ENN.k-description.py      experiment script, e.g. E01.1-wheel-availability.py
-            ├── ENN.k-description.py.lock its lockfile (D01.6)
-            ├── ENN.k-....                any input files of that experiment
+            ├── ENN.k-description.py       an experiment with a single script, e.g. E01.1-wheel-availability.py
+            ├── ENN.kx-description.ext     each code file of an experiment with several, e.g. E02.1a-hydro1d.py,
+            │                              E02.1b-convergence.py, E02.1c-figure.py
+            ├── ENN.kx-description.py.lock the lockfile of a script (D01.6), with the script's ID
             └── results/
-                └── ENN.k-....            everything the experiment produces
+                └── ENN.kx-....            everything a script produces, with that script's ID
 ```
 
 ## Naming conventions
@@ -29,12 +30,16 @@ All names are lowercase, with words separated by hyphens; only the `D` and `E` p
 | Brief file | `DNN-<topic>-brief.md` | `D01-tooling-brief.md` |
 | Sub-decision ID | `DNN.k` | `D01.7`, the seventh sub-decision of brief D01 |
 | Experiment ID | `ENN.k` | `E01.2`, the second experiment of brief D01 |
-| Experiment files | `ENN.k-<description>.<ext>` | `E01.2-style-formatting.py`, `E01.2-style-sample.py` |
-| Experiment results | `results/ENN.k-<description>.<ext>` | `results/E01.2-format-120-double.diff` |
+| Code file of a single-script experiment | `ENN.k-<description>.<ext>` | `E01.2-style-formatting.py` |
+| Code file of a multi-script experiment | `ENN.kx-<description>.<ext>`, with x = a, b, c, … | `E02.1a-hydro1d.py`, `E02.1b-convergence.py`, `E02.1c-figure.py` |
+| Lockfile | the script's name plus `.lock` | `E02.1b-convergence.py.lock` |
+| Inputs and results | `ENN.k[x]-<description>.<ext>`, with the ID of the script that uses or produces them | `E01.2-style-sample.py`, `results/E02.1b-errors.json`, `results/E02.1c-convergence.png` |
 
 - `NN` is the two-digit brief number; `k` counts sub-decisions or experiments within that brief, starting at 1.
-- Every file belonging to an experiment (script, lockfile, inputs and results) starts with that experiment's ID, so the brief can refer to it unambiguously and its files sort together.
-- IDs are never reused, not even after a sub-decision is superseded or an experiment is dropped.
+- **One code file, one letter.** An experiment with a single script uses the plain experiment ID. As soon as an experiment has more than one code file (scripts, modules, kernels, Dockerfiles, shell scripts), every code file gets its own letter, starting at `a` and incrementing in the order the files are added. The letters show at a glance how many code files an experiment has and which files belong to which part. Should a single-script experiment later gain a second code file, its first file is renamed to letter `a`.
+- **Every file belongs visibly to one script.** A lockfile carries its script's ID. An input file or a result carries the ID of the script that uses or produces it: in E02.1, the error data in `results/E02.1b-errors.json` comes from `E02.1b-convergence.py`, and the figure `results/E02.1c-convergence.png` from `E02.1c-figure.py`.
+- Every file of an experiment starts with that experiment's ID, so the brief can refer to it unambiguously and its files sort together.
+- IDs and letters are never reused, not even after a sub-decision is superseded or an experiment or script is dropped.
 
 ## Planned briefs
 
@@ -112,6 +117,6 @@ project to, and which later topics they constrain.
 
 ## Experiment conventions
 
-- Each experiment is a standalone script with inline dependency metadata (PEP 723) and its own lockfile (`ENN.k-description.py.lock`, created with `uv lock --script`). It is rerun with `uv run --locked --script ENN.k-description.py` (D01.6).
+- Each script that is run declares its dependencies inline (PEP 723) and has its own lockfile (`<script name>.lock`, created with `uv lock --script`). It is rerun with `uv run --locked --script <script name>` (D01.6). Modules and kernels that are only imported by a script need no lockfile of their own.
 - Scripts record the machine, software versions and parameters alongside their results.
 - Experiments test the decision at hand with the smallest code that can answer it. They are not early versions of mhdpy.

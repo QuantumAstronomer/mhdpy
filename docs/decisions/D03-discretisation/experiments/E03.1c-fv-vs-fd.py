@@ -5,7 +5,7 @@
 """Experiment E03.1: finite-volume Godunov against ZEUS-type finite differences, and total against internal energy.
 
 Compares the two discretisation families of the reference codes on the same problems, using the minimal solvers in
-``E03.1-godunov1d.py`` (finite volume, total energy, HLL, MC limiter, SSP-RK2) and ``E03.1-zeus1d.py`` (staggered finite
+``E03.1a-godunov1d.py`` (finite volume, total energy, HLL, MC limiter, SSP-RK2) and ``E03.1b-zeus1d.py`` (staggered finite
 differences, internal energy, artificial viscosity, operator splitting):
 
 1. Shock tubes against their exact solutions: the Sod problem and Toro's test 3, a strong shock (pressure ratio 10^5).
@@ -18,9 +18,9 @@ differences, internal energy, artificial viscosity, operator splitting):
 
 Run from this directory with:
 
-    uv run --locked --script E03.1-fv-vs-fd.py
+    uv run --locked --script E03.1c-fv-vs-fd.py
 
-Results are written to results/; the figure is drawn from them by E03.1-figure.py.
+Results are written to results/; the figure is drawn from them by E03.1d-figure.py.
 """
 
 import importlib.util
@@ -44,8 +44,8 @@ def load(name: str, filename: str):
     return module
 
 
-fv = load("godunov1d", "E03.1-godunov1d.py")
-fd = load("zeus1d", "E03.1-zeus1d.py")
+fv = load("godunov1d", "E03.1a-godunov1d.py")
+fd = load("zeus1d", "E03.1b-zeus1d.py")
 
 GAMMA = 1.4
 G = fd.N_GHOST
@@ -189,9 +189,9 @@ def main() -> None:
             f"{res['FV']['steps']} / {res['FD']['steps']} |"
         )
 
-    (RESULTS / "E03.1-fv-vs-fd.json").write_text(json.dumps(results, indent=1) + "\n")
-    (RESULTS / "E03.1-fv-vs-fd.md").write_text("\n".join(md) + "\n\n![E03.1](E03.1-fv-vs-fd.png)\n")
-    (RESULTS / "E03.1-metadata.json").write_text(
+    (RESULTS / "E03.1c-fv-vs-fd.json").write_text(json.dumps(results, indent=1) + "\n")
+    (RESULTS / "E03.1c-fv-vs-fd.md").write_text("\n".join(md) + "\n\n![E03.1](E03.1d-fv-vs-fd.png)\n")
+    (RESULTS / "E03.1c-metadata.json").write_text(
         json.dumps({"python": sys.version, "numpy": np.__version__, "platform": platform.platform()}, indent=2) + "\n"
     )
     print("\n".join(md))

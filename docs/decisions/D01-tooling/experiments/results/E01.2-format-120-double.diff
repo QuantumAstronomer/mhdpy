@@ -1,0 +1,95 @@
+--- original
++++ formatted (120-double)
+@@ -72,7 +72,7 @@
+ 
+         # Normalise all input parameters to tuples, whatever their input-form
+         # used to be (scalar, list, tuple, etc.).
+-        n_cells     = to_tuple(n_cells)
++        n_cells = to_tuple(n_cells)
+         bound_lower = to_tuple(bound_lower)
+         bound_upper = to_tuple(bound_upper)
+ 
+@@ -81,25 +81,31 @@
+         ndim: int = len(n_cells)
+ 
+         if not (len(n_cells) == len(bound_lower) == len(bound_upper)):
+-            raise ValueError(f"n_cells, bound_lower, and bound_upper must have the same length, got: "
+-                             f"n_cells = {len(n_cells)}, bound_lower = {len(bound_lower)}, bound_upper = {len(bound_upper)}.")
++            raise ValueError(
++                f"n_cells, bound_lower, and bound_upper must have the same length, got: "
++                f"n_cells = {len(n_cells)}, bound_lower = {len(bound_lower)}, bound_upper = {len(bound_upper)}."
++            )
+ 
+         # Number of dimensions can not exceed 3 and must be at least 1 to be
+         # consistent with our physical world.
+         if ndim not in (1, 2, 3):
+-            raise ValueError(f"Number of dimensions, i.e. length of the n_cells sequence, must either be 1, 2, or 3, got: {ndim}.")
++            raise ValueError(
++                f"Number of dimensions, i.e. length of the n_cells sequence, must either be 1, 2, or 3, got: {ndim}."
++            )
+ 
+         # Per-direction checks of validity of types and values
+         for direction in range(ndim):
+             # Check n_cells to be integer in every direction
+-            if not is_integer(value = n_cells[direction]):
++            if not is_integer(value=n_cells[direction]):
+                 raise TypeError(f"n_cells[{direction}] must be an integer, got: {type(n_cells[direction]).__name__}.")
+ 
+             # Check the upper and lower bounds to be a real value (not
+             # necessarily > 0)
+             for name, bound in (("bound_lower", bound_lower), ("bound_upper", bound_upper)):
+-                if not is_real(value = bound[direction]):
+-                    raise TypeError(f"{name}[{direction}] must be a real number, got: {type(bound[direction]).__name__}.")
++                if not is_real(value=bound[direction]):
++                    raise TypeError(
++                        f"{name}[{direction}] must be a real number, got: {type(bound[direction]).__name__}."
++                    )
+ 
+                 # inf and nan pass is_real(), and every comparison with nan is
+                 # False, so the ordering check below would not catch them
+@@ -114,12 +120,14 @@
+             # Upper bound must be strictly greater than the lower bound to be
+             # valid
+             if bound_upper[direction] <= bound_lower[direction]:
+-                raise ValueError(f"bound_upper[{direction}] must be greater than bound_lower[{direction}], got: "
+-                                 f"bound_upper = {bound_upper[direction]} <= {bound_lower[direction]} = bound_lower.")
++                raise ValueError(
++                    f"bound_upper[{direction}] must be greater than bound_lower[{direction}], got: "
++                    f"bound_upper = {bound_upper[direction]} <= {bound_lower[direction]} = bound_lower."
++                )
+ 
+         # Make checks on the type and value of the ghost cells, i.e. must be a
+         # non-negative integer.
+-        if not is_integer(value = n_ghost):
++        if not is_integer(value=n_ghost):
+             raise TypeError(f"n_ghost must be an integer, got: {type(n_ghost).__name__}.")
+ 
+         if n_ghost < 0:
+@@ -129,10 +137,10 @@
+         # scalars would otherwise leak into repr() ("np.int64(8)") and make
+         # to_dict() unserializable by json, and a Fraction bound would turn
+         # the coordinate arrays into object arrays (R1.2 / R8.2).
+-        n_cells     = tuple(int(n) for n in n_cells)
++        n_cells = tuple(int(n) for n in n_cells)
+         bound_lower = tuple(float(bound) for bound in bound_lower)
+         bound_upper = tuple(float(bound) for bound in bound_upper)
+-        n_ghost     = int(n_ghost)
++        n_ghost = int(n_ghost)
+ 
+         # Set the coordinate spacing per direction
+         delta: tuple[float, ...] = tuple(
+@@ -151,8 +159,12 @@
+         # Coordinate arrays are computed once, here, and shared by reference
+         # from then on (R4.5): faces() and centers() only look them up. The
+         # centers are built from the faces, so the faces must come first.
+-        self._faces: tuple[NDArray[np.float64], ...] = tuple(self._compute_faces(direction) for direction in range(ndim))
+-        self._centers: tuple[NDArray[np.float64], ...] = tuple(self._compute_centers(direction) for direction in range(ndim))
++        self._faces: tuple[NDArray[np.float64], ...] = tuple(
++            self._compute_faces(direction) for direction in range(ndim)
++        )
++        self._centers: tuple[NDArray[np.float64], ...] = tuple(
++            self._compute_centers(direction) for direction in range(ndim)
++        )
+ 
+         # Centroids depend on the geometry, so a bare Grid cannot compute
+         # them here. They are computed on the first call to centroids(),

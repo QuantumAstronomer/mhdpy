@@ -1,0 +1,70 @@
+## Continuous integration of mhdpy (decision brief D01). Runs on every push to main and on every pull request.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+## A newer push to the same branch or pull request cancels the run that is still in progress.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ## Formatting, linting and type checking (D01.7, D01.8). These do not depend on the platform, so Linux suffices.
+  checks:
+    name: Format, lint and type checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.3.0
+      - run: uv sync --locked
+      - run: uv run ruff format --check
+      - run: uv run ruff check
+      - run: uv run pyright
+
+  ## The test suite on both target platforms and every supported Python version (D01.1, D01.2).
+  tests:
+    name: Tests (${{ matrix.os }}, Python ${{ matrix.python }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python: ["3.13", "3.14"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.3.0
+        with:
+          python-version: ${{ matrix.python }}
+      - run: uv sync --locked
+      - run: uv run pytest
+
+  ## The test suite against the lowest dependency versions pyproject.toml allows, so that the declared lower bounds are
+  ## known to hold (D01.6).
+  lowest-versions:
+    name: Tests with lowest allowed dependency versions
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.3.0
+        with:
+          python-version: "3.13"
+      - run: uv sync --resolution lowest-direct
+      - run: uv run --no-sync pytest
+
+  ## The tests that ship inside the wheel, run against an installed copy of that wheel rather than the source tree, as a
+  ## user would run them (D01.4).
+  package:
+    name: Build and test the wheel
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.3.0
+      - run: uv build
+      - run: uv run --isolated --no-project --with dist/*.whl --with pytest pytest --pyargs mhdpy

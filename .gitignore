@@ -1,0 +1,27 @@
+## Reference material: third-party code and papers that are not ours to redistribute (D01.4).
+/References/
+
+## Python
+__pycache__/
+*.py[cod]
+
+## Virtual environments (managed by uv)
+.venv/
+
+## Build artefacts
+build/
+dist/
+*.egg-info/
+
+## Tool caches
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+## Documentation build output
+docs/_build/
+
+## Editors and operating systems
+.DS_Store
+.idea/

@@ -1,0 +1,85 @@
+## Project configuration of mhdpy. The choices made here are recorded in decision brief D01
+## (docs/decisions/D01-tooling/D01-tooling-brief.md); the sub-decision behind each section is noted.
+
+[project]
+name = "mhdpy"
+version = "0.1.0.dev0"
+description = "A Python-first package for astrophysical (magneto)hydrodynamics."
+readme = "README.md"
+authors = [{ name = "Thom van Essen" }]
+## D01.3: BSD-3-Clause, plus the licences of third-party code reused in mhdpy.
+license = "BSD-3-Clause"
+license-files = ["LICENSE", "LICENSES/*.txt"]
+## D01.2: Python 3.13 and 3.14, under a rolling three-year support window (SPEC 0).
+requires-python = ">=3.13"
+classifiers = [
+    "Development Status :: 1 - Planning",
+    "Intended Audience :: Science/Research",
+    "Operating System :: MacOS",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Scientific/Engineering :: Astronomy",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Typing :: Typed",
+]
+## D01.6: runtime dependencies get the version current at the time they are added as lower bound, no upper bound.
+dependencies = []
+
+## D01.6: development tools live in dependency groups, which are never installed for users.
+[dependency-groups]
+dev = [
+    "pyright>=1.1.414",
+    "pytest>=9.1.1",
+    "ruff>=0.17.0",
+]
+
+## D01.5: uv_build, as an interim choice until brief D04 (compiled code) is decided.
+[build-system]
+requires = ["uv_build>=0.12.23,<0.13.0"]
+build-backend = "uv_build"
+
+## D01.7: ruff formats and lints everything at 120 characters.
+[tool.ruff]
+line-length = 120
+## Experiments in the decision briefs are standalone scripts with their own environments (D01.6), and the
+## E01.2 style sample deliberately predates the house style. They are frozen evidence, not package code.
+extend-exclude = ["docs/decisions"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.ruff.lint]
+select = [
+    "E",   ## pycodestyle errors
+    "W",   ## pycodestyle warnings
+    "F",   ## pyflakes
+    "I",   ## import sorting
+    "B",   ## bugbear: likely bugs and design problems
+    "UP",  ## pyupgrade: modern syntax for the supported Python versions
+    "NPY", ## NumPy-specific checks
+    "D",   ## docstrings (pydocstyle)
+]
+ignore = [
+    "E266", ## house style: comments start with a double hash, "## comment" (D01.7)
+]
+
+[tool.ruff.lint.pydocstyle]
+## D01.10 / D01.11: standard NumPy docstring layout.
+convention = "numpy"
+
+## D01.8: pyright, strict for framework and package interfaces. Numerical kernels may relax this per file with a
+## "# pyright: basic" comment once they exist.
+[tool.pyright]
+include = ["src"]
+pythonVersion = "3.13"
+typeCheckingMode = "strict"
+venvPath = "."
+venv = ".venv"
+
+## D01.9: pytest. Tests live next to the component they test, inside the package (D01.4). Every tests/ folder is a
+## package with its own __init__.py, so test modules in different components may share a name, and an installed copy
+## can be tested with a plain "pytest --pyargs mhdpy".
+[tool.pytest.ini_options]
+testpaths = ["src"]

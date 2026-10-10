@@ -1,0 +1,174 @@
+--- original
++++ formatted (88-double)
+@@ -52,27 +52,39 @@
+ 
+         # Strings are sequences in Python. However, they should not be passed,
+         # hence we make an explicit check on the parameters.
+-        for name, value in (("n_cells", n_cells), ("bound_lower", bound_lower), ("bound_upper", bound_upper)):
++        for name, value in (
++            ("n_cells", n_cells),
++            ("bound_lower", bound_lower),
++            ("bound_upper", bound_upper),
++        ):
+             if isinstance(value, (str, bytes)):
+-                raise TypeError(f"{name} must be a number or a sequence of numbers, got: {type(value).__name__}.")
++                raise TypeError(
++                    f"{name} must be a number or a sequence of numbers, got: {type(value).__name__}."
++                )
+ 
+             # numpy arrays are accepted for convenience (R1.1): a 1-D array
+             # counts as a sequence and a 0-d array as a bare scalar. An array
+             # with more axes has no meaning here.
+             if isinstance(value, np.ndarray) and value.ndim > 1:
+-                raise ValueError(f"{name} must be a scalar or a 1-D sequence, got: a {value.ndim}-D array.")
++                raise ValueError(
++                    f"{name} must be a scalar or a 1-D sequence, got: a {value.ndim}-D array."
++                )
+ 
+         # Requirement 1.1 specifies that n_cells, bound_lower, and bound_upper
+         # must all agree on their type, i.e. they must be of the same type.
+         # is_sequence() counts a 1-D numpy array as a sequence and a 0-d one
+         # as a scalar; isinstance(value, Sequence) would count every array
+         # as a scalar.
+-        if not (is_sequence(n_cells) == is_sequence(bound_lower) == is_sequence(bound_upper)):
+-            raise ValueError("n_cells, bound_lower, and bound_upper must be ALL scalars or ALL sequences, not a mix.")
++        if not (
++            is_sequence(n_cells) == is_sequence(bound_lower) == is_sequence(bound_upper)
++        ):
++            raise ValueError(
++                "n_cells, bound_lower, and bound_upper must be ALL scalars or ALL sequences, not a mix."
++            )
+ 
+         # Normalise all input parameters to tuples, whatever their input-form
+         # used to be (scalar, list, tuple, etc.).
+-        n_cells     = to_tuple(n_cells)
++        n_cells = to_tuple(n_cells)
+         bound_lower = to_tuple(bound_lower)
+         bound_upper = to_tuple(bound_upper)
+ 
+@@ -81,62 +93,84 @@
+         ndim: int = len(n_cells)
+ 
+         if not (len(n_cells) == len(bound_lower) == len(bound_upper)):
+-            raise ValueError(f"n_cells, bound_lower, and bound_upper must have the same length, got: "
+-                             f"n_cells = {len(n_cells)}, bound_lower = {len(bound_lower)}, bound_upper = {len(bound_upper)}.")
++            raise ValueError(
++                f"n_cells, bound_lower, and bound_upper must have the same length, got: "
++                f"n_cells = {len(n_cells)}, bound_lower = {len(bound_lower)}, bound_upper = {len(bound_upper)}."
++            )
+ 
+         # Number of dimensions can not exceed 3 and must be at least 1 to be
+         # consistent with our physical world.
+         if ndim not in (1, 2, 3):
+-            raise ValueError(f"Number of dimensions, i.e. length of the n_cells sequence, must either be 1, 2, or 3, got: {ndim}.")
++            raise ValueError(
++                f"Number of dimensions, i.e. length of the n_cells sequence, must either be 1, 2, or 3, got: {ndim}."
++            )
+ 
+         # Per-direction checks of validity of types and values
+         for direction in range(ndim):
+             # Check n_cells to be integer in every direction
+-            if not is_integer(value = n_cells[direction]):
+-                raise TypeError(f"n_cells[{direction}] must be an integer, got: {type(n_cells[direction]).__name__}.")
++            if not is_integer(value=n_cells[direction]):
++                raise TypeError(
++                    f"n_cells[{direction}] must be an integer, got: {type(n_cells[direction]).__name__}."
++                )
+ 
+             # Check the upper and lower bounds to be a real value (not
+             # necessarily > 0)
+-            for name, bound in (("bound_lower", bound_lower), ("bound_upper", bound_upper)):
+-                if not is_real(value = bound[direction]):
+-                    raise TypeError(f"{name}[{direction}] must be a real number, got: {type(bound[direction]).__name__}.")
++            for name, bound in (
++                ("bound_lower", bound_lower),
++                ("bound_upper", bound_upper),
++            ):
++                if not is_real(value=bound[direction]):
++                    raise TypeError(
++                        f"{name}[{direction}] must be a real number, got: {type(bound[direction]).__name__}."
++                    )
+ 
+                 # inf and nan pass is_real(), and every comparison with nan is
+                 # False, so the ordering check below would not catch them
+                 # (R2.2).
+                 if not math.isfinite(bound[direction]):
+-                    raise ValueError(f"{name}[{direction}] must be finite, got: {bound[direction]}.")
++                    raise ValueError(
++                        f"{name}[{direction}] must be finite, got: {bound[direction]}."
++                    )
+ 
+             # Check the number of cells in each direction is larger than 0
+             if n_cells[direction] < 1:
+-                raise ValueError(f"n_cells[{direction}] must be greater than or equal to 1, got: {n_cells[direction]}.")
++                raise ValueError(
++                    f"n_cells[{direction}] must be greater than or equal to 1, got: {n_cells[direction]}."
++                )
+ 
+             # Upper bound must be strictly greater than the lower bound to be
+             # valid
+             if bound_upper[direction] <= bound_lower[direction]:
+-                raise ValueError(f"bound_upper[{direction}] must be greater than bound_lower[{direction}], got: "
+-                                 f"bound_upper = {bound_upper[direction]} <= {bound_lower[direction]} = bound_lower.")
++                raise ValueError(
++                    f"bound_upper[{direction}] must be greater than bound_lower[{direction}], got: "
++                    f"bound_upper = {bound_upper[direction]} <= {bound_lower[direction]} = bound_lower."
++                )
+ 
+         # Make checks on the type and value of the ghost cells, i.e. must be a
+         # non-negative integer.
+-        if not is_integer(value = n_ghost):
+-            raise TypeError(f"n_ghost must be an integer, got: {type(n_ghost).__name__}.")
++        if not is_integer(value=n_ghost):
++            raise TypeError(
++                f"n_ghost must be an integer, got: {type(n_ghost).__name__}."
++            )
+ 
+         if n_ghost < 0:
+-            raise ValueError(f"n_ghost must be greater than or equal to 0, got: {n_ghost}.")
++            raise ValueError(
++                f"n_ghost must be greater than or equal to 0, got: {n_ghost}."
++            )
+ 
+         # Store plain Python numbers, whatever numeric type was passed. numpy
+         # scalars would otherwise leak into repr() ("np.int64(8)") and make
+         # to_dict() unserializable by json, and a Fraction bound would turn
+         # the coordinate arrays into object arrays (R1.2 / R8.2).
+-        n_cells     = tuple(int(n) for n in n_cells)
++        n_cells = tuple(int(n) for n in n_cells)
+         bound_lower = tuple(float(bound) for bound in bound_lower)
+         bound_upper = tuple(float(bound) for bound in bound_upper)
+-        n_ghost     = int(n_ghost)
++        n_ghost = int(n_ghost)
+ 
+         # Set the coordinate spacing per direction
+         delta: tuple[float, ...] = tuple(
+-            (bound_upper[direction] - bound_lower[direction]) / n_cells[direction] for direction in range(ndim)
++            (bound_upper[direction] - bound_lower[direction]) / n_cells[direction]
++            for direction in range(ndim)
+         )
+ 
+         # Finally, store the normalised and validated variables under private
+@@ -151,8 +185,12 @@
+         # Coordinate arrays are computed once, here, and shared by reference
+         # from then on (R4.5): faces() and centers() only look them up. The
+         # centers are built from the faces, so the faces must come first.
+-        self._faces: tuple[NDArray[np.float64], ...] = tuple(self._compute_faces(direction) for direction in range(ndim))
+-        self._centers: tuple[NDArray[np.float64], ...] = tuple(self._compute_centers(direction) for direction in range(ndim))
++        self._faces: tuple[NDArray[np.float64], ...] = tuple(
++            self._compute_faces(direction) for direction in range(ndim)
++        )
++        self._centers: tuple[NDArray[np.float64], ...] = tuple(
++            self._compute_centers(direction) for direction in range(ndim)
++        )
+ 
+         # Centroids depend on the geometry, so a bare Grid cannot compute
+         # them here. They are computed on the first call to centroids(),
+@@ -191,4 +229,6 @@
+         # weights that depend only on centroid positions, so only on the two
+         # grids as well. They are computed once per coarse grid and stored
+         # here, keyed by the coarse grid, just like the volume sums above.
+-        self._prolongation_weights: dict[Grid, tuple[tuple[NDArray[np.float64], ...], ...]] = {}
++        self._prolongation_weights: dict[
++            Grid, tuple[tuple[NDArray[np.float64], ...], ...]
++        ] = {}

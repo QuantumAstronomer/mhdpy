@@ -1,0 +1,98 @@
+{
+ "date": "2026-10-10",
+ "platform": "macOS-26.7.1-x86_64-i386-64bit-Mach-O",
+ "uv": "uv 0.12.23 (46b84fd0b 2026-10-03 x86_64-apple-darwin)",
+ "free_threaded_interpreters": {
+  "macOS x86-64": "3.14.8",
+  "macOS arm64": "3.14.8",
+  "Linux x86-64": "3.14.8",
+  "Linux aarch64": "3.14.8"
+ },
+ "mpi_wheels": {
+  "mpich": {
+   "version": "5.0.2",
+   "released": "2026-09-29",
+   "platforms": [
+    "Linux aarch64",
+    "Linux x86-64",
+    "macOS arm64",
+    "macOS x86-64"
+   ]
+  },
+  "openmpi": {
+   "version": "5.0.11",
+   "released": "2026-09-25",
+   "platforms": [
+    "Linux aarch64",
+    "Linux x86-64",
+    "macOS arm64",
+    "macOS x86-64"
+   ]
+  },
+  "impi-rt": {
+   "version": "2021.18.1",
+   "released": "2026-07-14",
+   "platforms": [
+    "Linux x86-64"
+   ]
+  }
+ },
+ "smoke_tests": {
+  "macOS native, Python 3.14, mpich": {
+   "success": true,
+   "seconds": 2.4589111669993144,
+   "library": "MPICH Version: 5.0.2",
+   "interpreter": "gil",
+   "error": null
+  },
+  "Linux container, Python 3.14, mpich": {
+   "success": true,
+   "seconds": 1.6518407289986499,
+   "library": "MPICH Version: 5.0.2",
+   "interpreter": "gil",
+   "error": null
+  },
+  "macOS native, Python 3.14, openmpi": {
+   "success": true,
+   "seconds": 4.665819462999934,
+   "library": "Open MPI v5.0.11",
+   "interpreter": "gil",
+   "error": null
+  },
+  "Linux container, Python 3.14, openmpi": {
+   "success": true,
+   "seconds": 2.665583522997622,
+   "library": "Open MPI v5.0.11",
+   "interpreter": "gil",
+   "error": null
+  },
+  "macOS native, Python 3.14t, mpich": {
+   "success": true,
+   "seconds": 2.6171958959967014,
+   "library": "MPICH Version: 5.0.2",
+   "interpreter": "free-threaded",
+   "error": null
+  },
+  "Linux container, Python 3.14t, mpich": {
+   "success": true,
+   "seconds": 8.589369856999838,
+   "library": "MPICH Version: 5.0.2",
+   "interpreter": "free-threaded",
+   "error": null
+  },
+  "macOS native, Python 3.14t, openmpi": {
+   "success": true,
+   "seconds": 5.037421920002089,
+   "library": "Open MPI v5.0.11",
+   "interpreter": "free-threaded",
+   "error": null
+  },
+  "Linux container, Python 3.14t, openmpi": {
+   "success": true,
+   "seconds": 9.912167273992964,
+   "library": "Open MPI v5.0.11",
+   "interpreter": "free-threaded",
+   "error": null
+  }
+ }
+}

@@ -1,0 +1,7 @@
+# Linux environment of experiment E05.2: the official uv image with Python 3.14, plus a C compiler with OpenMP (gcc,
+# with libgomp) for the loop-level variant. The free-threaded interpreter is downloaded by uv at run time. Built and
+# used by E05.2d-run.py.
+FROM ghcr.io/astral-sh/uv:python3.14-bookworm-slim
+RUN apt-get update \
+    && apt-get install --yes --no-install-recommends gcc libc6-dev \
+    && rm -rf /var/lib/apt/lists/*

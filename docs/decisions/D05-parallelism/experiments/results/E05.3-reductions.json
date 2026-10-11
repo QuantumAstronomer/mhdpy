@@ -1,0 +1,115 @@
+{
+ "python": "3.14.8 (main, Oct  3 2026, 00:54:41) [Clang 22.1.3 ]",
+ "numpy": "2.5.3",
+ "platform": "macOS-26.7.1-x86_64-i386-64bit-Mach-O",
+ "grid": [
+  4096,
+  1024
+ ],
+ "exact_sum": 11114905.600000001,
+ "rows": {
+  "NumPy, whole grid": {
+   "ulp": [
+    0.0
+   ],
+   "seconds": 0.0027918819978367537
+  },
+  "NumPy per block of 32\u00b2, partial sums added in block order": {
+   "ulp": [
+    -16.0
+   ],
+   "seconds": 0.02751238599739736
+  },
+  "NumPy per block of 32\u00b2, partial sums added in reverse order": {
+   "ulp": [
+    -8.0
+   ],
+   "seconds": 0.02751238599739736
+  },
+  "NumPy per block of 32\u00b2, partial sums added in shuffled order": {
+   "ulp": [
+    -20.0,
+    0.0,
+    -4.0,
+    -25.0,
+    -35.0
+   ],
+   "seconds": 0.02751238599739736
+  },
+  "NumPy per block of 64\u00b2, partial sums added in block order": {
+   "ulp": [
+    -4.0
+   ],
+   "seconds": 0.0110307479990297
+  },
+  "NumPy per block of 64\u00b2, partial sums added in reverse order": {
+   "ulp": [
+    -7.0
+   ],
+   "seconds": 0.0110307479990297
+  },
+  "NumPy per block of 64\u00b2, partial sums added in shuffled order": {
+   "ulp": [
+    0.0,
+    1.0,
+    -14.0,
+    4.0,
+    -2.0
+   ],
+   "seconds": 0.0110307479990297
+  },
+  "NumPy per block of 128\u00b2, partial sums added in block order": {
+   "ulp": [
+    5.0
+   ],
+   "seconds": 0.006175187001645099
+  },
+  "NumPy per block of 128\u00b2, partial sums added in reverse order": {
+   "ulp": [
+    4.0
+   ],
+   "seconds": 0.006175187001645099
+  },
+  "NumPy per block of 128\u00b2, partial sums added in shuffled order": {
+   "ulp": [
+    6.0,
+    3.0,
+    1.0,
+    10.0,
+    8.0
+   ],
+   "seconds": 0.006175187001645099
+  },
+  "exactly rounded (math.fsum), whole grid": {
+   "ulp": [
+    0.0
+   ],
+   "seconds": 0.335382616998686
+  },
+  "exact per block of 32\u00b2 (Python), any order": {
+   "ulp": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "seconds": 1.9281577069996274
+  },
+  "exact per block of 64\u00b2 (Python), any order": {
+   "ulp": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "seconds": 1.9514636189996963
+  },
+  "exact per block of 128\u00b2 (Python), any order": {
+   "ulp": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "seconds": 1.706668938997609
+  }
+ },
+ "distinct_minima": 1
+}

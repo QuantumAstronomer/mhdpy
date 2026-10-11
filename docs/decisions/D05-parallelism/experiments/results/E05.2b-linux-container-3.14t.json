@@ -1,0 +1,205 @@
+{
+ "label": "linux-container-3.14t",
+ "python": "3.14.3 free-threading build (main, Feb  3 2026, 22:55:28) [Clang 21.1.4 ]",
+ "numpy": "2.5.3",
+ "platform": "Linux-7.0.14-linuxkit-x86_64-with-glibc2.36",
+ "cpu_count": 8,
+ "steps_checked": 4,
+ "grid": [
+  2048,
+  512
+ ],
+ "configurations": {
+  "single block, one thread": {
+   "1": {
+    "cell_updates_per_second": 4389497.831231472,
+    "bitwise_identical": true
+   }
+  },
+  "single block, loop-level OpenMP": {
+   "1": {
+    "cell_updates_per_second": 4355855.185469672,
+    "bitwise_identical": true
+   },
+   "2": {
+    "cell_updates_per_second": 7783353.711660276,
+    "bitwise_identical": true
+   },
+   "3": {
+    "cell_updates_per_second": 9416318.990809256,
+    "bitwise_identical": true
+   },
+   "4": {
+    "cell_updates_per_second": 11172197.880902741,
+    "bitwise_identical": true
+   },
+   "6": {
+    "cell_updates_per_second": 13063253.01244222,
+    "bitwise_identical": true
+   },
+   "8": {
+    "cell_updates_per_second": 13246505.843823224,
+    "bitwise_identical": true
+   }
+  },
+  "blocks of 32\u00b2, Python threads": {
+   "1": {
+    "cell_updates_per_second": 3782235.0169649054,
+    "bitwise_identical": true
+   },
+   "2": {
+    "cell_updates_per_second": 7717403.485964761,
+    "bitwise_identical": true
+   },
+   "3": {
+    "cell_updates_per_second": 12846529.595969975,
+    "bitwise_identical": true
+   },
+   "4": {
+    "cell_updates_per_second": 16857917.988986768,
+    "bitwise_identical": true
+   },
+   "6": {
+    "cell_updates_per_second": 20507090.70793649,
+    "bitwise_identical": true
+   },
+   "8": {
+    "cell_updates_per_second": 23037405.35316646,
+    "bitwise_identical": true
+   }
+  },
+  "blocks of 32\u00b2, processes": {
+   "1": {
+    "cell_updates_per_second": 3960579.5320146023,
+    "bitwise_identical": true
+   },
+   "2": {
+    "cell_updates_per_second": 7567652.021003041,
+    "bitwise_identical": true
+   },
+   "3": {
+    "cell_updates_per_second": 11668017.19446918,
+    "bitwise_identical": true
+   },
+   "4": {
+    "cell_updates_per_second": 15085464.84226991,
+    "bitwise_identical": true
+   },
+   "6": {
+    "cell_updates_per_second": 20276046.436825793,
+    "bitwise_identical": true
+   },
+   "8": {
+    "cell_updates_per_second": 19722512.604800653,
+    "bitwise_identical": true
+   }
+  },
+  "blocks of 64\u00b2, Python threads": {
+   "1": {
+    "cell_updates_per_second": 4374341.229094298,
+    "bitwise_identical": true
+   },
+   "2": {
+    "cell_updates_per_second": 9477289.791177241,
+    "bitwise_identical": true
+   },
+   "3": {
+    "cell_updates_per_second": 12066848.09395022,
+    "bitwise_identical": true
+   },
+   "4": {
+    "cell_updates_per_second": 16070405.74327774,
+    "bitwise_identical": true
+   },
+   "6": {
+    "cell_updates_per_second": 21618275.593931448,
+    "bitwise_identical": true
+   },
+   "8": {
+    "cell_updates_per_second": 22294563.729765225,
+    "bitwise_identical": true
+   }
+  },
+  "blocks of 64\u00b2, processes": {
+   "1": {
+    "cell_updates_per_second": 4423549.265111728,
+    "bitwise_identical": true
+   },
+   "2": {
+    "cell_updates_per_second": 9289764.442402367,
+    "bitwise_identical": true
+   },
+   "3": {
+    "cell_updates_per_second": 11310211.55654552,
+    "bitwise_identical": true
+   },
+   "4": {
+    "cell_updates_per_second": 15510666.700797327,
+    "bitwise_identical": true
+   },
+   "6": {
+    "cell_updates_per_second": 18295795.095246416,
+    "bitwise_identical": true
+   },
+   "8": {
+    "cell_updates_per_second": 20313897.426676873,
+    "bitwise_identical": true
+   }
+  },
+  "blocks of 128\u00b2, Python threads": {
+   "1": {
+    "cell_updates_per_second": 4499554.221865342,
+    "bitwise_identical": true
+   },
+   "2": {
+    "cell_updates_per_second": 7986447.953476654,
+    "bitwise_identical": true
+   },
+   "3": {
+    "cell_updates_per_second": 11404916.67792187,
+    "bitwise_identical": true
+   },
+   "4": {
+    "cell_updates_per_second": 14077940.682291647,
+    "bitwise_identical": true
+   },
+   "6": {
+    "cell_updates_per_second": 15735648.146276671,
+    "bitwise_identical": true
+   },
+   "8": {
+    "cell_updates_per_second": 16544791.25176471,
+    "bitwise_identical": true
+   }
+  },
+  "blocks of 128\u00b2, processes": {
+   "1": {
+    "cell_updates_per_second": 4759690.234893217,
+    "bitwise_identical": true
+   },
+   "2": {
+    "cell_updates_per_second": 8438147.47500797,
+    "bitwise_identical": true
+   },
+   "3": {
+    "cell_updates_per_second": 11518804.832601119,
+    "bitwise_identical": true
+   },
+   "4": {
+    "cell_updates_per_second": 13394759.278205296,
+    "bitwise_identical": true
+   },
+   "6": {
+    "cell_updates_per_second": 16310801.233619535,
+    "bitwise_identical": true
+   },
+   "8": {
+    "cell_updates_per_second": 15930457.782288382,
+    "bitwise_identical": true
+   }
+  }
+ },
+ "gil_enabled_after_import": false,
+ "gil_enabled_at_start": false,
+ "openmp": true
+}

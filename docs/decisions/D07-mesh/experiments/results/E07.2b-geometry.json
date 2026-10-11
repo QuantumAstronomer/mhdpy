@@ -1,0 +1,99 @@
+{
+ "python": "3.14.8 (main, Oct  3 2026, 00:54:41) [Clang 22.1.3 ]",
+ "numpy": "2.5.4",
+ "platform": "macOS-26.7.1-x86_64-i386-64bit-Mach-O",
+ "cases": {
+  "2D, 64\u00b2": {
+   "kernel_seconds": 0.00022628854449108303,
+   "variants": {
+    "uniform Cartesian (one cell width)": {
+     "seconds": 2.4071332263091986e-05,
+     "fraction_of_kernel": 0.1063745065718098,
+     "bitwise_identical": true,
+     "geometry_bytes_per_state_bytes": 0.0
+    },
+    "separable 1D factors per direction": {
+     "seconds": 4.163037283218835e-05,
+     "fraction_of_kernel": 0.18397030625573188,
+     "bitwise_identical": true,
+     "geometry_bytes_per_state_bytes": 0.02244809688581315
+    },
+    "full arrays of areas and volumes": {
+     "seconds": 2.9495315670852106e-05,
+     "fraction_of_kernel": 0.13034383042759098,
+     "bitwise_identical": true,
+     "geometry_bytes_per_state_bytes": 0.8913494809688581
+    }
+   }
+  },
+  "2D, 512\u00b2": {
+   "kernel_seconds": 0.020893728932909045,
+   "variants": {
+    "uniform Cartesian (one cell width)": {
+     "seconds": 0.002831595349081634,
+     "fraction_of_kernel": 0.1355236950844939,
+     "bitwise_identical": true,
+     "geometry_bytes_per_state_bytes": 0.0
+    },
+    "separable 1D factors per direction": {
+     "seconds": 0.0037286525678800787,
+     "fraction_of_kernel": 0.17845797558937396,
+     "bitwise_identical": true,
+     "geometry_bytes_per_state_bytes": 0.003081996274262364
+    },
+    "full arrays of areas and volumes": {
+     "seconds": 0.004125738621656342,
+     "fraction_of_kernel": 0.1974630107868406,
+     "bitwise_identical": true,
+     "geometry_bytes_per_state_bytes": 0.9853254011177213
+    }
+   }
+  },
+  "3D, 32\u00b3": {
+   "kernel_seconds": 0.0035513308352914034,
+   "variants": {
+    "uniform Cartesian (one cell width)": {
+     "seconds": 0.0003506101156489991,
+     "fraction_of_kernel": 0.0987264019912777,
+     "bitwise_identical": true,
+     "geometry_bytes_per_state_bytes": 0.0
+    },
+    "separable 1D factors per direction": {
+     "seconds": 0.000573670956098878,
+     "fraction_of_kernel": 0.16153689495724088,
+     "bitwise_identical": true,
+     "geometry_bytes_per_state_bytes": 0.0016589506172839507
+    },
+    "full arrays of areas and volumes": {
+     "seconds": 0.0005470664535540127,
+     "fraction_of_kernel": 0.15404547729474585,
+     "bitwise_identical": true,
+     "geometry_bytes_per_state_bytes": 0.5750342935528121
+    }
+   }
+  },
+  "3D, 64\u00b3": {
+   "kernel_seconds": 0.03136828419956146,
+   "variants": {
+    "uniform Cartesian (one cell width)": {
+     "seconds": 0.004410082318919603,
+     "fraction_of_kernel": 0.1405904859463514,
+     "bitwise_identical": true,
+     "geometry_bytes_per_state_bytes": 0.0
+    },
+    "separable 1D factors per direction": {
+     "seconds": 0.005739358415220917,
+     "fraction_of_kernel": 0.18296692221696828,
+     "bitwise_identical": true,
+     "geometry_bytes_per_state_bytes": 0.0004904081009566456
+    },
+    "full arrays of areas and volumes": {
+     "seconds": 0.00666150626088695,
+     "fraction_of_kernel": 0.21236438112161965,
+     "bitwise_identical": true,
+     "geometry_bytes_per_state_bytes": 0.6747811927539181
+    }
+   }
+  }
+ }
+}

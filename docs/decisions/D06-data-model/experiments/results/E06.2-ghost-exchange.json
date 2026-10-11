@@ -1,0 +1,34 @@
+{
+ "python": "3.14.8 (main, Oct  3 2026, 00:54:41) [Clang 22.1.3 ]",
+ "numpy": "2.5.4",
+ "platform": "macOS-26.7.1-x86_64-i386-64bit-Mach-O",
+ "blocks": 256,
+ "block_cells": [
+  64,
+  64
+ ],
+ "variables": 6,
+ "identical": true,
+ "rows": {
+  "one array for all variables, 8 copies per block": {
+   "seconds": 0.006175628004712053,
+   "microseconds_per_block": 24.123546893406456,
+   "fraction_of_kernel": 0.09423260505236897
+  },
+  "one array per module (hydro, scalars), 16 copies per block": {
+   "seconds": 0.008676703000674024,
+   "microseconds_per_block": 33.89337109638291,
+   "fraction_of_kernel": 0.13239598084524573
+  },
+  "one array per variable, 48 copies per block": {
+   "seconds": 0.017299398998147808,
+   "microseconds_per_block": 67.57577733651488,
+   "fraction_of_kernel": 0.26396788022076123
+  },
+  "one array for all variables, one vectorised call": {
+   "seconds": 0.007021466997684911,
+   "microseconds_per_block": 27.427605459706683,
+   "fraction_of_kernel": 0.10713908382697923
+  }
+ }
+}

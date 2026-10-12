@@ -1,0 +1,32 @@
+{
+ "label": "macos-native-3.14",
+ "python": "3.14.8 (main, Oct  3 2026, 00:54:41) [Clang 22.1.3 ]",
+ "platform": "macOS-26.7.1-x86_64-i386-64bit-Mach-O",
+ "rows": {
+  "compiled | 1": {
+   "cells_per_second": 550548668.6209579,
+   "bitwise_identical": true
+  },
+  "NumPy, per range | 1": {
+   "cells_per_second": 117704266.93999483,
+   "bitwise_identical": true
+  },
+  "NumPy, per block | 1": {
+   "cells_per_second": 94492521.1230459,
+   "bitwise_identical": true
+  },
+  "compiled | 6": {
+   "cells_per_second": 611306205.2843924,
+   "bitwise_identical": true
+  },
+  "NumPy, per range | 6": {
+   "cells_per_second": 181082852.56052676,
+   "bitwise_identical": true
+  },
+  "NumPy, per block | 6": {
+   "cells_per_second": 54244125.469959594,
+   "bitwise_identical": true
+  }
+ },
+ "gil_enabled_after_import": true
+}

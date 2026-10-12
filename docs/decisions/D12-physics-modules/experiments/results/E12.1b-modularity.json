@@ -1,0 +1,50 @@
+{
+ "python": "3.14.8 (main, Oct  3 2026, 00:54:41) [Clang 22.1.3 ]",
+ "numpy": "2.5.4",
+ "platform": "macOS-26.7.1-x86_64-i386-64bit-Mach-O",
+ "cases": {
+  "64\u00b2 | 0": {
+   "cells_per_second": {
+    "fused": 11075562.54945833,
+    "separate passes": 18586617.22731575
+   },
+   "bitwise_identical": true
+  },
+  "64\u00b2 | 1": {
+   "cells_per_second": {
+    "fused": 9599359.760019038,
+    "separate passes": 14540621.950294252
+   },
+   "bitwise_identical": true
+  },
+  "64\u00b2 | 4": {
+   "cells_per_second": {
+    "fused": 7088475.491420948,
+    "separate passes": 9828239.851133345
+   },
+   "bitwise_identical": true
+  },
+  "512\u00b2 | 0": {
+   "cells_per_second": {
+    "fused": 8857972.54895023,
+    "separate passes": 13769786.21495537
+   },
+   "bitwise_identical": true
+  },
+  "512\u00b2 | 1": {
+   "cells_per_second": {
+    "fused": 7560520.4820728125,
+    "separate passes": 10947347.258205391
+   },
+   "bitwise_identical": true
+  },
+  "512\u00b2 | 4": {
+   "cells_per_second": {
+    "fused": 4962202.352848349,
+    "separate passes": 6837537.282427652
+   },
+   "bitwise_identical": true
+  }
+ },
+ "compiler": "Apple clang version 21.0.0 (clang-2100.1.1.101)"
+}

@@ -1,0 +1,76 @@
+{
+ "label": "macos-native-3.14",
+ "python": "3.14.8 (main, Oct  3 2026, 00:54:41) [Clang 22.1.3 ]",
+ "platform": "macOS-26.7.1-x86_64-i386-64bit-Mach-O",
+ "rows": {
+  "uniform cost, static equal counts | 6": {
+   "cell_updates_per_second": 32225169.63459254,
+   "seconds_per_step": 0.12412657700042473,
+   "bitwise_identical": true,
+   "efficiency": 1.0
+  },
+  "uniform cost, dynamic, chunks of 4 | 6": {
+   "cell_updates_per_second": 37551631.8391614,
+   "seconds_per_step": 0.1065200046999962,
+   "bitwise_identical": true,
+   "efficiency": 1.0
+  },
+  "static, equal counts | 6": {
+   "cell_updates_per_second": 19366115.973781634,
+   "seconds_per_step": 0.20654632066725753,
+   "bitwise_identical": true,
+   "efficiency": 0.7211549056856285,
+   "max_over_mean_worker_load": 1.784375
+  },
+  "static, cost-weighted | 6": {
+   "cell_updates_per_second": 28364650.7736472,
+   "seconds_per_step": 0.14102059750075568,
+   "bitwise_identical": true,
+   "efficiency": 1.0562421025035829,
+   "max_over_mean_worker_load": 1.0
+  },
+  "dynamic, chunks of 4 | 6": {
+   "cell_updates_per_second": 33600786.239878505,
+   "seconds_per_step": 0.11904483339894796,
+   "bitwise_identical": true,
+   "efficiency": 1.0737467724586278
+  },
+  "uniform cost, static equal counts | 12": {
+   "cell_updates_per_second": 36047851.3528239,
+   "seconds_per_step": 0.11096361779927974,
+   "bitwise_identical": true,
+   "efficiency": 1.0
+  },
+  "uniform cost, dynamic, chunks of 4 | 12": {
+   "cell_updates_per_second": 41794088.24333388,
+   "seconds_per_step": 0.09570731575028428,
+   "bitwise_identical": true,
+   "efficiency": 1.0
+  },
+  "static, equal counts | 12": {
+   "cell_updates_per_second": 27099653.09024732,
+   "seconds_per_step": 0.14760336549989006,
+   "bitwise_identical": true,
+   "efficiency": 0.902122664399782,
+   "max_over_mean_worker_load": 1.83125
+  },
+  "static, cost-weighted | 12": {
+   "cell_updates_per_second": 33178844.917458385,
+   "seconds_per_step": 0.12055874789948576,
+   "bitwise_identical": true,
+   "efficiency": 1.1044933999327282,
+   "max_over_mean_worker_load": 1.0
+  },
+  "dynamic, chunks of 4 | 12": {
+   "cell_updates_per_second": 38282893.07129603,
+   "seconds_per_step": 0.10448531129950425,
+   "bitwise_identical": true,
+   "efficiency": 1.0991858805026697
+  }
+ },
+ "gil_enabled_after_import": true,
+ "repeats": 65,
+ "cloud_blocks": 80,
+ "blocks": 1600,
+ "work_factor": 1.2
+}

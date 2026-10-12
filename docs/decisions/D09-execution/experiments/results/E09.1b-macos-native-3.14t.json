@@ -1,0 +1,130 @@
+{
+ "label": "macos-native-3.14t",
+ "python": "3.14.8 free-threading build (main, Oct  3 2026, 00:55:01) [Clang 22.1.3 ]",
+ "numpy": "2.5.4",
+ "platform": "macOS-26.7.1-x86_64-i386-64bit-Mach-O",
+ "cpu_count": 12,
+ "rows": {
+  "50x50 | per-block calls, persistent team | 1": {
+   "cell_updates_per_second": 6921941.746644479,
+   "seconds_per_step": 0.5778725314958137,
+   "bitwise_identical": true
+  },
+  "50x50 | ranged calls, persistent team | 1": {
+   "cell_updates_per_second": 7074998.44494337,
+   "seconds_per_step": 0.5653711490012938,
+   "bitwise_identical": true
+  },
+  "50x50 | ranged calls, thread pool | 1": {
+   "cell_updates_per_second": 7533228.71883052,
+   "seconds_per_step": 0.5309808249949128,
+   "bitwise_identical": true
+  },
+  "50x50 | barriers only | 1": {
+   "cell_updates_per_second": 1763032685171.3032,
+   "seconds_per_step": 2.2688178351108357e-06,
+   "bitwise_identical": null
+  },
+  "50x50 | per-block calls, persistent team | 6": {
+   "cell_updates_per_second": 29408954.09644808,
+   "seconds_per_step": 0.13601299750007456,
+   "bitwise_identical": true
+  },
+  "50x50 | ranged calls, persistent team | 6": {
+   "cell_updates_per_second": 30287906.69455545,
+   "seconds_per_step": 0.1320659113334841,
+   "bitwise_identical": true
+  },
+  "50x50 | ranged calls, thread pool | 6": {
+   "cell_updates_per_second": 31865346.31941766,
+   "seconds_per_step": 0.12552821362442046,
+   "bitwise_identical": true
+  },
+  "50x50 | barriers only | 6": {
+   "cell_updates_per_second": 26613738965.728306,
+   "seconds_per_step": 0.00015029831040091652,
+   "bitwise_identical": null
+  },
+  "50x50 | per-block calls, persistent team | 12": {
+   "cell_updates_per_second": 34014505.66942839,
+   "seconds_per_step": 0.11759688760066637,
+   "bitwise_identical": true
+  },
+  "50x50 | ranged calls, persistent team | 12": {
+   "cell_updates_per_second": 36551320.24896614,
+   "seconds_per_step": 0.1094351715000812,
+   "bitwise_identical": true
+  },
+  "50x50 | ranged calls, thread pool | 12": {
+   "cell_updates_per_second": 35587357.96096136,
+   "seconds_per_step": 0.11239946512432653,
+   "bitwise_identical": true
+  },
+  "50x50 | barriers only | 12": {
+   "cell_updates_per_second": 8569257257.467125,
+   "seconds_per_step": 0.00046678491260306824,
+   "bitwise_identical": null
+  },
+  "25x25 | per-block calls, persistent team | 1": {
+   "cell_updates_per_second": 5233995.579566413,
+   "seconds_per_step": 0.7642345010026474,
+   "bitwise_identical": true
+  },
+  "25x25 | ranged calls, persistent team | 1": {
+   "cell_updates_per_second": 5849726.530146926,
+   "seconds_per_step": 0.6837926490043174,
+   "bitwise_identical": true
+  },
+  "25x25 | ranged calls, thread pool | 1": {
+   "cell_updates_per_second": 5844592.942878578,
+   "seconds_per_step": 0.6843932569972822,
+   "bitwise_identical": true
+  },
+  "25x25 | barriers only | 1": {
+   "cell_updates_per_second": 1752628551798.7405,
+   "seconds_per_step": 2.2822862242514305e-06,
+   "bitwise_identical": null
+  },
+  "25x25 | per-block calls, persistent team | 6": {
+   "cell_updates_per_second": 22120769.715488415,
+   "seconds_per_step": 0.1808255341675249,
+   "bitwise_identical": true
+  },
+  "25x25 | ranged calls, persistent team | 6": {
+   "cell_updates_per_second": 23410956.593143247,
+   "seconds_per_step": 0.17086016900187437,
+   "bitwise_identical": true
+  },
+  "25x25 | ranged calls, thread pool | 6": {
+   "cell_updates_per_second": 24078491.21026503,
+   "seconds_per_step": 0.16612336566565014,
+   "bitwise_identical": true
+  },
+  "25x25 | barriers only | 6": {
+   "cell_updates_per_second": 25936590113.6468,
+   "seconds_per_step": 0.00015422227758055826,
+   "bitwise_identical": null
+  },
+  "25x25 | per-block calls, persistent team | 12": {
+   "cell_updates_per_second": 23884240.989466228,
+   "seconds_per_step": 0.16747444483432142,
+   "bitwise_identical": true
+  },
+  "25x25 | ranged calls, persistent team | 12": {
+   "cell_updates_per_second": 26630433.18826336,
+   "seconds_per_step": 0.15020409062526596,
+   "bitwise_identical": true
+  },
+  "25x25 | ranged calls, thread pool | 12": {
+   "cell_updates_per_second": 25652068.753904216,
+   "seconds_per_step": 0.15593284262467932,
+   "bitwise_identical": true
+  },
+  "25x25 | barriers only | 12": {
+   "cell_updates_per_second": 8287826457.70652,
+   "seconds_per_step": 0.0004826355885240043,
+   "bitwise_identical": null
+  }
+ },
+ "gil_enabled_after_import": false
+}

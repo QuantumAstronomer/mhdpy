@@ -2,10 +2,10 @@
 
 | | |
 |---|---|
-| Status | Decided (frozen) |
+| Status | Decided (frozen); partly superseded |
 | Decided | 2026-10-10 |
 | Supersedes | D01.5 (by D04.5) |
-| Superseded by | — |
+| Superseded by | D04.2 → D09.2 (in part) |
 
 ## 1. Introduction
 
@@ -187,6 +187,8 @@ Numba would be the closest alternative and is simpler to write. It is ruled out 
 **Decision.** *(2026-10-10)* **C, Cython in pure Python mode.** With Numba not installable on the development machine, Cython is the only realistic option. Writing the kernels in C instead is not desired: it would mean working in a language without prior experience, without a gain in speed (E04.1).
 
 ### D04.2 — Kernel structure
+
+> Superseded in part by D09.2 (2026-10-12): kernels are called for a range of blocks and loop over them in compiled code, instead of once per block. Kernels as functions over arrays, with Python orchestrating, still stand.
 
 How are kernels shaped and called?
 

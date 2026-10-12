@@ -1,0 +1,6 @@
+# Linux environment of experiments E10.1 and E10.2: the official uv image with Python 3.14 plus GCC, the compiler of
+# the Linux wheels (D04.5), next to Apple's Clang natively. Built and used by E10.1c-dispatch.py and E10.2b-directions.py.
+FROM ghcr.io/astral-sh/uv:python3.14-bookworm-slim
+RUN apt-get update \
+    && apt-get install --yes --no-install-recommends gcc libc6-dev \
+    && rm -rf /var/lib/apt/lists/*

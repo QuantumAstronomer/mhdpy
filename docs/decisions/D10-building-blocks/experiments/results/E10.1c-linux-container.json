@@ -1,0 +1,85 @@
+{
+ "label": "linux-container",
+ "python": "3.14.2 (main, Feb  3 2026, 03:09:04) [GCC 12.2.0]",
+ "platform": "Linux-7.0.14-linuxkit-x86_64-with-glibc2.36",
+ "cases": {
+  "2D, 64\u00b2": {
+   "direct": {
+    "bitwise_identical": true,
+    "cells_per_second": 10992233.33835582
+   },
+   "switch": {
+    "bitwise_identical": true,
+    "cells_per_second": 11042606.315074254
+   },
+   "function pointer": {
+    "bitwise_identical": true,
+    "cells_per_second": 8213319.731514473
+   },
+   "switch, fixed per wrapper": {
+    "bitwise_identical": true,
+    "cells_per_second": 10203010.370401163
+   },
+   "fused types": {
+    "bitwise_identical": true,
+    "cells_per_second": 10809801.384820689
+   }
+  },
+  "2D, 512\u00b2": {
+   "direct": {
+    "bitwise_identical": true,
+    "cells_per_second": 8662436.78696981
+   },
+   "switch": {
+    "bitwise_identical": true,
+    "cells_per_second": 8841092.788434058
+   },
+   "function pointer": {
+    "bitwise_identical": true,
+    "cells_per_second": 7295322.10617894
+   },
+   "switch, fixed per wrapper": {
+    "bitwise_identical": true,
+    "cells_per_second": 8826943.18812552
+   },
+   "fused types": {
+    "bitwise_identical": true,
+    "cells_per_second": 8562270.602693953
+   }
+  },
+  "3D, 32\u00b3": {
+   "direct": {
+    "bitwise_identical": true,
+    "cells_per_second": 7139994.648886271
+   },
+   "switch": {
+    "bitwise_identical": true,
+    "cells_per_second": 6654554.478722317
+   },
+   "function pointer": {
+    "bitwise_identical": true,
+    "cells_per_second": 5104778.12185544
+   },
+   "switch, fixed per wrapper": {
+    "bitwise_identical": true,
+    "cells_per_second": 5898182.468055134
+   },
+   "fused types": {
+    "bitwise_identical": true,
+    "cells_per_second": 5903183.950904983
+   }
+  }
+ },
+ "uncompiled_fused_branches": {
+  "tags 0": {
+   "hll_alt": 0,
+   "mc_alt": 0
+  },
+  "tags 1": {
+   "hll_alt": 144,
+   "mc_alt": 1440
+  },
+  "correct": true
+ },
+ "compiler": "cc (Debian 12.2.0-14+deb12u1) 12.2.0"
+}

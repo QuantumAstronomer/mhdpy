@@ -1,0 +1,62 @@
+{
+ "label": "macos-native",
+ "python": "3.14.8 (main, Oct  3 2026, 00:54:41) [Clang 22.1.3 ]",
+ "platform": "macOS-26.7.1-x86_64-i386-64bit-Mach-O",
+ "cases": {
+  "2D, 64\u00b2": {
+   "direction-specific": {
+    "bitwise_identical": true,
+    "cells_per_second": 18579412.822663337
+   },
+   "one routine, inline": {
+    "bitwise_identical": true,
+    "cells_per_second": 18051627.464664098
+   },
+   "one routine, no inline hint": {
+    "bitwise_identical": true,
+    "cells_per_second": 18102201.6810181
+   },
+   "generic": {
+    "bitwise_identical": true,
+    "cells_per_second": 11540135.157418735
+   }
+  },
+  "2D, 512\u00b2": {
+   "direction-specific": {
+    "bitwise_identical": true,
+    "cells_per_second": 13510595.214532897
+   },
+   "one routine, inline": {
+    "bitwise_identical": true,
+    "cells_per_second": 13306002.530733552
+   },
+   "one routine, no inline hint": {
+    "bitwise_identical": true,
+    "cells_per_second": 13417815.467141058
+   },
+   "generic": {
+    "bitwise_identical": true,
+    "cells_per_second": 9086689.805085143
+   }
+  },
+  "3D, 32\u00b3": {
+   "direction-specific": {
+    "bitwise_identical": true,
+    "cells_per_second": 10802239.086207012
+   },
+   "one routine, inline": {
+    "bitwise_identical": true,
+    "cells_per_second": 11111007.68725007
+   },
+   "one routine, no inline hint": {
+    "bitwise_identical": true,
+    "cells_per_second": 10308558.765676297
+   },
+   "generic": {
+    "bitwise_identical": true,
+    "cells_per_second": 7703003.033466886
+   }
+  }
+ },
+ "compiler": "Apple clang version 21.0.0 (clang-2100.1.1.101)"
+}

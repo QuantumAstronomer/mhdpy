@@ -1,0 +1,119 @@
+{
+ "label": "macos-native-3.14t",
+ "python": "3.14.8 free-threading build (main, Oct  3 2026, 00:55:01) [Clang 22.1.3 ]",
+ "numpy": "2.5.4",
+ "platform": "macOS-26.7.1-x86_64-i386-64bit-Mach-O",
+ "cpu_count": 12,
+ "gil_enabled": false,
+ "rows": {
+  "50x50 | NumPy | 1": {
+   "cell_updates_per_second": 6365616.332209972,
+   "bitwise_identical": true,
+   "blocks": 1600,
+   "cells_with_ghosts_per_cell": 1.1664
+  },
+  "50x50 | NumPy | 6": {
+   "cell_updates_per_second": 29782810.427821826,
+   "bitwise_identical": true,
+   "blocks": 1600,
+   "cells_with_ghosts_per_cell": 1.1664
+  },
+  "50x50 | NumPy | 12": {
+   "cell_updates_per_second": 33324908.157908715,
+   "bitwise_identical": true,
+   "blocks": 1600,
+   "cells_with_ghosts_per_cell": 1.1664
+  },
+  "50x50 | compiled, per block | 1": {
+   "cell_updates_per_second": 6864108.850910296,
+   "bitwise_identical": true,
+   "blocks": 1600,
+   "cells_with_ghosts_per_cell": 1.1664
+  },
+  "50x50 | compiled, per block | 6": {
+   "cell_updates_per_second": 28688017.00556127,
+   "bitwise_identical": true,
+   "blocks": 1600,
+   "cells_with_ghosts_per_cell": 1.1664
+  },
+  "50x50 | compiled, per block | 12": {
+   "cell_updates_per_second": 31414523.19608931,
+   "bitwise_identical": true,
+   "blocks": 1600,
+   "cells_with_ghosts_per_cell": 1.1664
+  },
+  "50x50 | compiled, per worker | 1": {
+   "cell_updates_per_second": 6894864.800402063,
+   "bitwise_identical": true,
+   "blocks": 1600,
+   "cells_with_ghosts_per_cell": 1.1664
+  },
+  "50x50 | compiled, per worker | 6": {
+   "cell_updates_per_second": 29113695.559954073,
+   "bitwise_identical": true,
+   "blocks": 1600,
+   "cells_with_ghosts_per_cell": 1.1664
+  },
+  "50x50 | compiled, per worker | 12": {
+   "cell_updates_per_second": 32019812.24604606,
+   "bitwise_identical": true,
+   "blocks": 1600,
+   "cells_with_ghosts_per_cell": 1.1664
+  },
+  "25x25 | NumPy | 1": {
+   "cell_updates_per_second": 4173743.037129,
+   "bitwise_identical": true,
+   "blocks": 6400,
+   "cells_with_ghosts_per_cell": 1.3456
+  },
+  "25x25 | NumPy | 6": {
+   "cell_updates_per_second": 19949377.871803798,
+   "bitwise_identical": true,
+   "blocks": 6400,
+   "cells_with_ghosts_per_cell": 1.3456
+  },
+  "25x25 | NumPy | 12": {
+   "cell_updates_per_second": 24221860.42126239,
+   "bitwise_identical": true,
+   "blocks": 6400,
+   "cells_with_ghosts_per_cell": 1.3456
+  },
+  "25x25 | compiled, per block | 1": {
+   "cell_updates_per_second": 4588026.144024534,
+   "bitwise_identical": true,
+   "blocks": 6400,
+   "cells_with_ghosts_per_cell": 1.3456
+  },
+  "25x25 | compiled, per block | 6": {
+   "cell_updates_per_second": 20691016.177318417,
+   "bitwise_identical": true,
+   "blocks": 6400,
+   "cells_with_ghosts_per_cell": 1.3456
+  },
+  "25x25 | compiled, per block | 12": {
+   "cell_updates_per_second": 24089688.699438374,
+   "bitwise_identical": true,
+   "blocks": 6400,
+   "cells_with_ghosts_per_cell": 1.3456
+  },
+  "25x25 | compiled, per worker | 1": {
+   "cell_updates_per_second": 5066103.12788219,
+   "bitwise_identical": true,
+   "blocks": 6400,
+   "cells_with_ghosts_per_cell": 1.3456
+  },
+  "25x25 | compiled, per worker | 6": {
+   "cell_updates_per_second": 20752233.066149272,
+   "bitwise_identical": true,
+   "blocks": 6400,
+   "cells_with_ghosts_per_cell": 1.3456
+  },
+  "25x25 | compiled, per worker | 12": {
+   "cell_updates_per_second": 23459400.312312208,
+   "bitwise_identical": true,
+   "blocks": 6400,
+   "cells_with_ghosts_per_cell": 1.3456
+  }
+ },
+ "gil_enabled_after_import": false
+}

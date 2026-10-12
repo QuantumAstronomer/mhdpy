@@ -72,14 +72,14 @@ The parallel model is that of D05: Python threads over fixed, contiguous ranges 
 | Block | Blocks | Cells stored per interior cell | Free-threaded, 1 worker | Free-threaded, 6 workers | With GIL, 6 workers |
 |---|---|---|---|---|---|
 | 4000 × 1000 (one block) | 1 | 1.01 | 5.8 | — | — |
-| 25² | 6400 | 1.35 | 3.7 | 18.0 | 16.2 |
-| 40² | 2500 | 1.21 | 5.6 | 24.7 | 24.4 |
-| 50² | 1600 | 1.17 | 5.7 | 25.7 | 27.0 |
-| 100 × 50 | 800 | 1.12 | 6.2 | **27.4** | **27.3** |
-| 100² | 400 | 1.08 | 6.3 | 21.1 | 19.7 |
-| 125² | 256 | 1.07 | 6.3 | 16.6 | 17.8 |
-| 200² | 100 | 1.04 | 6.1 | 13.3 | 14.6 |
-| 250² | 64 | 1.03 | 5.8 | 13.4 | 14.2 |
+| 25² | 6400 | 1.35 | 3.7 | 18.0 | 11.8 |
+| 40² | 2500 | 1.21 | 5.6 | 24.7 | 20.5 |
+| 50² | 1600 | 1.17 | 5.7 | 25.7 | 23.4 |
+| 100 × 50 | 800 | 1.12 | 6.2 | **27.4** | **28.6** |
+| 100² | 400 | 1.08 | 6.3 | 21.1 | 26.9 |
+| 125² | 256 | 1.07 | 6.3 | 16.6 | 21.0 |
+| 200² | 100 | 1.04 | 6.1 | 13.3 | 18.3 |
+| 250² | 64 | 1.03 | 5.8 | 13.4 | 17.0 |
 
 On the 4096 × 1024 grid, 64² blocks gave 27.7 (6 workers) and 5.9 (1 worker), and 32² gave 25.0 and 5.1. These are in line with the neighbouring thesis-grid sizes.
 
@@ -88,7 +88,9 @@ On the 4096 × 1024 grid, 64² blocks gave 27.7 (6 workers) and 5.9 (1 worker), 
 - **Below about 40², overhead takes over.** At 25², ghost cells add 35 % to the cells stored, and per-block overhead grows; the single-worker speed falls by 40 %.
 - **Rectangular blocks elongated along the contiguous direction were the best on the thesis grid** (100 × 50). That gives long inner loops with fewer cells per block.
 - **Blocking also pays on one core:** 100² blocks were 9 % faster than one block of the whole grid, presumably through cache reuse.
-- **In this run, the standard interpreter with 6 threads was as fast as the free-threaded one,** unlike E05.2, where it reached only 3×. The kernel does more work per block here (five variables, three velocity components), so the share of time spent holding the GIL is smaller. That supports the requirement of D05.4: keep the Python per block small, and the standard interpreter scales too. This was measured on macOS only, with 6 workers.
+- **With the standard interpreter, the best block size shifts to larger blocks** (corrected 2026-10-12, see the note below). It was faster than the free-threaded one from 100² upward (26.9 against 21.1 at 100²) and slower below (11.8 against 18.0 at 25²); its best was 100 × 50 (28.6). Larger blocks mean less Python per cell, and with the GIL that Python is serialised. Run-to-run variation on the laptop is about ±15 % (the free-threaded 50² run gave 25.7 here and 29.8 in E08.1), so differences of that size between separate runs are not significant.
+
+> **Correction (2026-10-12).** The column "With GIL" originally showed a run that, unintentionally, also used the free-threaded interpreter. uv reused the cached environment of the free-threaded run for the request "3.14". That run had led to the statement that the standard interpreter was as fast as the free-threaded one. The driver now requests "3.14+gil", the run was repeated, and the column, the bullet above and the figure show the corrected results. The decisions of this brief do not depend on that column: the default block size of D07.3 is derived from the free-threaded results, which the free-threaded focus of D05.3 makes the primary target. For the standard interpreter, 50² blocks are about 18 % slower than its best size; D09 can take this into account when it chooses defaults per interpreter.
 
 ### E07.2 — The cost of general geometry
 

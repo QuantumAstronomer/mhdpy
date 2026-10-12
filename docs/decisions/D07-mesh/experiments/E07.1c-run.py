@@ -17,7 +17,8 @@ from pathlib import Path
 
 HERE = Path(__file__).parent.resolve()
 RESULTS = HERE / "results"
-RUNS = {"macos-native-3.14t": ("3.14t", "1,6"), "macos-native-3.14": ("3.14", "6")}
+## uv may reuse a cached free-threaded script environment for a plain "3.14" request; "3.14+gil" forces the GIL build.
+RUNS = {"macos-native-3.14t": ("3.14t", "1,6"), "macos-native-3.14": ("3.14+gil", "6")}
 TITLES = {"macos-native-3.14t": "Python 3.14t (free-threaded)", "macos-native-3.14": "Python 3.14 (with GIL)"}
 
 

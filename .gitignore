@@ -1,5 +1,10 @@
-## Reference material: third-party code and papers that are not ours to redistribute (D01.4).
-/References/
+## Reference material: third-party code, papers and the CompHydro book are not ours to redistribute (D01.4). Only the
+## syntheses of the reference codes, written for this project in its own words, are tracked.
+/References/*
+!/References/Athena_synthesis.md
+!/References/Pyro_synthesis.md
+!/References/Ulula_synthesis.md
+!/References/Zeus_synthesis.md
 
 ## Python
 __pycache__/

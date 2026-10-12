@@ -21,10 +21,11 @@ from pathlib import Path
 HERE = Path(__file__).parent.resolve()
 RESULTS = HERE / "results"
 IMAGE = "mhdpy-e052"
+## uv may reuse a cached free-threaded script environment for a plain "3.14" request; "3.14+gil" forces the GIL build.
 RUNS = {
-    "macos-native-3.14": ("native", "3.14"),
+    "macos-native-3.14": ("native", "3.14+gil"),
     "macos-native-3.14t": ("native", "3.14t"),
-    "linux-container-3.14": ("container", "3.14"),
+    "linux-container-3.14": ("container", "3.14+gil"),
     "linux-container-3.14t": ("container", "3.14t"),
 }
 TITLES = {

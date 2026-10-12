@@ -1,0 +1,19 @@
+{
+ "python": "3.14.8 (main, Oct  3 2026, 00:54:41) [Clang 22.1.3 ]",
+ "numpy": "2.5.4",
+ "platform": "macOS-26.7.1-x86_64-i386-64bit-Mach-O",
+ "rows": {
+  "state, time and previous step, binary": {
+   "bitwise_identical": true,
+   "max_relative_difference": 0.0
+  },
+  "state and time only, binary": {
+   "bitwise_identical": false,
+   "max_relative_difference": 0.00037869964571748396
+  },
+  "everything as text, 10 significant digits": {
+   "bitwise_identical": false,
+   "max_relative_difference": 1.0094756364154022e-09
+  }
+ }
+}

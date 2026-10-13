@@ -2,9 +2,8 @@
 
 mhdpy solves its equations in dimensionless code units. A unit system relates them to cgs through three numbers, the
 code units of length, mass and time, from which every other unit follows. The requirements this module fulfils are in
-``docs/requirements/L0-foundation/units.md`` (UNI01-UNI18). They are tested in the accompanying test module
-``tests/test_units.py``, except for the physical constants and astronomical units (UNI10-UNI11), which are tested in
-``tests/test_constants.py``.
+``docs/requirements/L0-foundation/units.md`` (UNI01-UNI18) and tested in the accompanying test package
+``tests/units/``, one module per group of requirements.
 """
 
 import math

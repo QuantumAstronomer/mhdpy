@@ -2,7 +2,7 @@
 
 One table of constants, from cited sources, serves every module, so that no two modules can use different values of
 the same constant. The unit system (``units.py``) converts them to code units. The requirements are UNI10 and UNI11 in
-``docs/requirements/L0-foundation/units.md``, tested in the accompanying test module ``tests/test_constants.py``.
+``docs/requirements/L0-foundation/units.md``, tested in ``tests/units/test_constants.py``.
 
 Every constant is the double-precision number nearest to its value in cgs: the value its source publishes, or, for a
 constant derived from published values (such as the parsec or the solar mass), the value derived from them exactly.

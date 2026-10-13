@@ -1,8 +1,7 @@
 """Tests of the physical constants and astronomical units: requirements UNI10-UNI11.
 
 The requirements are part of those of the unit system (docs/requirements/L0-foundation/units.md), which converts the
-constants to code units; the other requirements of that document are tested in test_units.py. Each test names the
-requirements it checks in its docstring.
+constants to code units. Each test names the requirements it checks in its docstring.
 """
 
 import math
@@ -12,9 +11,7 @@ import numpy as np
 import pytest
 
 from mhdpy.foundation import constants, units
-
-## pi to 50 digits, for the exact references below: the decimal module has no constant pi.
-PI = Decimal("3.1415926535897932384626433832795028841971693993751")
+from mhdpy.foundation.tests.units.reference import PI
 
 ## The measured constants of UNI10 as CODATA 2022 publishes them, in SI, each with the exact factor that converts it to
 ## cgs: a metre is 100 cm, a kilogram 1000 g, a joule 1e7 erg. The values are written as strings, so that the decimal
@@ -54,7 +51,7 @@ IAU_CONSTANTS = {
 ## so it can be computed here, outside the 50-digit context of the functions below.
 JULIAN_YEAR = Decimal("365.25") * 86400
 
-## The dimensions of each physical constant of UNI10 in length, mass and time, as in NAMED_UNITS of test_units.py.
+## The dimensions of each physical constant of UNI10 in length, mass and time, as in NAMED_UNITS of reference.py.
 ## This table is the specification the conversion to code units is checked against. The kelvin is not a dimension of
 ## the code units, so a constant that contains it keeps it, and it does not appear here.
 # fmt: off
@@ -85,7 +82,7 @@ def exact_references() -> dict[str, Decimal]:
     c, h and k_B are exact by the definition of the SI; the Stefan-Boltzmann constant and the radiation constant follow
     from them and are exact as well.
     """
-    ## 50 significant digits, as in the exact references of test_units.py, for this function only.
+    ## 50 significant digits, as in the exact references of the other tests, for this function only.
     with localcontext() as context:
         context.prec = 50
         c, h, k = (

@@ -25,7 +25,9 @@ classifiers = [
     "Typing :: Typed",
 ]
 ## D01.6: runtime dependencies get the version current at the time they are added as lower bound, no upper bound.
-dependencies = []
+dependencies = [
+    "numpy>=2.5.4",
+]
 
 ## D02.7: everything needed to run the tests that ship with the package: pip install "mhdpy[test]", then
 ## pytest --pyargs mhdpy. The dev group below includes this extra, so a plain "uv sync" installs it for development.

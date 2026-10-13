@@ -9,6 +9,8 @@ code units of length, mass and time, from which every other unit follows. The re
 import math
 from dataclasses import dataclass
 
+import numpy as np
+
 ## The public interface of this module (D15.7): only names listed here are meant for use outside it.
 __all__ = ["UnitSystem"]
 
@@ -73,6 +75,15 @@ class UnitSystem:
             ## so this single condition refuses zero, negative, infinite and undefined values alike.
             if not (math.isfinite(value) and value > 0):
                 raise ValueError(f"The code unit of {name} must be a positive, finite number in cgs, got {value!r}.")
+
+            ## Store the code unit as NumPy's double-precision number np.float64 (UNI05). The value stays exactly as
+            ## given (UNI01), but its type makes every conversion double precision: a single-precision array multiplied
+            ## by a plain Python float stays single precision, multiplied by an np.float64 it becomes double precision.
+            ## np.float64 is a subclass of Python's float, so a unit still works wherever a float does. Every unit
+            ## derived from these three (UNI02) is then an np.float64 as well, since arithmetic on np.float64 gives
+            ## np.float64. A frozen dataclass refuses ordinary assignment to its fields, even here; object.__setattr__
+            ## is the documented way around that during construction.
+            object.__setattr__(self, name, np.float64(value))
 
     ## The named units of UNI03. Each is a property: it is read like an attribute (system.density, without
     ## parentheses) but computed from the general rule of UNI02 each time it is read. Computing is cheap, and it means

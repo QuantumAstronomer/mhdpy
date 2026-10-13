@@ -1,7 +1,8 @@
 """Reference values shared by the tests of the unit system.
 
 The code units most tests use, the specification tables of the named units and their labels, pi to 50 digits for exact
-references, and the domain of the round trips. Each test module imports what it uses.
+references, and the domain of the round trips. Each test module imports what it uses; the unit systems built from these
+code units are fixtures, in conftest.py.
 """
 
 import sys

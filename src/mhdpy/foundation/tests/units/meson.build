@@ -1,6 +1,7 @@
-## The tests of the unit system, one module per group of requirements, with the reference values they share.
+## The tests of the unit system, one module per group of requirements, with the fixtures and reference values they share.
 py.install_sources(
   '__init__.py',
+  'conftest.py',
   'reference.py',
   'test_definition.py',
   'test_conversions.py',

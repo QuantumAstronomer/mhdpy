@@ -14,13 +14,11 @@ from mhdpy.foundation.tests.units.reference import LENGTH, MASS, PI, TIME, withi
 class TestMagneticField:
     """UNI07: the factor 4 pi is absorbed into the magnetic field."""
 
-    def test_magnetic_field_unit(self) -> None:
+    def test_magnetic_field_unit(self, system: units.UnitSystem) -> None:
         """Check that the code unit of the magnetic field is sqrt(4 pi p_u) gauss (UNI07).
 
         Here p_u is the code unit of pressure. The unit must agree with an exact reference to within 4 ulp.
         """
-        system = units.UnitSystem(length=LENGTH, mass=MASS, time=TIME)
-
         ## The reference, computed independently at 50 significant digits as in the test of UNI02. The code unit of
         ## pressure is M / (L T^2), and Decimal.sqrt() takes the square root at the precision of the context.
         with localcontext() as context:
@@ -38,13 +36,11 @@ class TestMagneticField:
 
     ## Hypothesis draws field strengths in code units from the whole range of doubles, as in the tests of UNI06.
     @given(field=st.floats(allow_nan=False, allow_infinity=False))
-    def test_magnetic_energy_density_agrees(self, field: float) -> None:
+    def test_magnetic_energy_density_agrees(self, system: units.UnitSystem, field: float) -> None:
         """Check that a field's energy density is the same physical quantity in both systems (UNI07).
 
         B^2 / (8 pi), with B in gauss, must equal B_code^2 / 2 times the code unit of pressure, to within 4 ulp.
         """
-        system = units.UnitSystem(length=LENGTH, mass=MASS, time=TIME)
-
         ## Hypothesis's floats are Python floats, whose ** raises an OverflowError for results too large for a double,
         ## where NumPy returns infinity. Converting the drawn field to np.float64 makes every operation below behave
         ## like NumPy's, so an overflow is caught by the assume() further on rather than crashing the test.

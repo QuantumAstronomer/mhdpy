@@ -24,12 +24,13 @@ class TestTemperature:
         p_over_rho=st.floats(min_value=1e-100, max_value=1e100),
         mu=st.floats(min_value=0.1, max_value=10.0),
     )
-    def test_temperature_from_pressure_over_density(self, p_over_rho: float, mu: float) -> None:
+    def test_temperature_from_pressure_over_density(
+        self, system: units.UnitSystem, p_over_rho: float, mu: float
+    ) -> None:
         """Check that T = mu m_H (p / rho) / k_B for a ratio p / rho in code units (UNI08).
 
         The mean molecular weight mu is in units of the mass of the hydrogen atom m_H.
         """
-        system = units.UnitSystem(length=LENGTH, mass=MASS, time=TIME)
         temperature = system.temperature(p_over_rho, mu=mu)
 
         ## A scalar in gives a scalar out, in double precision like every unit (UNI05).
@@ -57,13 +58,13 @@ class TestTemperature:
         temperature=st.floats(min_value=1e-100, max_value=1e100),
         mu=st.floats(min_value=0.1, max_value=10.0),
     )
-    def test_pressure_over_density_from_temperature(self, temperature: float, mu: float) -> None:
+    def test_pressure_over_density_from_temperature(
+        self, system: units.UnitSystem, temperature: float, mu: float
+    ) -> None:
         """Check that the conversion from temperature to p / rho in code units inverts the first (UNI08).
 
         The two conversions applied one after the other must reproduce the value to within 2 ulp.
         """
-        system = units.UnitSystem(length=LENGTH, mass=MASS, time=TIME)
-
         ## From temperature to p / rho in code units, and back.
         p_over_rho = system.pressure_over_density(temperature, mu=mu)
         back = system.temperature(p_over_rho, mu=mu)
@@ -74,12 +75,11 @@ class TestTemperature:
 
     ## Run this test once for each direction of the conversion; getattr picks the method by its name.
     @pytest.mark.parametrize("conversion", ["temperature", "pressure_over_density"])
-    def test_mean_molecular_weight_per_cell(self, conversion: str) -> None:
+    def test_mean_molecular_weight_per_cell(self, system: units.UnitSystem, conversion: str) -> None:
         """Check that the mean molecular weight may be an array, applied cell by cell (UNI08).
 
         The array has the shape of the values to convert.
         """
-        system = units.UnitSystem(length=LENGTH, mass=MASS, time=TIME)
         convert = getattr(system, conversion)
 
         ## A small two-dimensional field of values, and a mean molecular weight that differs in every cell, as in gas
@@ -105,9 +105,10 @@ class TestTemperature:
     ## invalid code units does.
     @pytest.mark.parametrize("conversion", ["temperature", "pressure_over_density"])
     @pytest.mark.parametrize("value", [0.0, -1.0, math.inf, -math.inf, math.nan])
-    def test_invalid_mean_molecular_weight_is_refused(self, conversion: str, value: float) -> None:
+    def test_invalid_mean_molecular_weight_is_refused(
+        self, system: units.UnitSystem, conversion: str, value: float
+    ) -> None:
         """Check that a mean molecular weight that is not positive and finite is refused (UNI08)."""
-        system = units.UnitSystem(length=LENGTH, mass=MASS, time=TIME)
         convert = getattr(system, conversion)
 
         ## The invalid value is refused on its own, and as one cell among valid ones: a single bad cell must not
@@ -119,26 +120,26 @@ class TestTemperature:
 
     ## Run this test once for each direction of the conversion.
     @pytest.mark.parametrize("conversion", ["temperature", "pressure_over_density"])
-    def test_default_mean_molecular_weight(self, conversion: str) -> None:
+    def test_default_mean_molecular_weight(
+        self, system: units.UnitSystem, system_with_default: units.UnitSystem, conversion: str
+    ) -> None:
         """Check that a default mean molecular weight is used when a conversion gives none (UNI09).
 
         The default is the one given when the unit system was created.
         """
-        ## The same unit system, once with a default mean molecular weight and once without.
-        with_default = units.UnitSystem(length=LENGTH, mass=MASS, time=TIME, mu=0.6)
-        without_default = units.UnitSystem(length=LENGTH, mass=MASS, time=TIME)
-        convert = getattr(with_default, conversion)
+        ## The same unit system, once with a default mean molecular weight of 0.6 and once without (see conftest.py).
+        convert = getattr(system_with_default, conversion)
 
         ## The default is kept as given, and a unit system created without one has none.
-        assert with_default.mu == 0.6
-        assert without_default.mu is None
+        assert system_with_default.mu == 0.6
+        assert system.mu is None
 
         ## A conversion without mu uses the default: exactly as if 0.6 had been given to it.
         assert convert(2.0) == convert(2.0, mu=0.6)
 
         ## A mu given to the conversion takes precedence over the default: the result is that of a unit system without
         ## a default, given the same mu.
-        assert convert(2.0, mu=1.3) == getattr(without_default, conversion)(2.0, mu=1.3)
+        assert convert(2.0, mu=1.3) == getattr(system, conversion)(2.0, mu=1.3)
 
     ## Run this test for each invalid value, as the test of invalid code units does.
     @pytest.mark.parametrize("value", [0.0, -1.0, math.inf, -math.inf, math.nan])
@@ -149,12 +150,11 @@ class TestTemperature:
 
     ## Run this test once for each direction of the conversion.
     @pytest.mark.parametrize("conversion", ["temperature", "pressure_over_density"])
-    def test_missing_mean_molecular_weight_is_refused(self, conversion: str) -> None:
+    def test_missing_mean_molecular_weight_is_refused(self, system: units.UnitSystem, conversion: str) -> None:
         """Check that a temperature conversion without any mean molecular weight is refused (UNI09).
 
         Without a value given to the conversion and without a default, no value may be assumed silently.
         """
-        system = units.UnitSystem(length=LENGTH, mass=MASS, time=TIME)
         convert = getattr(system, conversion)
 
         ## The error must say what is missing.

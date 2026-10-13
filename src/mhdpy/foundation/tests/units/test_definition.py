@@ -44,12 +44,11 @@ class TestDefinition:
         with pytest.raises(ValueError, match=name):
             units.UnitSystem(**arguments)
 
-    def test_unit_from_dimensions(self) -> None:
+    def test_unit_from_dimensions(self, system: units.UnitSystem) -> None:
         """Check that the unit of dimensions L^a M^b T^c is the code units' product to those powers (UNI02).
 
         The product must agree to within 4 ulp, for integer and half-integer exponents alike.
         """
-        system = units.UnitSystem(length=LENGTH, mass=MASS, time=TIME)
         ## All exponents from -4 to 4 in steps of 1/2: integers and half-integers, as the requirement asks.
         exponents = [k / 2 for k in range(-8, 9)]
 
@@ -79,9 +78,8 @@ class TestDefinition:
     ## Run this test once for every named unit. Each key of NAMED_UNITS becomes a separate test case, reported for
     ## example as test_named_units_follow_from_dimensions[density].
     @pytest.mark.parametrize("name", list(NAMED_UNITS))
-    def test_named_units_follow_from_dimensions(self, name: str) -> None:
+    def test_named_units_follow_from_dimensions(self, system: units.UnitSystem, name: str) -> None:
         """Check that every named unit equals the unit computed from its dimensions, to within 4 ulp (UNI03)."""
-        system = units.UnitSystem(length=LENGTH, mass=MASS, time=TIME)
         named = getattr(system, name)
 
         ## The same unit from its dimensions through the general rule of UNI02, which is tested on its own.
@@ -93,10 +91,8 @@ class TestDefinition:
     ## Run this test once for every named unit: those of UNI03, and the magnetic field of UNI07, whose unit is not a
     ## product of base units and so is not in NAMED_UNITS.
     @pytest.mark.parametrize("name", [*NAMED_UNITS, "magnetic_field"])
-    def test_named_unit_labels(self, name: str) -> None:
+    def test_named_unit_labels(self, system: units.UnitSystem, name: str) -> None:
         """Check that every named unit has the label of its cgs unit, as written in file headers (UNI04)."""
-        system = units.UnitSystem(length=LENGTH, mass=MASS, time=TIME)
-
         ## The expected label is looked up in LABELS. A named unit missing from that table makes this lookup fail with
         ## a KeyError, so a new named unit cannot be added without deciding on its label.
         assert system.label(name) == LABELS[name]

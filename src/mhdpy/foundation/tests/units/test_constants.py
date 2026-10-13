@@ -167,14 +167,11 @@ class TestPhysicalConstants:
 
     ## Run this test once for each physical constant of UNI10.
     @pytest.mark.parametrize("name", list(DIMENSIONS))
-    def test_constants_in_code_units(self, name: str) -> None:
+    def test_constants_in_code_units(self, system: units.UnitSystem, name: str) -> None:
         """Check that every constant converts to code units by its dimensions (UNI10).
 
         A constant containing the kelvin, such as k_B, keeps it: code units have no temperature dimension.
         """
-        ## Any unit system serves, since the test checks the conversion, not the values: this one of 1 kpc, 1e5 solar
-        ## masses and 1 Myr.
-        system = units.UnitSystem(length=constants.KILOPARSEC, mass=1e5 * constants.SOLAR_MASS, time=constants.MEGAYEAR)
         in_cgs_value = getattr(constants, name)
 
         ## The constant in code units, a double like every unit.

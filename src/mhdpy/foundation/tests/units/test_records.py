@@ -19,6 +19,8 @@ class TestRecords:
     @pytest.mark.parametrize("name", ["length", "mass", "time", "mu", "new_attribute"])
     def test_cannot_be_changed(self, name: str) -> None:
         """Check that changing a unit system after its creation is refused (UNI12)."""
+        ## A unit system of its own rather than the shared fixture: should the refusal fail, the change must not reach
+        ## the unit system the other tests use.
         system = units.UnitSystem(length=LENGTH, mass=MASS, time=TIME, mu=0.6)
 
         ## setattr(system, "mass", 1.0) is the same as system.mass = 1.0, and delattr(system, "mass") as del
@@ -99,12 +101,12 @@ class TestRecords:
         if mu is not None:
             assert restored.mu is not None and float(restored.mu).hex() == float(mu).hex()
 
-    def test_record_names_sources(self) -> None:
+    def test_record_names_sources(self, system: units.UnitSystem) -> None:
         """Check that the record names the sources of the constants (UNI14).
 
         The sources are CODATA 2022, AME 2020, and the IAU resolutions of 2012 and 2015.
         """
-        record = units.UnitSystem(length=LENGTH, mass=MASS, time=TIME).to_record()
+        record = system.to_record()
 
         ## The sources are one line of text in the record, the one the constants module states. The isinstance check
         ## also tells the type checker that the value is a string, which the record's type leaves open.

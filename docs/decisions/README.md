@@ -62,6 +62,7 @@ Ordered bottom-up. Brief D03 is a deliberate exception: the discretisation famil
 | D13 | Driver and simulation lifecycle | Main loop, timestep, scheduling of outputs and restarts |
 | D14 | I/O, restart and diagnostics | File formats, history output |
 | D15 | Configuration and user interface | Python API, input files, problem setups and hooks, CLI |
+| D16 | Task automation | One command for all checks, locally and in CI (an addition to D01, written after D15) |
 
 ## Brief template
 
@@ -73,7 +74,9 @@ Ordered bottom-up. Brief D03 is a deliberate exception: the discretisation famil
 | Status | Draft / Decided / Partly superseded / Superseded |
 | Decided | <date all sub-decisions were made> |
 | Supersedes | <IDs from earlier briefs, or "—"> |
+| Extends | <an earlier brief this one adds to, if any; otherwise the row is left out> |
 | Superseded by | <per ID: "D03.2 → D07.1", or "—"> |
+| Extended by | <later briefs that add to this one, if any; otherwise the row is left out> |
 
 ## 1. Introduction
 What has to be decided and why it matters at this layer. Background from the
@@ -114,6 +117,7 @@ project to, and which later topics they constrain.
 - **Frozen once decided.** When all of a brief's sub-decisions have been made, the brief is frozen. After that, only the status table and supersession notes may change.
 - **Changing a decision means writing a new brief.** The new sub-decision states `Supersedes DNN.k`. The old brief gets a line under that sub-decision's heading, `> Superseded by DMM.j (<date>)`, and its status table is updated. `architecture.md` is updated to the new decision.
 - **Single sub-decisions can be superseded.** The rest of the old brief stays valid.
+- **Adding to a frozen brief also means writing a new brief.** A decision that adds to an earlier brief without changing any of its decisions supersedes nothing. The new brief states `Extends DNN` in its status table, and the old brief gets an `Extended by` row in its own, the one change a frozen brief admits besides supersession notes.
 
 ## Experiment conventions
 

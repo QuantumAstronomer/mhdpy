@@ -6,6 +6,7 @@
 | Decided | 2026-10-10 |
 | Supersedes | — |
 | Superseded by | D01.5 → D04.5 |
+| Extended by | D16 (task automation: one command for all checks, with nox) |
 
 ## 1. Introduction
 

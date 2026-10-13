@@ -49,6 +49,7 @@ dev = [
     "meson>=1.12.1",
     "meson-python>=0.22.1",
     "ninja>=1.13.2",
+    "nox>=2026.8.17",
 ]
 
 ## D04.5: meson-python builds the package and compiles its Cython kernels (superseding D01.5, uv_build).
@@ -88,7 +89,7 @@ convention = "numpy"
 ## D01.8: pyright, strict for framework and package interfaces. Kernel sources are not checked and are typed through
 ## .pyi stubs (D04).
 [tool.pyright]
-include = ["src"]
+include = ["src", "noxfile.py"]
 ## D04: pyright cannot interpret Cython's types in kernel sources, so their diagnostics are ignored. "ignore" rather
 ## than "exclude", because the editor (Pylance) still reports excluded files while they are open. Each kernel is typed
 ## for its callers by a .pyi stub next to it.

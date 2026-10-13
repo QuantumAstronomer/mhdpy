@@ -20,14 +20,15 @@ This runs the fast test tier. The full tier (high-resolution and three-dimension
 mhdpy is developed with [uv](https://docs.astral.sh/uv/). After cloning the repository:
 
 ```bash
-uv sync                               # create the virtual environment with all development and test tools
-uv run pytest                         # run the fast test tier
-uv run pytest --cov                   # ... with line and branch coverage, which must be 100 %
-MHDPY_TEST_TIER=full uv run pytest    # run the full test tier as well
-uv run ruff format                    # format the code
-uv run ruff check                     # lint the code
-uv run pyright                        # type-check the code
+uv sync                                 # create the virtual environment with all development and test tools
+uv run nox                              # run every check CI runs: lint, types, tests in both kernel modes, coverage
+uv run nox -s tests -- -k TestRecords   # run a selection of tests, in both kernel modes
+MHDPY_TEST_TIER=full uv run nox         # include the full test tier
+uv run pytest                           # a quick test run, compiled kernels only
+uv run ruff format                      # format the code
 ```
+
+`uv run nox` runs the sessions defined in `noxfile.py`, the same ones CI runs. The tests run twice, once with the kernels compiled and once uncompiled, and line and branch coverage must reach 100 % on the two runs combined.
 
 ## Licence
 

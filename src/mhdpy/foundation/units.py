@@ -282,3 +282,27 @@ class UnitSystem:
         p_over_rho_cgs = constants.BOLTZMANN_CONSTANT * np.asarray(temperature, dtype=np.float64)
         p_over_rho_cgs = p_over_rho_cgs / (self._mean_molecular_weight(mu) * constants.HYDROGEN_MASS)
         return p_over_rho_cgs / self.specific_energy
+
+    def constant(self, name: str) -> float:
+        """Return a physical constant in code units, such as ``"GRAVITATIONAL_CONSTANT"`` (UNI10).
+
+        The constant is converted by its dimensions in length, mass and time. A constant that contains the kelvin, such
+        as Boltzmann's constant, keeps it: code units have no temperature dimension, so k_B in code units is a code
+        unit of energy per kelvin.
+
+        Parameters
+        ----------
+        name : str
+            The name of the constant, as its name in ``mhdpy.foundation.constants``: ``"GRAVITATIONAL_CONSTANT"`` for
+            ``constants.GRAVITATIONAL_CONSTANT``.
+
+        Returns
+        -------
+        float
+            The value of the constant in code units.
+        """
+        ## Look up the dimensions first: an unknown name, or an astronomical unit (which has no conversion to code
+        ## units), raises a KeyError that names it. getattr(constants, name) then reads the value in cgs, as
+        ## constants.GRAVITATIONAL_CONSTANT would, and dividing by its unit converts it to code units (UNI05).
+        dimensions = constants.DIMENSIONS[name]
+        return getattr(constants, name) / self.unit(**dimensions)

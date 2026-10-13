@@ -1,0 +1,63 @@
+{
+ "python": "3.14.8 (main, Oct  3 2026, 00:54:41) [Clang 22.1.3 ]",
+ "platform": "macOS-26.7.1-x86_64-i386-64bit-Mach-O",
+ "record_round_trip_exact": true,
+ "scenarios": {
+  "a correct parameter file": {
+   "starts": true,
+   "message": "resolved"
+  },
+  "a correct file with overrides": {
+   "starts": true,
+   "message": "resolved; differs from the thesis record in {'hydro.cfl': 0.3, 'output.variables': ['rho']}"
+  },
+  "a misspelt name in the file": {
+   "starts": false,
+   "message": "parameter file: unknown parameter 'hydro.cfll'; did you mean 'hydro.cfl'?"
+  },
+  "a misspelt section in an override": {
+   "starts": false,
+   "message": "override: unknown parameter 'hdyro.cfl'; did you mean 'hydro.cfl'?"
+  },
+  "a float where an integer is required": {
+   "starts": false,
+   "message": "parameter file: 'mesh.nx1' must be int, got float 4000.0"
+  },
+  "an integer where a float is required": {
+   "starts": true,
+   "message": "resolved; differs from the thesis record in {'hydro.cfl': 1.0}"
+  },
+  "a value out of range": {
+   "starts": false,
+   "message": "override: 'hydro.cfl' must be in (0, 1], got 1.5"
+  },
+  "a quoted number": {
+   "starts": false,
+   "message": "parameter file: 'hydro.cfl' must be float, got str '0.4'"
+  },
+  "a bare word for a boolean": {
+   "starts": false,
+   "message": "override: 'cooling.enabled' must be bool, got str 'no'"
+  },
+  "restart with a later end time": {
+   "starts": true,
+   "message": "resolved; differs from the thesis record in {'time.tlim': 200000.0}"
+  },
+  "restart with another block size": {
+   "starts": true,
+   "message": "resolved; differs from the thesis record in {'mesh.block': 25}"
+  },
+  "restart changing the mesh": {
+   "starts": false,
+   "message": "override: 'mesh.nx1' cannot change on restart (it is fixed by the restart file)"
+  },
+  "restart with the original parameter file and a later end time": {
+   "starts": true,
+   "message": "resolved; differs from the thesis record in {'time.tlim': 200000.0}"
+  },
+  "restart with a parameter file that changes the mesh": {
+   "starts": false,
+   "message": "parameter file: 'mesh.nx2' cannot change on restart (it is fixed by the restart file)"
+  }
+ }
+}

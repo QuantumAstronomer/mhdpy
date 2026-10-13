@@ -1,0 +1,367 @@
+{
+ "python": "3.14.8 (main, Oct  3 2026, 00:54:41) [Clang 22.1.3 ]",
+ "pyyaml": "6.0.3",
+ "platform": "macOS-26.7.1-x86_64-i386-64bit-Mach-O",
+ "formats": {
+  "TOML": {
+   "parameters": {
+    "mesh.nx1": {
+     "read": "4000",
+     "type": "int",
+     "as_meant": true
+    },
+    "mesh.nx2": {
+     "read": "1000",
+     "type": "int",
+     "as_meant": true
+    },
+    "mesh.x1max": {
+     "read": "4.0",
+     "type": "float",
+     "as_meant": true
+    },
+    "hydro.gamma": {
+     "read": "1.6666666666666667",
+     "type": "float",
+     "as_meant": true
+    },
+    "hydro.cfl": {
+     "read": "0.4",
+     "type": "float",
+     "as_meant": true
+    },
+    "time.tlim": {
+     "read": "100000.0",
+     "type": "float",
+     "as_meant": true
+    },
+    "cooling.enabled": {
+     "read": "False",
+     "type": "bool",
+     "as_meant": true
+    },
+    "conduction.kappa": {
+     "read": "1e-10",
+     "type": "float",
+     "as_meant": true
+    },
+    "problem.name": {
+     "read": "'cloud'",
+     "type": "str",
+     "as_meant": true
+    },
+    "problem.country": {
+     "read": "'NO'",
+     "type": "str",
+     "as_meant": true
+    },
+    "output.variables": {
+     "read": "['rho', 'press']",
+     "type": "list",
+     "as_meant": true
+    }
+   },
+   "round_trip_exact": true
+  },
+  "YAML": {
+   "parameters": {
+    "mesh.nx1": {
+     "read": "4000",
+     "type": "int",
+     "as_meant": true
+    },
+    "mesh.nx2": {
+     "read": "1000",
+     "type": "int",
+     "as_meant": true
+    },
+    "mesh.x1max": {
+     "read": "4.0",
+     "type": "float",
+     "as_meant": true
+    },
+    "hydro.gamma": {
+     "read": "1.6666666666666667",
+     "type": "float",
+     "as_meant": true
+    },
+    "hydro.cfl": {
+     "read": "0.4",
+     "type": "float",
+     "as_meant": true
+    },
+    "time.tlim": {
+     "read": "'1e5'",
+     "type": "str",
+     "as_meant": false
+    },
+    "cooling.enabled": {
+     "read": "False",
+     "type": "bool",
+     "as_meant": true
+    },
+    "conduction.kappa": {
+     "read": "1e-10",
+     "type": "float",
+     "as_meant": true
+    },
+    "problem.name": {
+     "read": "'cloud'",
+     "type": "str",
+     "as_meant": true
+    },
+    "problem.country": {
+     "read": "False",
+     "type": "bool",
+     "as_meant": false
+    },
+    "output.variables": {
+     "read": "['rho', 'press']",
+     "type": "list",
+     "as_meant": true
+    }
+   },
+   "round_trip_exact": true
+  },
+  "INI": {
+   "parameters": {
+    "mesh.nx1": {
+     "read": "'4000'",
+     "type": "str",
+     "as_meant": false
+    },
+    "mesh.nx2": {
+     "read": "'1000'",
+     "type": "str",
+     "as_meant": false
+    },
+    "mesh.x1max": {
+     "read": "'4.0'",
+     "type": "str",
+     "as_meant": false
+    },
+    "hydro.gamma": {
+     "read": "'1.6666666666666667'",
+     "type": "str",
+     "as_meant": false
+    },
+    "hydro.cfl": {
+     "read": "'0.4'",
+     "type": "str",
+     "as_meant": false
+    },
+    "time.tlim": {
+     "read": "'1e5'",
+     "type": "str",
+     "as_meant": false
+    },
+    "cooling.enabled": {
+     "read": "'false'",
+     "type": "str",
+     "as_meant": false
+    },
+    "conduction.kappa": {
+     "read": "'1.0e-10'",
+     "type": "str",
+     "as_meant": false
+    },
+    "problem.name": {
+     "read": "'cloud'",
+     "type": "str",
+     "as_meant": true
+    },
+    "problem.country": {
+     "read": "'NO'",
+     "type": "str",
+     "as_meant": true
+    },
+    "output.variables": {
+     "read": "'rho, press'",
+     "type": "str",
+     "as_meant": false
+    }
+   },
+   "round_trip_exact": true
+  },
+  "INI, types inferred (Pyro)": {
+   "parameters": {
+    "mesh.nx1": {
+     "read": "4000",
+     "type": "int",
+     "as_meant": true
+    },
+    "mesh.nx2": {
+     "read": "1000",
+     "type": "int",
+     "as_meant": true
+    },
+    "mesh.x1max": {
+     "read": "4.0",
+     "type": "float",
+     "as_meant": true
+    },
+    "hydro.gamma": {
+     "read": "1.6666666666666667",
+     "type": "float",
+     "as_meant": true
+    },
+    "hydro.cfl": {
+     "read": "0.4",
+     "type": "float",
+     "as_meant": true
+    },
+    "time.tlim": {
+     "read": "100000.0",
+     "type": "float",
+     "as_meant": true
+    },
+    "cooling.enabled": {
+     "read": "'false'",
+     "type": "str",
+     "as_meant": false
+    },
+    "conduction.kappa": {
+     "read": "1e-10",
+     "type": "float",
+     "as_meant": true
+    },
+    "problem.name": {
+     "read": "'cloud'",
+     "type": "str",
+     "as_meant": true
+    },
+    "problem.country": {
+     "read": "'NO'",
+     "type": "str",
+     "as_meant": true
+    },
+    "output.variables": {
+     "read": "'rho, press'",
+     "type": "str",
+     "as_meant": false
+    }
+   },
+   "round_trip_exact": true
+  },
+  "Athena++ input": {
+   "parameters": {
+    "mesh.nx1": {
+     "read": "'4000'",
+     "type": "str",
+     "as_meant": false
+    },
+    "mesh.nx2": {
+     "read": "'1000'",
+     "type": "str",
+     "as_meant": false
+    },
+    "mesh.x1max": {
+     "read": "'4.0'",
+     "type": "str",
+     "as_meant": false
+    },
+    "hydro.gamma": {
+     "read": "'1.6666666666666667'",
+     "type": "str",
+     "as_meant": false
+    },
+    "hydro.cfl": {
+     "read": "'0.4'",
+     "type": "str",
+     "as_meant": false
+    },
+    "time.tlim": {
+     "read": "'1e5'",
+     "type": "str",
+     "as_meant": false
+    },
+    "cooling.enabled": {
+     "read": "'false'",
+     "type": "str",
+     "as_meant": false
+    },
+    "conduction.kappa": {
+     "read": "'1.0e-10'",
+     "type": "str",
+     "as_meant": false
+    },
+    "problem.name": {
+     "read": "'cloud'",
+     "type": "str",
+     "as_meant": true
+    },
+    "problem.country": {
+     "read": "'NO'",
+     "type": "str",
+     "as_meant": true
+    },
+    "output.variables": {
+     "read": "'rho,press'",
+     "type": "str",
+     "as_meant": false
+    }
+   },
+   "round_trip_exact": true
+  },
+  "JSON": {
+   "parameters": {
+    "mesh.nx1": {
+     "read": "4000",
+     "type": "int",
+     "as_meant": true
+    },
+    "mesh.nx2": {
+     "read": "1000",
+     "type": "int",
+     "as_meant": true
+    },
+    "mesh.x1max": {
+     "read": "4.0",
+     "type": "float",
+     "as_meant": true
+    },
+    "hydro.gamma": {
+     "read": "1.6666666666666667",
+     "type": "float",
+     "as_meant": true
+    },
+    "hydro.cfl": {
+     "read": "0.4",
+     "type": "float",
+     "as_meant": true
+    },
+    "time.tlim": {
+     "read": "100000.0",
+     "type": "float",
+     "as_meant": true
+    },
+    "cooling.enabled": {
+     "read": "False",
+     "type": "bool",
+     "as_meant": true
+    },
+    "conduction.kappa": {
+     "read": "1e-10",
+     "type": "float",
+     "as_meant": true
+    },
+    "problem.name": {
+     "read": "'cloud'",
+     "type": "str",
+     "as_meant": true
+    },
+    "problem.country": {
+     "read": "'NO'",
+     "type": "str",
+     "as_meant": true
+    },
+    "output.variables": {
+     "read": "['rho', 'press']",
+     "type": "list",
+     "as_meant": true
+    }
+   },
+   "round_trip_exact": true
+  }
+ }
+}

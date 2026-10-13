@@ -1,0 +1,32 @@
+{
+ "python": "3.14.8 (main, Oct  3 2026, 00:54:41) [Clang 22.1.3 ]",
+ "numpy": "2.5.4",
+ "h5py": "3.16.0",
+ "yt": "4.4.2",
+ "platform": "macOS-26.7.1-x86_64-i386-64bit-Mach-O",
+ "yt_fields": [
+  "athena_pp/press",
+  "athena_pp/r0",
+  "athena_pp/rho",
+  "athena_pp/vel1",
+  "athena_pp/vel2",
+  "athena_pp/vel3"
+ ],
+ "yt_derived_examples": [
+  "gas/density",
+  "gas/pressure",
+  "gas/velocity_magnitude",
+  "gas/velocity_x"
+ ],
+ "yt_time": 0.25,
+ "checks": {
+  "yt: rho": true,
+  "yt: vel1": true,
+  "yt: vel2": true,
+  "yt: vel3": true,
+  "yt: press": true,
+  "yt: r0": true,
+  "yt: gas/density = rho": true,
+  "minimal reader: all variables": true
+ }
+}

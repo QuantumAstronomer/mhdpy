@@ -35,9 +35,14 @@ __all__ = [
     "SOLAR_LUMINOSITY",
     "SOLAR_MASS",
     "SOLAR_RADIUS",
+    "SOURCES",
     "SPEED_OF_LIGHT",
     "STEFAN_BOLTZMANN_CONSTANT",
 ]
+
+## The sources of all values in this module, as one line of text, for the records of unit systems in outputs and restart
+## files (UNI14). A file that states its sources can be interpreted exactly even after these values have been revised.
+SOURCES = "CODATA 2022; AME 2020; IAU 2012 Resolution B2; IAU 2015 Resolutions B2 and B3"
 
 ## ---- Physical constants (UNI10), CODATA 2022 unless stated otherwise ----
 ## The SI values in the comments are as published; the conversion to cgs is exact (1 m = 100 cm, 1 kg = 1000 g,

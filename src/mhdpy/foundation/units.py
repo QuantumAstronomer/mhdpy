@@ -7,7 +7,9 @@ code units of length, mass and time, from which every other unit follows. The re
 """
 
 import math
+from collections.abc import Mapping
 from dataclasses import dataclass
+from typing import Self
 
 import numpy as np
 import numpy.typing as npt
@@ -306,3 +308,60 @@ class UnitSystem:
         ## constants.GRAVITATIONAL_CONSTANT would, and dividing by its unit converts it to code units (UNI05).
         dimensions = constants.DIMENSIONS[name]
         return getattr(constants, name) / self.unit(**dimensions)
+
+    def to_record(self) -> dict[str, float | str]:
+        """Return the record of the unit system: its defining values and the sources of the constants (UNI14).
+
+        The record consists of plain values, Python floats and strings, so that any file format can store it: the
+        attributes of outputs (D14.2), restart files (D13.5). ``UnitSystem.from_record`` creates the unit system again.
+
+        Returns
+        -------
+        dict
+            The code units ``"length"``, ``"mass"`` and ``"time"``, the default mean molecular weight ``"mu"`` if the
+            unit system has one, and the sources of the constants ``"sources"``.
+        """
+        ## float() turns each np.float64 into a plain Python float with exactly the same bits, so nothing is lost.
+        record: dict[str, float | str] = {
+            "length": float(self.length),
+            "mass": float(self.mass),
+            "time": float(self.time),
+        }
+
+        ## A missing default is left out rather than recorded as None: HDF5 attributes, for one, cannot hold None.
+        if self.mu is not None:
+            record["mu"] = float(self.mu)
+
+        ## The sources of the constants, so that a file states which values it was made with. They are not needed
+        ## to create the unit system again: the code units are in cgs and do not depend on the constants.
+        record["sources"] = constants.SOURCES
+        return record
+
+    @classmethod
+    def from_record(cls, record: Mapping[str, float | str]) -> Self:
+        """Create a unit system from its record, as written by ``UnitSystem.to_record`` (UNI14).
+
+        The unit system created is equal to the one recorded, with every value identical bit for bit.
+
+        Parameters
+        ----------
+        record : mapping
+            The record, as read from a file: ``"length"``, ``"mass"`` and ``"time"``, and ``"mu"`` if the unit system
+            has a default mean molecular weight. Other entries, such as the sources of the constants, are ignored.
+
+        Returns
+        -------
+        UnitSystem
+            The unit system of the record.
+        """
+        ## A classmethod is called on the class, UnitSystem.from_record(record), and receives the class as cls, so
+        ## cls(...) creates the unit system; Self in the signature is the type of that class. Creating it checks the
+        ## values again (UNI01, UNI09), so a damaged record cannot give an invalid unit system. A missing code unit
+        ## raises a KeyError that names it.
+        mu = record.get("mu")
+        return cls(
+            length=float(record["length"]),
+            mass=float(record["mass"]),
+            time=float(record["time"]),
+            mu=None if mu is None else float(mu),
+        )

@@ -10,4 +10,5 @@ backend_c = custom_target(
 )
 py.extension_module('_backend', backend_c, install: true, subdir: 'mhdpy')
 
+subdir('foundation')
 subdir('tests')

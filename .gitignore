@@ -31,6 +31,7 @@ docs/_build/
 ## Editors and operating systems
 .DS_Store
 .idea/
+.vscode/
 
 ## Hypothesis example database
 .hypothesis/

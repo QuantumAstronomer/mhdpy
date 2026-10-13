@@ -24,5 +24,5 @@ def test_unknown_mode_is_refused(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def test_module_without_source() -> None:
     """Check that loading a module without a source file is refused."""
-    with pytest.raises(ImportError):
+    with pytest.raises(ImportError, match="no source file"):
         _kernel_mode.load_uncompiled("mhdpy.missing")

@@ -175,7 +175,9 @@ class TestPhysicalConstants:
 
         A constant containing the kelvin, such as k_B, keeps it: code units have no temperature dimension.
         """
-        system = units.UnitSystem(length=3.0856775814913673e21, mass=1.988409870698051e38, time=3.15576e13)
+        ## Any unit system serves, since the test checks the conversion, not the values: this one of 1 kpc, 1e5 solar
+        ## masses and 1 Myr.
+        system = units.UnitSystem(length=constants.KILOPARSEC, mass=1e5 * constants.SOLAR_MASS, time=constants.MEGAYEAR)
         in_cgs_value = getattr(constants, name)
 
         ## The constant in code units, a double like every unit.

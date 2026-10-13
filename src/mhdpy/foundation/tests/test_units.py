@@ -36,9 +36,8 @@ def within_range(x: float) -> bool:
 ## simulation that can be set up and run (D13).
 NEEDS_DRIVER = pytest.mark.skip(reason="needs physics modules and the driver of a simulation (layers L6 and above)")
 
-## Code units of 1 kpc, 1e5 solar masses and 1 Myr, written out in cgs. The tests of the definition use these literal
-## values so that they do not depend on the astronomical constants of the unit system itself, which are tested
-## separately (UNI11).
+## Code units of 1 kpc, 1e5 solar masses and 1 Myr, written out in cgs. The tests use these literal values so that they
+## do not depend on the astronomical units of constants.py, which are tested separately (UNI11).
 LENGTH = 3.0856775814913673e21
 MASS = 1.988409870698051e38
 TIME = 3.15576e13
@@ -96,7 +95,6 @@ class TestDefinition:
     @pytest.mark.parametrize("name", ["length", "mass", "time"])
     def test_defined_by_three_code_units(self, name: str) -> None:
         """Check that a unit system keeps its three defining code units exactly as given (UNI01)."""
-        ## Set up a unit system with the code units defined at the top of this file.
         system = units.UnitSystem(length=LENGTH, mass=MASS, time=TIME)
 
         ## getattr(system, "mass") is the same as system.mass: it reads the attribute whose name is in the variable.
@@ -114,8 +112,7 @@ class TestDefinition:
 
         Zero, negative, infinite and undefined values are all refused, with an error that names the offending unit.
         """
-        ## Start from the valid code units and replace the one under test by the invalid value. The | operator merges
-        ## two dictionaries; where both have the same key, the value of the right-hand one wins.
+        ## Start from the valid code units and replace the one under test by the invalid value.
         arguments = CODE_UNITS | {name: value}
 
         ## Creating the unit system must raise a ValueError. The match argument is searched for in the error message,
@@ -133,26 +130,28 @@ class TestDefinition:
         ## All exponents from -4 to 4 in steps of 1/2: integers and half-integers, as the requirement asks.
         exponents = [k / 2 for k in range(-8, 9)]
 
-        ## Every combination of three exponents, 17^3 = 4913 in all. itertools.product(exponents, repeat=3) gives each
-        ## triplet (length, mass, time) once. Checking them all is fast (about a second) and, unlike a random sample,
-        ## cannot miss the one combination where the error is largest.
-        for length, mass, time in itertools.product(exponents, repeat=3):
-            ## The reference, computed independently with Python's decimal module at 50 significant digits.
-            ## Decimal(LENGTH) is the exact value of the double LENGTH, and the powers and products are rounded only at
-            ## the 50th digit, so the reference is exact for any comparison in double precision. localcontext() sets
-            ## the precision for this block only, without affecting decimal arithmetic elsewhere.
-            with localcontext() as context:
-                context.prec = 50
-                exact = (
-                    Decimal(LENGTH) ** Decimal(length) * Decimal(MASS) ** Decimal(mass) * Decimal(TIME) ** Decimal(time)
-                )
-            expected = float(exact)  ## the double nearest to the exact value
+        ## The reference, computed independently with Python's decimal module at 50 significant digits. Decimal(LENGTH)
+        ## is the exact value of the double LENGTH, and powers and products are rounded only at the 50th digit, so the
+        ## reference is exact for any comparison in double precision. localcontext() sets the precision for this block
+        ## only, without affecting decimal arithmetic elsewhere. The 17 powers of each code unit are computed once,
+        ## before the loop: fractional powers are slow in the decimal module, and computing them for every combination
+        ## took about a second.
+        with localcontext() as context:
+            context.prec = 50
+            powers = {name: {e: Decimal(value) ** Decimal(e) for e in exponents} for name, value in CODE_UNITS.items()}
 
-            ## math.ulp(x) is the gap between x and the next larger double, the "unit in the last place". Three powers
-            ## (about 1 ulp each) and two products (1/2 ulp each) give a bound of 4 ulp. The message after the comma is
-            ## shown when the assert fails, and names the exponents of the failing combination.
-            actual = system.unit(length=length, mass=mass, time=time)
-            assert abs(actual - expected) <= 4 * math.ulp(expected), f"exponents {length}, {mass}, {time}"
+            ## Every combination of three exponents, 17^3 = 4913 in all. itertools.product(exponents, repeat=3) gives
+            ## each triplet (length, mass, time) once. Checking them all, unlike a random sample, cannot miss the one
+            ## combination where the error is largest.
+            for length, mass, time in itertools.product(exponents, repeat=3):
+                exact = powers["length"][length] * powers["mass"][mass] * powers["time"][time]
+                expected = float(exact)  ## the double nearest to the exact value
+
+                ## math.ulp(x) is the gap between x and the next larger double, the "unit in the last place". Three
+                ## powers (about 1 ulp each) and two products (1/2 ulp each) give a bound of 4 ulp. The message after
+                ## the comma is shown when the assert fails, and names the exponents of the failing combination.
+                actual = system.unit(length=length, mass=mass, time=time)
+                assert abs(actual - expected) <= 4 * math.ulp(expected), f"exponents {length}, {mass}, {time}"
 
     ## Run this test once for every named unit. Each key of NAMED_UNITS becomes a separate test case, reported for
     ## example as test_named_units_follow_from_dimensions[density].
@@ -160,7 +159,6 @@ class TestDefinition:
     def test_named_units_follow_from_dimensions(self, name: str) -> None:
         """Check that every named unit equals the unit computed from its dimensions, to within 4 ulp (UNI03)."""
         system = units.UnitSystem(length=LENGTH, mass=MASS, time=TIME)
-        ## The named unit, read as an attribute: getattr(system, "density") is system.density.
         named = getattr(system, name)
 
         ## The same unit from its dimensions through the general rule of UNI02, which is tested on its own.
@@ -382,7 +380,7 @@ class TestTemperature:
     def test_pressure_over_density_from_temperature(self, temperature: float, mu: float) -> None:
         """Check that the conversion from temperature to p / rho in code units inverts the first (UNI08).
 
-        The two conversions applied one after the other must reproduce the value to within rounding.
+        The two conversions applied one after the other must reproduce the value to within 2 ulp.
         """
         system = units.UnitSystem(length=LENGTH, mass=MASS, time=TIME)
 
@@ -390,10 +388,9 @@ class TestTemperature:
         p_over_rho = system.pressure_over_density(temperature, mu=mu)
         back = system.temperature(p_over_rho, mu=mu)
 
-        ## Each conversion takes four roundings. Two of the eight do not count: both conversions compute the same
-        ## product mu m_H, which one divides by and the other multiplies with, so its rounding cancels. The unit of
-        ## specific energy cancels in the same way. That leaves six roundings, within 6 ulp (see the test above).
-        assert abs(back - temperature) <= 6 * math.ulp(temperature)
+        ## Both conversions use the same factor, mu m_H u / k_B, one dividing by it and the other multiplying, so its
+        ## own rounding cancels. That leaves one rounding per conversion, within 2 ulp (see the test above).
+        assert abs(back - temperature) <= 2 * math.ulp(temperature)
 
     ## Run this test once for each direction of the conversion; getattr picks the method by its name.
     @pytest.mark.parametrize("conversion", ["temperature", "pressure_over_density"])
@@ -634,8 +631,7 @@ for name in sorted(set(sys.modules) - before):
     def test_no_further_dependencies(self, module: str) -> None:
         """Check that importing the unit system imports no third-party package other than NumPy (UNI18)."""
         ## The program runs in a fresh Python interpreter, the one running the tests (sys.executable), because this
-        ## one has long since imported pytest, Hypothesis and the unit system itself. capture_output collects what the
-        ## program prints, text=True returns it as a string, and check=True fails the test if the program fails.
+        ## one has long since imported pytest, Hypothesis and the unit system itself.
         result = subprocess.run(
             [sys.executable, "-c", self.PROGRAM, module], capture_output=True, text=True, check=True
         )

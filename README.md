@@ -2,7 +2,7 @@
 
 A Python-first package for astrophysical (magneto)hydrodynamics.
 
-mhdpy is in its planning stage. Its purpose, priorities and architectural decisions are documented in [`docs/architecture.md`](docs/architecture.md).
+mhdpy is in early development: its foundation layer is being built, starting with the unit system. Its purpose, priorities and architectural decisions are documented in [`docs/architecture.md`](docs/architecture.md).
 
 ## Verifying an installation
 

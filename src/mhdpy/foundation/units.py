@@ -2,8 +2,9 @@
 
 mhdpy solves its equations in dimensionless code units. A unit system relates them to cgs through three numbers, the
 code units of length, mass and time, from which every other unit follows. The requirements this module fulfils are in
-``docs/requirements/L0-foundation/units.md`` (UNI01-UNI18) and tested in the accompanying test module
-``tests/test_units.py``.
+``docs/requirements/L0-foundation/units.md`` (UNI01-UNI18). They are tested in the accompanying test module
+``tests/test_units.py``, except for the physical constants and astronomical units (UNI10-UNI11), which are tested in
+``tests/test_constants.py``.
 """
 
 import math
@@ -43,7 +44,7 @@ _LABELS = {
 # fmt: on
 
 
-## frozen=True: the fields cannot be changed after creation, which UNI12 will require; it also gives the unit system an
+## frozen=True: the fields cannot be changed after creation, as UNI12 requires; it also gives the unit system an
 ## equality comparison of its fields, which UNI13 builds on. kw_only=True: the fields can only be given by keyword, so
 ## UnitSystem(length=..., mass=..., time=...) works, while a call with positional arguments, which could silently mix
 ## up length, mass and time, is refused.
@@ -85,7 +86,7 @@ class UnitSystem:
             ## math.isfinite is False for infinities and for NaN ("not a number"), and NaN also fails every comparison,
             ## so this single condition refuses zero, negative, infinite and undefined values alike.
             if not (math.isfinite(value) and value > 0):
-                raise ValueError(f"The code unit of {name} must be a positive, finite number in cgs, got {value!r}.")
+                raise ValueError(f"The code unit of {name} must be a positive, finite number in cgs, got {value}.")
 
             ## Store the code unit as NumPy's double-precision number np.float64 (UNI05). The value stays exactly as
             ## given (UNI01), but its type makes every conversion double precision: a single-precision array multiplied
@@ -101,7 +102,7 @@ class UnitSystem:
         ## when it is given the same value itself.
         if self.mu is not None:
             if not (math.isfinite(self.mu) and self.mu > 0):
-                raise ValueError(f"The default mean molecular weight must be positive and finite, got {self.mu!r}.")
+                raise ValueError(f"The default mean molecular weight must be positive and finite, got {self.mu}.")
             object.__setattr__(self, "mu", np.float64(self.mu))
 
     def _mean_molecular_weight(self, mu: npt.ArrayLike | None) -> npt.NDArray[np.float64]:
@@ -124,11 +125,27 @@ class UnitSystem:
         ## zero-dimensional array gives back an ordinary np.float64, so a scalar stays a scalar in the result.
         mu = np.asarray(mu, dtype=np.float64)
 
-        ## The same condition as for the code units (UNI01), applied to every element at once: np.isfinite and > give an
-        ## array of True and False, & combines them element by element, and np.all requires it to hold everywhere.
-        if not np.all(np.isfinite(mu) & (mu > 0)):
-            raise ValueError(f"The mean molecular weight must be positive and finite, got {mu!r}.")
+        ## The same condition as for the code units (UNI01), for every element at once: np.isfinite and > give arrays of
+        ## True and False, & combines them element by element, and ~ inverts the result, marking the invalid elements.
+        invalid = ~(np.isfinite(mu) & (mu > 0))
+        if invalid.any():
+            if mu.ndim == 0:
+                raise ValueError(f"The mean molecular weight must be positive and finite, got {float(mu)}.")
+            ## For an array, name the first invalid value, where it is, and how many there are, so that a single bad
+            ## cell in a large field can be found. np.argwhere lists the indices of the marked elements.
+            index = tuple(int(i) for i in np.argwhere(invalid)[0])
+            raise ValueError(
+                f"The mean molecular weight must be positive and finite, got {float(mu[index])} at index {index}, "
+                f"one of {int(invalid.sum())} invalid values."
+            )
         return mu
+
+    def _kelvin_per_code_unit(self, mu: npt.ArrayLike | None) -> npt.NDArray[np.float64]:
+        """Return mu m_H u / k_B: the temperature of gas whose p / rho is one code unit u of specific energy (UNI08)."""
+        ## The constant factors are combined into one number first, so that an array takes one multiplication by mu
+        ## and one by its values, rather than one pass per factor.
+        scale = self.specific_energy * constants.HYDROGEN_MASS / constants.BOLTZMANN_CONSTANT
+        return self._mean_molecular_weight(mu) * scale
 
     ## The named units of UNI03. Each is a property: it is read like an attribute (system.density, without
     ## parentheses) but computed from the general rule of UNI02 each time it is read. Computing is cheap, and it means
@@ -197,10 +214,10 @@ class UnitSystem:
         return np.sqrt(4 * np.pi * self.pressure)
 
     def unit(self, *, length: float = 0.0, mass: float = 0.0, time: float = 0.0) -> float:
-        """Return the code unit, in cgs, of a quantity with dimensions length^length mass^mass time^time (UNI02).
+        """Return the code unit, in cgs, of a quantity with dimensions L^length M^mass T^time (UNI02).
 
-        Any unit follows from the three code units raised to the powers of the quantity's dimensions. The exponents may
-        be half-integers, as for the magnetic field (UNI07).
+        L, M and T stand for length, mass and time. Any unit follows from the three code units raised to the powers of
+        the quantity's dimensions. The exponents may be half-integers, as for the magnetic field (UNI07).
 
         Parameters
         ----------
@@ -254,10 +271,9 @@ class UnitSystem:
         float or numpy.ndarray
             The temperature in kelvin, in double precision, with the shape of p_over_rho.
         """
-        ## p / rho has the dimensions of a specific energy, so its unit converts it to erg/g (UNI05). The factors are
-        ## applied in the order of the formula; np.asarray makes a list of values work as an array does.
-        p_over_rho_cgs = np.asarray(p_over_rho, dtype=np.float64) * self.specific_energy
-        return self._mean_molecular_weight(mu) * constants.HYDROGEN_MASS * p_over_rho_cgs / constants.BOLTZMANN_CONSTANT
+        ## T = (p / rho) mu m_H u / k_B: the ratio in code units times the temperature of one code unit. np.asarray
+        ## makes a list of values work as an array does.
+        return np.asarray(p_over_rho, dtype=np.float64) * self._kelvin_per_code_unit(mu)
 
     def pressure_over_density(
         self, temperature: npt.ArrayLike, *, mu: npt.ArrayLike | None = None
@@ -280,10 +296,8 @@ class UnitSystem:
             The ratio of pressure to density in code units of specific energy, in double precision, with the shape of
             temperature.
         """
-        ## The ratio in erg/g first, then converted to code units by dividing by the unit of specific energy (UNI05).
-        p_over_rho_cgs = constants.BOLTZMANN_CONSTANT * np.asarray(temperature, dtype=np.float64)
-        p_over_rho_cgs = p_over_rho_cgs / (self._mean_molecular_weight(mu) * constants.HYDROGEN_MASS)
-        return p_over_rho_cgs / self.specific_energy
+        ## The inverse of UnitSystem.temperature: a division by the same factor.
+        return np.asarray(temperature, dtype=np.float64) / self._kelvin_per_code_unit(mu)
 
     def constant(self, name: str) -> float:
         """Return a physical constant in code units, such as ``"GRAVITATIONAL_CONSTANT"`` (UNI10).

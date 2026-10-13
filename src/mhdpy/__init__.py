@@ -4,7 +4,8 @@ mhdpy is a framework for astrophysical (magneto)hydrodynamical simulations, mean
 work: from standard verification problems up to production-scale runs. Its architecture, and the reasoning behind every
 choice in it, is documented in ``docs/architecture.md`` and in the decision briefs under ``docs/decisions/``.
 
-The package is in its planning stage and does not yet provide any functionality.
+The package is in early development: its foundation layer (L0) is being built, starting with the unit system in
+``mhdpy.foundation.units``.
 """
 
 from importlib.metadata import version

@@ -1,5 +1,5 @@
-## Project configuration of mhdpy. The choices made here are recorded in decision brief D01
-## (docs/decisions/D01-tooling/D01-tooling-brief.md); the sub-decision behind each section is noted.
+## Project configuration of mhdpy. The choices made here are recorded in the decision briefs (docs/decisions/); the
+## sub-decision behind each section is noted.
 
 [project]
 name = "mhdpy"
@@ -13,7 +13,7 @@ license-files = ["LICENSE", "LICENSES/*.txt"]
 ## D01.2: Python 3.13 and 3.14, under a rolling three-year support window (SPEC 0).
 requires-python = ">=3.13"
 classifiers = [
-    "Development Status :: 1 - Planning",
+    "Development Status :: 2 - Pre-Alpha",
     "Intended Audience :: Science/Research",
     "Operating System :: MacOS",
     "Operating System :: POSIX :: Linux",
@@ -36,6 +36,8 @@ test = [
     "hypothesis>=6.168.5",
     "pytest>=9.1.1",
     "pytest-cov>=7.1.0",
+    ## The uncompiled kernels import cython (Cython's pure Python mode, D04.1), so testing them with
+    ## MHDPY_KERNELS=uncompiled needs it.
     "cython>=3.3.0",
 ]
 

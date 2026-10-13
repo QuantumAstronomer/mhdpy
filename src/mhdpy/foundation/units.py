@@ -10,15 +10,17 @@ import math
 from dataclasses import dataclass
 
 import numpy as np
+import numpy.typing as npt
+
+from mhdpy.foundation import constants
 
 ## The public interface of this module (D15.7): only names listed here are meant for use outside it.
 __all__ = ["UnitSystem"]
 
-## The label of each named unit's cgs unit (UNI04), for the headers of the history and the attributes of outputs (D14).
-## The labels do not depend on the code units, only on the cgs units the values convert to, so one table serves every
-## unit system. The leading underscore marks the table as internal; it is read through UnitSystem.label.
 ## The label of each named unit's cgs unit (UNI04), exactly as it is to appear in the headers of the history and the
-## attributes of outputs. Units are written with their cgs names where those exist (dyn, erg), and exponents with ^.
+## attributes of outputs (D14). Units are written with their cgs names where those exist (dyn, erg), and exponents with
+## ^. The labels do not depend on the code units, only on the cgs units the values convert to, so one table serves every
+## unit system. The leading underscore marks the table as internal; it is read through UnitSystem.label.
 # fmt: off
 _LABELS = {
     "length"            : "cm",
@@ -34,6 +36,7 @@ _LABELS = {
     "energy"            : "erg",
     "specific_energy"   : "erg g^-1",
     "energy_flux"       : "erg cm^-2 s^-1",
+    "magnetic_field"    : "G",
 }
 # fmt: on
 
@@ -57,14 +60,20 @@ class UnitSystem:
         The code unit of mass, in g.
     time : float
         The code unit of time, in s.
+    mu : float, optional
+        The default mean molecular weight, used by temperature conversions that are given none (UNI09). Without it,
+        every temperature conversion must be given one.
     """
 
     length: float
     mass: float
     time: float
+    ## None, the default of the field, means that no default mean molecular weight was given: mhdpy assumes no value of
+    ## its own (UNI09).
+    mu: float | None = None
 
     def __post_init__(self) -> None:
-        """Refuse code units that are not positive and finite (UNI01).
+        """Refuse code units and a default mean molecular weight that are not positive and finite (UNI01, UNI09).
 
         A dataclass calls this method automatically at the end of its constructor, after the fields have been set, so
         no unit system with an invalid code unit can ever exist.
@@ -84,6 +93,40 @@ class UnitSystem:
             ## np.float64. A frozen dataclass refuses ordinary assignment to its fields, even here; object.__setattr__
             ## is the documented way around that during construction.
             object.__setattr__(self, name, np.float64(value))
+
+        ## The default mean molecular weight, if one is given, is checked by the same condition as the code units and
+        ## stored as an np.float64 for the same reason. A conversion that falls back on it then computes exactly as
+        ## when it is given the same value itself.
+        if self.mu is not None:
+            if not (math.isfinite(self.mu) and self.mu > 0):
+                raise ValueError(f"The default mean molecular weight must be positive and finite, got {self.mu!r}.")
+            object.__setattr__(self, "mu", np.float64(self.mu))
+
+    def _mean_molecular_weight(self, mu: npt.ArrayLike | None) -> npt.NDArray[np.float64]:
+        """Return the mean molecular weight of a temperature conversion as a double-precision array (UNI08, UNI09).
+
+        A conversion given no mean molecular weight uses the default of the unit system; without a default, it is
+        refused. A mean molecular weight that is not positive and finite, in any of its elements, is refused as well.
+        """
+        ## A value given to the conversion takes precedence over the default. Without either, no value is assumed:
+        ## the error says how to give one.
+        if mu is None:
+            if self.mu is None:
+                raise ValueError(
+                    "No mean molecular weight given: pass mu to the conversion, or give the unit system a default."
+                )
+            mu = self.mu
+
+        ## np.asarray turns a scalar into an array of zero dimensions and leaves an array as it is (without copying it
+        ## if it is double precision already), so one check serves scalars and arrays alike. Arithmetic with a
+        ## zero-dimensional array gives back an ordinary np.float64, so a scalar stays a scalar in the result.
+        mu = np.asarray(mu, dtype=np.float64)
+
+        ## The same condition as for the code units (UNI01), applied to every element at once: np.isfinite and > give an
+        ## array of True and False, & combines them element by element, and np.all requires it to hold everywhere.
+        if not np.all(np.isfinite(mu) & (mu > 0)):
+            raise ValueError(f"The mean molecular weight must be positive and finite, got {mu!r}.")
+        return mu
 
     ## The named units of UNI03. Each is a property: it is read like an attribute (system.density, without
     ## parentheses) but computed from the general rule of UNI02 each time it is read. Computing is cheap, and it means
@@ -139,6 +182,18 @@ class UnitSystem:
         """The code unit of energy flux, in erg/(cm^2 s) = g/(s^3)."""
         return self.unit(mass=1, time=-3)
 
+    @property
+    def magnetic_field(self) -> float:
+        """The code unit of the magnetic field, in gauss: sqrt(4 pi p_u), with p_u the code unit of pressure (UNI07).
+
+        The factor 4 pi is absorbed into the field, so the equations in code units contain no 4 pi: the magnetic
+        pressure and energy density are B^2/2, where Gaussian units have B^2/(8 pi).
+        """
+        ## Absorbing 4 pi means B_code^2/2, in code units of pressure, must equal B^2/(8 pi) in cgs. With B = B_code * u
+        ## that gives u^2 = 4 pi p_u. The factor sqrt(4 pi) is why this unit is not a product of powers of the base
+        ## units (UNI02). np.sqrt keeps the result an np.float64, like every other unit (UNI05).
+        return np.sqrt(4 * np.pi * self.pressure)
+
     def unit(self, *, length: float = 0.0, mass: float = 0.0, time: float = 0.0) -> float:
         """Return the code unit, in cgs, of a quantity with dimensions length^length mass^mass time^time (UNI02).
 
@@ -175,3 +230,55 @@ class UnitSystem:
         """
         ## A lookup in the table of labels. An unknown name raises a KeyError that names it.
         return _LABELS[name]
+
+    def temperature(
+        self, p_over_rho: npt.ArrayLike, *, mu: npt.ArrayLike | None = None
+    ) -> np.float64 | npt.NDArray[np.float64]:
+        """Return the temperature, in kelvin, of gas with the given ratio of pressure to density in code units (UNI08).
+
+        For an ideal gas, T = mu m_H (p / rho) / k_B, with mu the mean molecular weight in units of the mass of the
+        hydrogen atom m_H.
+
+        Parameters
+        ----------
+        p_over_rho : float or array_like
+            The ratio of pressure to density, in code units of specific energy.
+        mu : float or array_like, optional
+            The mean molecular weight, positive and finite: a scalar, or an array of the shape of p_over_rho that gives
+            it cell by cell. Without it, the default of the unit system is used (UNI09).
+
+        Returns
+        -------
+        float or numpy.ndarray
+            The temperature in kelvin, in double precision, with the shape of p_over_rho.
+        """
+        ## p / rho has the dimensions of a specific energy, so its unit converts it to erg/g (UNI05). The factors are
+        ## applied in the order of the formula; np.asarray makes a list of values work as an array does.
+        p_over_rho_cgs = np.asarray(p_over_rho, dtype=np.float64) * self.specific_energy
+        return self._mean_molecular_weight(mu) * constants.HYDROGEN_MASS * p_over_rho_cgs / constants.BOLTZMANN_CONSTANT
+
+    def pressure_over_density(
+        self, temperature: npt.ArrayLike, *, mu: npt.ArrayLike | None = None
+    ) -> np.float64 | npt.NDArray[np.float64]:
+        """Return the ratio of pressure to density, in code units, of gas at the given temperature (UNI08).
+
+        The inverse of UnitSystem.temperature: p / rho = k_B T / (mu m_H).
+
+        Parameters
+        ----------
+        temperature : float or array_like
+            The temperature, in kelvin.
+        mu : float or array_like, optional
+            The mean molecular weight, positive and finite: a scalar, or an array of the shape of temperature that
+            gives it cell by cell. Without it, the default of the unit system is used (UNI09).
+
+        Returns
+        -------
+        float or numpy.ndarray
+            The ratio of pressure to density in code units of specific energy, in double precision, with the shape of
+            temperature.
+        """
+        ## The ratio in erg/g first, then converted to code units by dividing by the unit of specific energy (UNI05).
+        p_over_rho_cgs = constants.BOLTZMANN_CONSTANT * np.asarray(temperature, dtype=np.float64)
+        p_over_rho_cgs = p_over_rho_cgs / (self._mean_molecular_weight(mu) * constants.HYDROGEN_MASS)
+        return p_over_rho_cgs / self.specific_energy

@@ -1,7 +1,8 @@
 """Tests of the unit system: requirements UNI01-UNI18 (docs/requirements/L0-foundation/units.md).
 
 The tests are grouped in classes that follow the groups of requirements in that document. Each test names the
-requirements it checks in its docstring.
+requirements it checks in its docstring. The physical constants and astronomical units (UNI10-UNI11) have a module of
+their own, and so do their tests: test_constants.py.
 """
 
 import itertools
@@ -14,7 +15,7 @@ import pytest
 from hypothesis import assume, given
 from hypothesis import strategies as st
 
-from mhdpy.foundation import units
+from mhdpy.foundation import constants, units
 
 
 def within_range(x: float) -> bool:
@@ -86,6 +87,7 @@ LABELS = {
     "energy"            : "erg",
     "specific_energy"   : "erg g^-1",
     "energy_flux"       : "erg cm^-2 s^-1",
+    "magnetic_field"    : "G",
 }
 # fmt: on
 
@@ -171,9 +173,9 @@ class TestDefinition:
         ## Both must agree to within 4 ulp, the tolerance of UNI02.
         assert abs(named - from_dimensions) <= 4 * math.ulp(from_dimensions)
 
-        ## Run this test once for every named unit, as the test of UNI03 does.
-
-    @pytest.mark.parametrize("name", list(NAMED_UNITS))
+    ## Run this test once for every named unit: those of UNI03, and the magnetic field of UNI07, whose unit is not a
+    ## product of base units and so is not in NAMED_UNITS.
+    @pytest.mark.parametrize("name", [*NAMED_UNITS, "magnetic_field"])
     def test_named_unit_labels(self, name: str) -> None:
         """Check that every named unit has the label of its cgs unit, as written in file headers (UNI04)."""
         system = units.UnitSystem(length=LENGTH, mass=MASS, time=TIME)
@@ -277,116 +279,214 @@ class TestConversions:
 class TestMagneticField:
     """UNI07: the factor 4 pi is absorbed into the magnetic field."""
 
-    @NOT_WRITTEN
     def test_magnetic_field_unit(self) -> None:
         """Check that the code unit of the magnetic field is sqrt(4 pi p_u) gauss (UNI07).
 
-        Here p_u is the code unit of pressure.
+        Here p_u is the code unit of pressure. The unit must agree with an exact reference to within 4 ulp.
         """
-        pytest.fail("Not written yet.")
+        system = units.UnitSystem(length=LENGTH, mass=MASS, time=TIME)
 
-    @NOT_WRITTEN
-    def test_magnetic_energy_density_agrees(self) -> None:
+        ## The reference, computed independently at 50 significant digits as in the test of UNI02. The decimal module
+        ## has no constant pi, so pi is written out to 50 digits. The code unit of pressure is M / (L T^2), and
+        ## Decimal.sqrt() takes the square root at the precision of the context.
+        with localcontext() as context:
+            context.prec = 50
+            pi = Decimal("3.1415926535897932384626433832795028841971693993751")
+            pressure = Decimal(MASS) / (Decimal(LENGTH) * Decimal(TIME) ** 2)
+            exact = (4 * pi * pressure).sqrt()
+        expected = float(exact)  ## the double nearest to the exact value
+
+        ## The unit computed by the unit system rounds pi, the pressure (within 4 ulp, UNI03), the product and the
+        ## square root. The square root halves the relative error of its argument, so these roundings together stay
+        ## within about 3 ulp; 4 ulp is the bound used throughout the unit system.
+        actual = system.magnetic_field
+        assert isinstance(actual, np.float64)
+        assert abs(actual - expected) <= 4 * math.ulp(expected)
+
+    ## Hypothesis draws field strengths in code units from the whole range of doubles, as in the tests of UNI06.
+    @given(field=st.floats(allow_nan=False, allow_infinity=False))
+    def test_magnetic_energy_density_agrees(self, field: float) -> None:
         """Check that a field's energy density is the same physical quantity in both systems (UNI07).
 
         B^2 / (8 pi), with B in gauss, must equal B_code^2 / 2 times the code unit of pressure, to within 4 ulp.
         """
-        pytest.fail("Not written yet.")
+        system = units.UnitSystem(length=LENGTH, mass=MASS, time=TIME)
+
+        ## Hypothesis's floats are Python floats, whose ** raises an OverflowError for results too large for a double,
+        ## where NumPy returns infinity. Converting the drawn field to np.float64 makes every operation below behave
+        ## like NumPy's, so an overflow is caught by the assume() further on rather than crashing the test.
+        field_code = np.float64(field)
+
+        ## Squares overflow at magnitudes above about 1e154, so far more draws overflow here than in the round trips of
+        ## UNI06. NumPy's warnings about them are silenced, as the draws are discarded below.
+        with np.errstate(over="ignore"):
+            ## The field in gauss, by the conversion of UNI05.
+            field_gauss = field_code * system.magnetic_field
+
+            ## The magnetic energy density in erg cm^-3, computed twice: in Gaussian cgs, where the factor 4 pi
+            ## appears, and in code units, where it does not, converted to cgs by the code unit of pressure.
+            in_gauss = field_gauss**2 / (8 * np.pi)
+            in_code_units = field_code**2 / 2 * system.pressure
+
+        ## Only values within the range of normal doubles, in either system, count (see within_range). This also
+        ## discards a field of zero, for which both sides are trivially zero.
+        assume(all(within_range(x) for x in (field_code, field_gauss, in_gauss, in_code_units)))
+
+        ## Both must describe the same energy density to within 4 ulp. Along the way, the field is rounded in its
+        ## conversion and squared, which doubles its relative error; the 4 pi of the unit and the 8 pi of Gaussian
+        ## units use the same rounded value of pi, so the error in pi cancels.
+        assert abs(in_gauss - in_code_units) <= 4 * math.ulp(in_code_units)
 
 
 class TestTemperature:
     """UNI08-UNI09: temperature converts from the ratio of pressure to density through the mean molecular weight."""
 
-    @NOT_WRITTEN
-    def test_temperature_from_pressure_over_density(self) -> None:
+    ## Hypothesis draws a ratio of pressure to density and a mean molecular weight. The ratio spans 200 orders of
+    ## magnitude in code units, far beyond any physical temperature, while every intermediate value of the conversion
+    ## stays well inside the range of normal doubles; the whole range of doubles, as in the tests of UNI06, would let
+    ## intermediate values underflow even where the result does not. The mean molecular weight spans 0.1 to 10, which
+    ## covers fully ionised (about 0.6) to molecular gas (about 2.3) with a wide margin.
+    @given(
+        p_over_rho=st.floats(min_value=1e-100, max_value=1e100),
+        mu=st.floats(min_value=0.1, max_value=10.0),
+    )
+    def test_temperature_from_pressure_over_density(self, p_over_rho: float, mu: float) -> None:
         """Check that T = mu m_H (p / rho) / k_B for a ratio p / rho in code units (UNI08).
 
         The mean molecular weight mu is in units of the mass of the hydrogen atom m_H.
         """
-        pytest.fail("Not written yet.")
+        system = units.UnitSystem(length=LENGTH, mass=MASS, time=TIME)
+        temperature = system.temperature(p_over_rho, mu=mu)
 
-    @NOT_WRITTEN
-    def test_pressure_over_density_from_temperature(self) -> None:
+        ## A scalar in gives a scalar out, in double precision like every unit (UNI05).
+        assert isinstance(temperature, np.float64)
+
+        ## The reference, computed exactly at 50 digits from the same ingredients: the unit of specific energy (the
+        ## unit of p / rho, tested under UNI03) and the constants k_B and m_H (tested under UNI10). This test checks
+        ## the formula of UNI08, not the values that go into it.
+        with localcontext() as context:
+            context.prec = 50
+            p_over_rho_cgs = Decimal(p_over_rho) * Decimal(system.specific_energy)
+            exact = (
+                Decimal(mu) * Decimal(constants.HYDROGEN_MASS) * p_over_rho_cgs / Decimal(constants.BOLTZMANN_CONSTANT)
+            )
+        expected = float(exact)
+
+        ## The conversion takes four roundings, one per multiplication or division. Each is at most half an ulp of its
+        ## own result, but up to one ulp of the final result, since the size of an ulp relative to a value varies by
+        ## a factor of two. Four roundings therefore stay within 4 ulp.
+        assert abs(temperature - expected) <= 4 * math.ulp(expected)
+
+    ## Hypothesis draws temperatures in kelvin over the same 200 orders of magnitude, and mean molecular weights as
+    ## above.
+    @given(
+        temperature=st.floats(min_value=1e-100, max_value=1e100),
+        mu=st.floats(min_value=0.1, max_value=10.0),
+    )
+    def test_pressure_over_density_from_temperature(self, temperature: float, mu: float) -> None:
         """Check that the conversion from temperature to p / rho in code units inverts the first (UNI08).
 
         The two conversions applied one after the other must reproduce the value to within rounding.
         """
-        pytest.fail("Not written yet.")
+        system = units.UnitSystem(length=LENGTH, mass=MASS, time=TIME)
 
-    @NOT_WRITTEN
-    def test_mean_molecular_weight_per_cell(self) -> None:
+        ## From temperature to p / rho in code units, and back.
+        p_over_rho = system.pressure_over_density(temperature, mu=mu)
+        back = system.temperature(p_over_rho, mu=mu)
+
+        ## Each conversion takes four roundings. Two of the eight do not count: both conversions compute the same
+        ## product mu m_H, which one divides by and the other multiplies with, so its rounding cancels. The unit of
+        ## specific energy cancels in the same way. That leaves six roundings, within 6 ulp (see the test above).
+        assert abs(back - temperature) <= 6 * math.ulp(temperature)
+
+    ## Run this test once for each direction of the conversion; getattr picks the method by its name.
+    @pytest.mark.parametrize("conversion", ["temperature", "pressure_over_density"])
+    def test_mean_molecular_weight_per_cell(self, conversion: str) -> None:
         """Check that the mean molecular weight may be an array, applied cell by cell (UNI08).
 
         The array has the shape of the values to convert.
         """
-        pytest.fail("Not written yet.")
+        system = units.UnitSystem(length=LENGTH, mass=MASS, time=TIME)
+        convert = getattr(system, conversion)
 
-    @NOT_WRITTEN
-    def test_invalid_mean_molecular_weight_is_refused(self) -> None:
+        ## A small two-dimensional field of values, and a mean molecular weight that differs in every cell, as in gas
+        ## of varying metallicity and ionisation.
+        values = np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])
+        mu = np.array([[0.6, 0.7, 0.8], [1.0, 1.2, 1.3]])
+
+        ## The whole field converted at once keeps its shape and is double precision.
+        result = convert(values, mu=mu)
+        assert result.shape == values.shape
+        assert result.dtype == np.float64
+
+        ## Each cell must be converted with its own mean molecular weight: every element equals the conversion of that
+        ## element on its own, with the mean molecular weight of that cell. .flat runs through the elements of an
+        ## array in order, zip pairs each value with its mu (strict=True refuses arrays of different sizes), and
+        ## reshape gives the list of results the shape of the field again. np.array_equal compares exactly, as the
+        ## same arithmetic happens in both cases.
+        cells = [convert(value, mu=mu_cell) for value, mu_cell in zip(values.flat, mu.flat, strict=True)]
+        expected = np.array(cells).reshape(values.shape)
+        assert np.array_equal(result, expected)
+
+    ## Run this test for each direction of the conversion and each invalid value, 2 x 5 = 10 cases, as the test of
+    ## invalid code units does.
+    @pytest.mark.parametrize("conversion", ["temperature", "pressure_over_density"])
+    @pytest.mark.parametrize("value", [0.0, -1.0, math.inf, -math.inf, math.nan])
+    def test_invalid_mean_molecular_weight_is_refused(self, conversion: str, value: float) -> None:
         """Check that a mean molecular weight that is not positive and finite is refused (UNI08)."""
-        pytest.fail("Not written yet.")
+        system = units.UnitSystem(length=LENGTH, mass=MASS, time=TIME)
+        convert = getattr(system, conversion)
 
-    @NOT_WRITTEN
-    def test_default_mean_molecular_weight(self) -> None:
+        ## The invalid value is refused on its own, and as one cell among valid ones: a single bad cell must not
+        ## slip through. The error message must say what is wrong.
+        with pytest.raises(ValueError, match="mean molecular weight"):
+            convert(1.0, mu=value)
+        with pytest.raises(ValueError, match="mean molecular weight"):
+            convert(np.array([1.0, 1.0]), mu=np.array([0.6, value]))
+
+    ## Run this test once for each direction of the conversion.
+    @pytest.mark.parametrize("conversion", ["temperature", "pressure_over_density"])
+    def test_default_mean_molecular_weight(self, conversion: str) -> None:
         """Check that a default mean molecular weight is used when a conversion gives none (UNI09).
 
         The default is the one given when the unit system was created.
         """
-        pytest.fail("Not written yet.")
+        ## The same unit system, once with a default mean molecular weight and once without.
+        with_default = units.UnitSystem(length=LENGTH, mass=MASS, time=TIME, mu=0.6)
+        without_default = units.UnitSystem(length=LENGTH, mass=MASS, time=TIME)
+        convert = getattr(with_default, conversion)
 
-    @NOT_WRITTEN
-    def test_missing_mean_molecular_weight_is_refused(self) -> None:
+        ## The default is kept as given, and a unit system created without one has none.
+        assert with_default.mu == 0.6
+        assert without_default.mu is None
+
+        ## A conversion without mu uses the default: exactly as if 0.6 had been given to it.
+        assert convert(2.0) == convert(2.0, mu=0.6)
+
+        ## A mu given to the conversion takes precedence over the default: the result is that of a unit system without
+        ## a default, given the same mu.
+        assert convert(2.0, mu=1.3) == getattr(without_default, conversion)(2.0, mu=1.3)
+
+    ## Run this test for each invalid value, as the test of invalid code units does.
+    @pytest.mark.parametrize("value", [0.0, -1.0, math.inf, -math.inf, math.nan])
+    def test_invalid_default_mean_molecular_weight_is_refused(self, value: float) -> None:
+        """Check that a default mean molecular weight that is not positive and finite is refused at creation (UNI09)."""
+        with pytest.raises(ValueError, match="mean molecular weight"):
+            units.UnitSystem(length=LENGTH, mass=MASS, time=TIME, mu=value)
+
+    ## Run this test once for each direction of the conversion.
+    @pytest.mark.parametrize("conversion", ["temperature", "pressure_over_density"])
+    def test_missing_mean_molecular_weight_is_refused(self, conversion: str) -> None:
         """Check that a temperature conversion without any mean molecular weight is refused (UNI09).
 
         Without a value given to the conversion and without a default, no value may be assumed silently.
         """
-        pytest.fail("Not written yet.")
+        system = units.UnitSystem(length=LENGTH, mass=MASS, time=TIME)
+        convert = getattr(system, conversion)
 
-
-class TestPhysicalConstants:
-    """UNI10-UNI11: physical constants and astronomical units from cited sources."""
-
-    @NOT_WRITTEN
-    def test_measured_constants_in_cgs(self) -> None:
-        """Check the measured constants in cgs against the values of CODATA 2022 (UNI10)."""
-        pytest.fail("Not written yet.")
-
-    @NOT_WRITTEN
-    def test_exact_constants_in_cgs(self) -> None:
-        """Check that the exact constants are the doubles nearest to their exact values in cgs (UNI10).
-
-        The constants exact by the definition of the SI are c, h and k_B.
-        """
-        pytest.fail("Not written yet.")
-
-    @NOT_WRITTEN
-    def test_hydrogen_mass(self) -> None:
-        """Check the mass of the hydrogen atom against the Atomic Mass Evaluation 2020 (UNI10).
-
-        The reference is the atomic mass of 1H in units of the atomic mass unit.
-        """
-        pytest.fail("Not written yet.")
-
-    @NOT_WRITTEN
-    def test_constants_in_code_units(self) -> None:
-        """Check that every constant converts to code units by its dimensions (UNI10).
-
-        A constant containing the kelvin, such as k_B, keeps it: code units have no temperature dimension.
-        """
-        pytest.fail("Not written yet.")
-
-    @NOT_WRITTEN
-    def test_astronomical_units(self) -> None:
-        """Check the astronomical units in cgs against the IAU resolutions (UNI11)."""
-        pytest.fail("Not written yet.")
-
-    @NOT_WRITTEN
-    def test_unit_system_from_astronomical_units(self) -> None:
-        """Check that a unit system can be defined in astronomical units (UNI11).
-
-        The example of the requirement: 1 kpc, 1e5 solar masses and 1 Myr.
-        """
-        pytest.fail("Not written yet.")
+        ## The error must say what is missing.
+        with pytest.raises(ValueError, match="mean molecular weight"):
+            convert(2.0)
 
 
 class TestRecords:

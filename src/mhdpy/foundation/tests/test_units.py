@@ -9,6 +9,7 @@ import dataclasses
 import itertools
 import json
 import math
+import subprocess
 import sys
 from decimal import Decimal, localcontext
 
@@ -34,13 +35,6 @@ def within_range(x: float) -> bool:
 ## Tests that can only be written once later layers exist: physics modules declaring what they need (D12.1) and a
 ## simulation that can be set up and run (D13).
 NEEDS_DRIVER = pytest.mark.skip(reason="needs physics modules and the driver of a simulation (layers L6 and above)")
-
-## A test that is planned but not written yet. Its body is pytest.fail("Not written yet."), which this marker declares
-## an expected failure ("xfail"), so the suite stays green while the test is visibly unfinished: pytest reports it as
-## "x" rather than as passed or failed. raises= accepts only that deliberate failure, so a stub that crashed for any
-## other reason would still fail. strict=True turns a stub that unexpectedly passes into a failure, so the marker cannot
-## be forgotten once the test is written. When a test is written, its marker is removed.
-NOT_WRITTEN = pytest.mark.xfail(reason="not written yet", raises=pytest.fail.Exception, strict=True)
 
 ## Code units of 1 kpc, 1e5 solar masses and 1 Myr, written out in cgs. The tests of the definition use these literal
 ## values so that they do not depend on the astronomical constants of the unit system itself, which are tested
@@ -622,7 +616,34 @@ class TestDimensionlessSimulations:
 class TestDependencies:
     """UNI18: the unit system needs nothing beyond the standard library and NumPy."""
 
-    @NOT_WRITTEN
-    def test_no_further_dependencies(self) -> None:
+    ## A small program that imports one module and prints the name of every module that importing it loaded, one per
+    ## line. sys.modules holds every module loaded so far; whatever is in it after the import but not before was
+    ## loaded by the import. The module to import is passed as the program's first argument, sys.argv[1].
+    PROGRAM = """
+import importlib
+import sys
+
+before = set(sys.modules)
+importlib.import_module(sys.argv[1])
+for name in sorted(set(sys.modules) - before):
+    print(name)
+"""
+
+    ## Run this test for both modules of the unit system: the units and the constants they use.
+    @pytest.mark.parametrize("module", ["mhdpy.foundation.units", "mhdpy.foundation.constants"])
+    def test_no_further_dependencies(self, module: str) -> None:
         """Check that importing the unit system imports no third-party package other than NumPy (UNI18)."""
-        pytest.fail("Not written yet.")
+        ## The program runs in a fresh Python interpreter, the one running the tests (sys.executable), because this
+        ## one has long since imported pytest, Hypothesis and the unit system itself. capture_output collects what the
+        ## program prints, text=True returns it as a string, and check=True fails the test if the program fails.
+        result = subprocess.run(
+            [sys.executable, "-c", self.PROGRAM, module], capture_output=True, text=True, check=True
+        )
+
+        ## A module's package is the part of its name before the first dot: numpy._core.multiarray is part of numpy.
+        packages = {name.split(".")[0] for name in result.stdout.split()}
+
+        ## sys.stdlib_module_names lists every module of Python's standard library. What is neither in it, nor mhdpy
+        ## itself, nor NumPy, is a further dependency. The set must be empty; if not, the assert shows it.
+        further = packages - sys.stdlib_module_names - {"mhdpy", "numpy"}
+        assert further == set()

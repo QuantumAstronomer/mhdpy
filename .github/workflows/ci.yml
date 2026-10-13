@@ -31,12 +31,13 @@ jobs:
   ## The fast test tier (D02.5) on both target platforms and every supported Python version (D01.1, D01.2). Coverage is
   ## measured here but enforced only after the measurements of all jobs are combined, in the coverage job (D02.8).
   tests:
-    name: Tests (${{ matrix.os }}, Python ${{ matrix.python }})
+    name: Tests (${{ matrix.os }}, Python ${{ matrix.python }}, ${{ matrix.kernels }})
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
         python: ["3.13", "3.14"]
+        kernels: [compiled, uncompiled]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
@@ -46,11 +47,12 @@ jobs:
       - run: uv sync --locked
       - run: uv run pytest --cov --cov-report= --cov-fail-under=0
         env:
-          COVERAGE_FILE: .coverage.${{ matrix.os }}-${{ matrix.python }}
+          MHDPY_KERNELS: ${{ matrix.kernels }}
+          COVERAGE_FILE: .coverage.${{ matrix.os }}-${{ matrix.python }}-${{ matrix.kernels }}
       - uses: actions/upload-artifact@v7
         with:
-          name: coverage-${{ matrix.os }}-${{ matrix.python }}
-          path: .coverage.${{ matrix.os }}-${{ matrix.python }}
+          name: coverage-${{ matrix.os }}-${{ matrix.python }}-${{ matrix.kernels }}
+          path: .coverage.${{ matrix.os }}-${{ matrix.python }}-${{ matrix.kernels }}
           include-hidden-files: true
           if-no-files-found: error
 
@@ -91,5 +93,9 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: astral-sh/setup-uv@v10.3.0
-      - run: uv build
+      ## Release builds are isolated: a clean build environment, not the project's .venv (which this job does not have).
+      - run: uv build --build-isolation
       - run: uv run --isolated --no-project --with "$(echo dist/*.whl)[test]" pytest --pyargs mhdpy
+      - run: uv run --isolated --no-project --with "$(echo dist/*.whl)[test]" pytest --pyargs mhdpy
+        env:
+          MHDPY_KERNELS: uncompiled

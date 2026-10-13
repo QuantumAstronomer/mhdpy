@@ -9,6 +9,11 @@ The package is in its planning stage and does not yet provide any functionality.
 
 from importlib.metadata import version
 
+from mhdpy import _kernel_mode
+
+## Must run before any kernel is imported: selects compiled or uncompiled kernels (MHDPY_KERNELS, D04.3).
+_kernel_mode.install()
+
 __all__ = ["__version__"]
 
 ## The version is defined once, in pyproject.toml, and read back from the installed package metadata, so that the two

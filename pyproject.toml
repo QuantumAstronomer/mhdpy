@@ -34,6 +34,7 @@ test = [
     "hypothesis>=6.168.5",
     "pytest>=9.1.1",
     "pytest-cov>=7.1.0",
+    "cython>=3.3.0",
 ]
 
 ## D01.6: development tools live in dependency groups, which are never installed for users.
@@ -42,12 +43,16 @@ dev = [
     "mhdpy[test]",
     "pyright>=1.1.414",
     "ruff>=0.17.0",
+    "cython>=3.3.0",
+    "meson>=1.12.1",
+    "meson-python>=0.22.1",
+    "ninja>=1.13.2",
 ]
 
-## D01.5: uv_build, as an interim choice until brief D04 (compiled code) is decided.
+## D04.5: meson-python builds the package and compiles its Cython kernels (superseding D01.5, uv_build).
 [build-system]
-requires = ["uv_build>=0.12.23,<0.13.0"]
-build-backend = "uv_build"
+requires = ["meson-python>=0.22.1", "cython>=3.3.0"]
+build-backend = "mesonpy"
 
 ## D01.7: ruff formats and lints everything at 120 characters.
 [tool.ruff]
@@ -78,10 +83,15 @@ ignore = [
 ## D01.10 / D01.11: standard NumPy docstring layout.
 convention = "numpy"
 
-## D01.8: pyright, strict for framework and package interfaces. Numerical kernels may relax this per file with a
-## "# pyright: basic" comment once they exist.
+## D01.8: pyright, strict for framework and package interfaces. Kernel sources are not checked and are typed through
+## .pyi stubs (D04).
 [tool.pyright]
 include = ["src"]
+## D04: pyright cannot interpret Cython's types in kernel sources, so their diagnostics are ignored. "ignore" rather
+## than "exclude", because the editor (Pylance) still reports excluded files while they are open. Each kernel is typed
+## for its callers by a .pyi stub next to it.
+ignore = ["src/mhdpy/_backend.py"]
+## The lowest supported Python version (D01.2), so that no newer language feature slips in unnoticed.
 pythonVersion = "3.13"
 typeCheckingMode = "strict"
 venvPath = "."
@@ -108,6 +118,11 @@ relative_files = true
 fail_under = 100
 show_missing = true
 skip_covered = true
+
+## meson-python's editable install rebuilds changed kernels when mhdpy is imported. It needs the build tools in the
+## project's own environment for that, so mhdpy is built without an isolated build environment.
+[tool.uv]
+no-build-isolation-package = ["mhdpy"]
 
 [tool.uv.sources]
 mhdpy = { workspace = true }

@@ -1,9 +1,37 @@
-"""The unit system of mhdpy: code units and their relation to physical units (cgs).
+"""The unit system of mhdpy: the relation between code units and physical units (cgs).
 
-mhdpy solves its equations in dimensionless code units. A unit system relates them to cgs through three numbers, the
-code units of length, mass and time, from which every other unit follows. The requirements this module fulfils are in
-``docs/requirements/L0-foundation/units.md`` (UNI01-UNI18) and tested in the accompanying test package
-``tests/units/``, one module per group of requirements.
+mhdpy computes in dimensionless code units. Every value that kernels, physics modules and the time integration work
+with is a multiple of a code unit, and the equations contain no constant that belongs to a particular system of units
+(D12). This has three benefits. Values of order unity keep the arithmetic well inside the range of double precision,
+even for problems whose values span dozens of orders of magnitude in cgs. The verification problems of the literature
+(D02), which are posed in code units, run as they are. And one problem in code units describes a whole family of
+physical systems, related by a change of units.
+
+A unit system relates code units to cgs. It is defined by three numbers, the code units of length, mass and time, from
+which every other unit follows; the factor 4 pi is absorbed into the magnetic field, so that no 4 pi appears in the
+equations either. It converts numbers and arrays between code units and cgs, converts between temperature and the ratio
+of pressure to density through the mean molecular weight, and converts the physical constants of ``constants.py`` to
+code units. It cannot be changed once created, and it converts to a record of plain values and back, bit for bit.
+
+Within mhdpy, the unit system belongs to the foundation (layer L0) and is used at the edges of a simulation, never in
+its computation. Physics modules that need physical constants, such as cooling or self-gravity, receive them converted
+to code units at set-up (D12). Outputs and the history record the unit system and label their values with cgs units
+(D14), and restart files record it, so that a continued run converts exactly as the original did (D13). A simulation
+without a unit system is dimensionless and runs entirely in code units; with one, it computes the same state, bit for
+bit (UNI15-UNI17).
+
+For example, a unit system of 1 kpc, 1e5 solar masses and 1 Myr, and some of its conversions::
+
+    from mhdpy.foundation import constants
+    from mhdpy.foundation.units import UnitSystem
+
+    system = UnitSystem(length=constants.KILOPARSEC, mass=1e5 * constants.SOLAR_MASS, time=constants.MEGAYEAR)
+    density_cgs = density * system.density          ## code units to g cm^-3
+    temperature = system.temperature(pressure / density, mu=0.6)
+    G = system.constant("GRAVITATIONAL_CONSTANT")   ## G in code units
+
+The requirements this module fulfils are in ``docs/requirements/L0-foundation/units.md`` (UNI01-UNI18), and they are
+tested in the accompanying test package ``tests/units/``, one module per group of requirements.
 """
 
 import math

@@ -1,15 +1,19 @@
 """The checks of mhdpy, run with one command: ``uv run nox`` (decision brief D16).
 
 Each check is a session, a function marked with ``@nox.session``. ``uv run nox`` runs them all, in the order they are
-defined here: formatting, linting and type checking, the tests with the kernels compiled and uncompiled, and their
-combined coverage. ``uv run nox -s <name>`` runs one session, ``uv run nox --list`` lists them, and arguments after
-``--`` are passed on to pytest, for example ``uv run nox -s tests -- -k TestRecords``.
+defined here: formatting, linting and type checking (including whether the layer READMEs agree with the docstrings
+they are made of), the tests with the kernels compiled and uncompiled, and their combined coverage. ``uv run nox -s
+<name>`` runs one session, ``uv run nox --list`` lists them, and arguments after ``--`` are passed on to pytest, for
+example ``uv run nox -s tests -- -k TestRecords``. The session ``readmes``, which writes the layer READMEs, runs only
+when asked for.
 
 CI runs the same sessions (D16.4), so a check is defined here once and runs the same locally and in CI.
 """
 
+import ast
 import platform
 import sys
+from pathlib import Path
 
 import nox
 
@@ -23,16 +27,64 @@ nox.options.default_venv_backend = "none"
 ## The two ways of running the kernels (D04.3), selected by the environment variable MHDPY_KERNELS.
 KERNELS = ["compiled", "uncompiled"]
 
+## The layers of mhdpy that are packages of their own, such as src/mhdpy/foundation: every subpackage of mhdpy except
+## its tests. Each has a README.md made of the docstrings of the package and its public modules.
+LAYERS = sorted(path.parent for path in Path("src/mhdpy").glob("*/__init__.py") if path.parent.name != "tests")
+
+
+def docstring(path: Path) -> str:
+    """Return the docstring of a module, read from its source without importing it."""
+    ## ast.parse turns the source into a syntax tree, from which ast.get_docstring takes the module's docstring, with
+    ## its indentation removed as Python's help() does. A module without a docstring gives an empty one.
+    return ast.get_docstring(ast.parse(path.read_text())) or ""
+
+
+def layer_readme(layer: Path) -> str:
+    """Return the README of a layer: the docstring of its package, then that of each public module (D16).
+
+    Modules are public unless their name starts with an underscore; the tests of the layer are not part of it.
+    """
+    name = ".".join(layer.parts[1:])  ## src/mhdpy/foundation -> mhdpy.foundation
+    sections = [
+        f"# `{name}`",
+        "<!-- Generated from the docstrings of this package and its modules by `uv run nox -s readmes`: edit the "
+        "docstrings, not this file. `uv run nox` checks that the two agree. -->",
+        docstring(layer / "__init__.py"),
+    ]
+    for module in sorted(layer.glob("*.py")):
+        if not module.name.startswith("_"):
+            sections += [f"## `{name}.{module.stem}`", docstring(module)]
+    return "\n\n".join(sections) + "\n"
+
 
 @nox.session
 def lint(session: nox.Session) -> None:
-    """Check formatting, lint rules and types, as in CI (D01.7, D01.8).
+    """Check formatting, lint rules and types (D01.7, D01.8), and that the layer READMEs match their docstrings (D16).
 
     Formatting is checked, never applied, so that running the checks cannot change what is about to be committed.
     """
     session.run("ruff", "format", "--check")
     session.run("ruff", "check")
     session.run("pyright")
+
+    ## Each layer's README must be exactly what the docstrings it is made of give now; otherwise a docstring was changed
+    ## without regenerating the README, or the README was edited by hand. A missing README counts as out of date.
+    stale: list[str] = []
+    for layer in LAYERS:
+        readme = layer / "README.md"
+        if not readme.exists() or readme.read_text() != layer_readme(layer):
+            stale.append(str(readme))
+    if stale:
+        session.error(f"Out of date with the docstrings: {', '.join(stale)}. Regenerate with: uv run nox -s readmes")
+
+
+## default=False: this session writes files, so it runs only when asked for by name, never as part of ``uv run nox``.
+@nox.session(default=False)
+def readmes(session: nox.Session) -> None:
+    """Write the README of each layer from the docstrings of its package and modules (D16)."""
+    for layer in LAYERS:
+        (layer / "README.md").write_text(layer_readme(layer))
+        session.log(f"Wrote {layer / 'README.md'}")
 
 
 ## The tests session is parametrised: nox runs it once for each kernel mode, as two sessions named tests(compiled) and

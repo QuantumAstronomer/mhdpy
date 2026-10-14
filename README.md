@@ -26,9 +26,10 @@ uv run nox -s tests -- -k TestRecords   # run a selection of tests, in both kern
 MHDPY_TEST_TIER=full uv run nox         # include the full test tier
 uv run pytest                           # a quick test run, compiled kernels only
 uv run ruff format                      # format the code
+uv run nox -s readmes                   # regenerate the layer READMEs after changing a module docstring
 ```
 
-`uv run nox` runs the sessions defined in `noxfile.py`, the same ones CI runs. The tests run twice, once with the kernels compiled and once uncompiled, and line and branch coverage must reach 100 % on the two runs combined.
+`uv run nox` runs the sessions defined in `noxfile.py`, the same ones CI runs. The tests run twice, once with the kernels compiled and once uncompiled, and line and branch coverage must reach 100 % on the two runs combined. Each layer of the package (for example `src/mhdpy/foundation/`) has a README made of the docstrings of its modules; `uv run nox` also checks that the READMEs agree with the docstrings.
 
 ## Licence
 

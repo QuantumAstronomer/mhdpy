@@ -1,14 +1,26 @@
 """Physical constants and astronomical units of mhdpy, in cgs.
 
-One table of constants, from cited sources, serves every module, so that no two modules can use different values of
-the same constant. The unit system (``units.py``) converts them to code units. The requirements are UNI10 and UNI11 in
-``docs/requirements/L0-foundation/units.md``, tested in ``tests/units/test_constants.py``.
+Physics modules need physical constants: Boltzmann's constant and the mass of the hydrogen atom for temperatures, the
+gravitational constant for self-gravity, the speed of light and the radiation constant for radiative processes. This
+module is the one table of them in mhdpy, so that no two modules can use different values of the same constant. Every
+value comes from a cited source: CODATA 2022 for the physical constants, the Atomic Mass Evaluation 2020 for the mass of
+the hydrogen atom, and the IAU resolutions of 2012 and 2015 for the astronomical units. The sources are named in
+``SOURCES``, which the record of a unit system carries into outputs and restart files, so that a file states which
+values it was made with even after they have been revised.
+
+The values are in cgs. The unit system (``units.py``) converts a physical constant to code units by its dimensions,
+listed in ``DIMENSIONS``; a constant that contains the kelvin keeps it, since code units have no temperature dimension.
+The astronomical units serve to define unit systems in the units astrophysical problems are posed in, such as 1 kpc,
+1e5 solar masses and 1 Myr; they are not converted to code units themselves.
 
 Every constant is the double-precision number nearest to its value in cgs: the value its source publishes, or, for a
 constant derived from published values (such as the parsec or the solar mass), the value derived from them exactly.
 Constants are therefore written as literals, with their source and derivation in the comment above them; computing them
 here in double precision would add rounding errors of its own. Each is NumPy's double-precision number np.float64,
 like the units, so that conversions stay in double precision.
+
+The requirements are UNI10 and UNI11 in ``docs/requirements/L0-foundation/units.md``, tested in
+``tests/units/test_constants.py``.
 """
 
 import numpy as np

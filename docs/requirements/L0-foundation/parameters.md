@@ -1,0 +1,127 @@
+# Parameters
+
+| | |
+|---|---|
+| Prefix | `PAR` |
+| Layer | L0, foundation |
+| Status | Draft |
+
+## Purpose
+
+Every choice a run makes is a parameter: the size of the mesh, the Courant number, the Riemann solver, the end time, the outputs and their schedules, the parameters of a problem's initial conditions. The parameter component is the one place where these choices are declared, given values, checked and recorded. Modules (D12.1), problems (D15.4), the driver (D13) and the outputs (D14) each declare the parameters they need; the component resolves the values a run uses from defaults, a parameter file and overrides, refuses every mistake before the run starts, and records the result exactly, so that outputs describe how they were made and a restart continues with the same values. Every numeric parameter carries a unit, so that physical values can be given as they are known, with their unit, and converted to the code units the equations are solved in.
+
+The component knows nothing of what the parameters mean. It does not create simulations, read restart files or write outputs: the driver (L6) gathers the declarations of the modules in a run and passes the resolved values on, and the writers (L7) store the record this component produces. It sits in the foundation for that reason: every higher layer declares parameters, and the component depends on nothing above it.
+
+## Sources
+
+- **D15.1:** one Python interface, with parameter files as one way to supply its values.
+- **D15.2:** parameters declared with type, default, check, unit where relevant, documentation and restart behaviour; namespaced by module; resolved in layers; checked before the run, with suggestions for misspelt names; recorded at start-up and in every output.
+- **D15.3:** parameter files in TOML, read with the standard library.
+- **UNI19, UNI20:** values with a unit, written as a number and a unit expression and converted to code units by the unit system.
+- **D15 §4:** overrides as `section.key=value` with TOML values; an integer is accepted where a float is declared; the record in outputs is JSON; `mhdpy parameters` writes a template that `mhdpy run` accepts unchanged; the parameter layer is tested against the scenarios of E15.2.
+- **D14.7:** on restart, parameters come from the restart file; only those declared changeable may change, and changes are recorded.
+- **D12.1:** every module declares its parameters as part of its integration contract.
+- **E15.1, E15.2:** TOML reads every value as meant; a prototype in the standard library catches every mistake of the scenarios before the run.
+
+## Requirements
+
+Each requirement is stated first, as the verifiable statement that tests check, and followed by its rationale.
+
+### Declarations
+
+A parameter exists because a module declares it. The declaration states everything the rest of mhdpy needs to know about the parameter: what values it accepts, what it is when nobody sets it, what it means, and whether it may change when a run is restarted. Users never introduce parameters of their own; they only give values to declared ones. That is what makes it possible to refuse a misspelt name instead of silently ignoring it.
+
+Names are namespaced by the module that declares them, `hydro.cfl` or `output.snapshot.dt`, so that two modules can each have a parameter `gamma` or `dt` without conflict, and so that a parameter file reads as one section per module. The same dotted names are used everywhere: in declarations, in parameter files (as TOML tables), in overrides on the command line, in dictionaries from Python, and in records.
+
+**PAR01.** A parameter is declared with a name, a type, a default value, documentation, and whether it may change on restart (fixed unless declared changeable). A numeric parameter is also declared with its unit (PAR04). Optionally, a parameter is declared with a check, a condition every value must satisfy, together with a description of that condition in words (for example "in (0, 1]"). Every parameter has a default: there are no required parameters, and a declaration without a default is refused.
+*Rationale:* A run must always be able to start: with the defaults alone, without a parameter file or any override, every parameter has a valid value (PAR03 checks the default against its own declaration, and PAR06 resolves to the defaults when no layer gives a value). A parameter that has no natural default, such as the file of a cooling table, gets one that runs, for example the table that ships with mhdpy, rather than none. These are the items of D15.2, and each serves a later requirement: the type and the check let wrong values be refused (PAR12, PAR13), the default is the value of the lowest layer (PAR06), the unit lets values be given in physical units (PAR09), the documentation and the unit go into templates (PAR20) and the reference documentation, and the restart behaviour decides what a restart may change (PAR16). The description of the check is needed because a check is code, and an error message has to say in words what was expected. Fixed is the safe default for restarts: a parameter that may change has to be declared so deliberately, by a module that knows the change keeps the restart consistent.
+
+**PAR02.** A parameter's name consists of at least two parts separated by dots, each part a lowercase Python identifier (`hydro.cfl`, `output.snapshot.dt`). A declaration with a name of any other form is refused.
+*Rationale:* At least two parts make every name namespaced by its module, as D15.2 requires; lowercase identifiers make every part a valid bare key in TOML and a valid section on the command line, without quoting. Refusing other forms at declaration catches the mistake in the module that made it, rather than in a user's parameter file later.
+
+**PAR03.** A parameter's type is one of `bool`, `int`, `float`, `str`, or a list whose elements all have one of these four types. A declaration whose default value is not of the declared type, or does not satisfy the declared check, is refused, naming the parameter.
+*Rationale:* These types are exactly those TOML represents without ambiguity and JSON records exactly (E15.1), so every value can be written in a parameter file, given as an override and recorded without conversion. Richer values, such as a table of outputs, are expressed as several parameters. A default that its own declaration would refuse is a bug in the module, and finding it at declaration means finding it in the module's own tests.
+
+**PAR04.** Every parameter of type `int` or `float`, or a list of either, declares its unit, in one of three forms: dimensionless; its dimensions, as the exponents of length, mass, time and temperature; or the name of a unit of the unit system (UNI03, UNI07). A parameter of type `int`, or a list of integers, is dimensionless. Parameters of type `bool` and `str`, and lists of them, have no unit. A numeric parameter declared without a unit, or a declaration that breaks these rules otherwise, is refused.
+*Rationale:* The unit is what lets a value be given in physical units and converted to code units through the unit system (PAR09), and what lets templates, logs and outputs show a value in physical units. Requiring it of every numeric parameter, with dimensionless stated explicitly rather than by omission, means that none is forgotten: a missing unit is a mistake in a declaration, found by the module's own tests, rather than a value that cannot be converted in a user's run. Integers count things, such as cells, blocks or steps, which have no dimensions; converting them would not give an integer anyway. Named units are needed for the magnetic field, whose code unit contains the factor $\sqrt{4\pi}$ and is therefore not a product of powers of the base units (UNI07). Temperature is a dimension of its own here because code units have none: a parameter in kelvin stays in kelvin, as the constants that contain the kelvin do (UNI10).
+
+**PAR05.** The parameters of a run are declared together, as one set. A name may be declared only once in the set, and no name may be the start of another (`output.snapshot` and `output.snapshot.dt` cannot both be parameters). A declaration that breaks either rule is refused, naming both parameters involved.
+*Rationale:* Two modules declaring the same name would compete for its value, and one of them would silently get a value meant for the other. A name that is also the start of another cannot be written in TOML, where `output.snapshot` would have to be both a value and a table, so the second rule keeps every set of parameters writable as a parameter file (PAR07, PAR20).
+
+### Supplying values
+
+The values of a run come in layers, each replacing the values of the layer below it for the parameters it gives: the declared defaults, then a parameter file, then overrides. The layers mirror how runs are made in practice. The defaults suit most runs; a parameter file holds the choices of one run, kept under version control; overrides vary one or two values without editing the file, for a parameter scan or a quick test.
+
+Overrides come either from the command line, as `name=value` strings, or from Python, as a dictionary. Values in strings are read as TOML, the same as in a parameter file, so that `hydro.cfl=0.3` is a float, `cooling.enabled=true` a boolean and `output.variables=["rho"]` a list, with no syntax to learn beyond that of the file.
+
+A number on its own is a value in code units, the units the equations are solved in. Physical values are given with their unit, as a string such as `"100 pc"` or `"1e-27 g cm^-3"`, and converted to code units by the unit system of the run. A number therefore has one meaning only, whether or not a run has a unit system, and every verification problem posed in code units is written exactly as in the literature.
+
+**PAR06.** The resolved value of each parameter is taken from the highest of these layers that gives it, in increasing order of precedence: the declared default, the parameter file, the overrides. A parameter given by no layer keeps its default; with neither a parameter file nor overrides, every parameter resolves to its default, without error, provided that the run has a unit system wherever a default is given with a unit (PAR09). Within the overrides, a later one replaces an earlier one.
+*Rationale:* This is the layering of D15.2, and the order runs from the most general to the most specific. Letting later overrides win within their layer makes a list of overrides behave like a sequence of edits, the way a command line is read.
+
+**PAR07.** A parameter file is a TOML document, read with Python's standard library. Its tables and dotted keys give the parameter names: the key `cfl` in the table `[hydro]` and the dotted key `hydro.cfl` both give `hydro.cfl`. A file that is not valid TOML is refused, with the file's name and the position of the error.
+*Rationale:* TOML is the format of D15.3, chosen because it read every value of E15.1 as meant, and its reader is part of the standard library. Mapping tables and dotted keys to the same names lets users write a file in whichever form they find clearer. The reader reports the line and column of a syntax error; passing them on, with the file's name, points the user straight at the mistake.
+
+**PAR08.** Overrides are given either as a dictionary, with dotted names as keys or nested dictionaries as in a TOML document, or as strings of the form `name=value`, whose value is read as a TOML value. A value that is not valid TOML is taken as a string.
+*Rationale:* The dictionary serves the Python interface of D15.1, and the strings the command line of D15.5. Reading string values as TOML gives them the same types as in a file (E15.2). Taking an invalid TOML value as a string keeps a bare word such as `cooling.enabled=no` from failing with a syntax error, so that it is refused instead for its type, with a message about the parameter rather than about TOML syntax (PAR13).
+
+**PAR09.** The value of a numeric parameter that is not dimensionless may be given, in any layer and in its default, as a string of a number and a unit expression (UNI19), such as `"10 Myr"` or `"1e-27 g cm^-3"`; for a list, each element may be given so. Such a value is converted to code units by the unit system of the run (UNI20). It is refused if its unit has other dimensions than the parameter's, or if the run has no unit system. A plain number is a value in code units, or, for a parameter in kelvin, in kelvin. A dimensionless parameter takes plain numbers only.
+*Rationale:* Plain numbers in code units keep every dimensionless run and every verification problem exactly as posed, and give each number a single meaning. A value with an explicit unit is how physical values enter a run: the user writes what is known, a cloud radius of `"100 pc"`, and the unit system converts it, with the conversion checked against the parameter's declared dimensions, so that a length given for a time is refused rather than converted into nonsense. Without a unit system, a value with a unit could only be ignored or guessed at, so it is refused, just as a module that needs physical constants is refused in a dimensionless run (UNI16). Defaults with a unit let a problem state its physical defaults as they are known; such a problem needs a unit system, and declares so as any module needing physical constants does.
+
+**PAR10.** For every parameter, the resolved set records where its value came from: its default, the restart record, the parameter file (by name), or an override, together with the value as it was given (for a value with a unit, the string).
+*Rationale:* When a result looks wrong, the first question is often where a value came from, and whether the default was used where a value was meant to be given. Recording the origin answers it, and lets the driver log a run's non-default values at start-up. Keeping the value as given shows `"100 pc"` next to its value in code units, which is what the user wrote and recognises.
+
+### Checks
+
+Every value is checked against its declaration before the run starts. E15.2 showed what this catches: a misspelt name, which other codes silently ignore so that the run goes ahead with the default; a value of the wrong type, such as a number of cells written as a float or a boolean written as `no`; and a value out of range, such as a Courant number of 1.5. A mistake found before the run costs the user a moment; found after the run, it costs the run, and found never, a wrong result that looks right.
+
+**PAR11.** A name that is not declared is refused. The message names the closest declared name, if one is close enough to be a likely misspelling.
+*Rationale:* Refusing unknown names is the main reason parameters are declared (D15.2). The suggestion turns the error into its own correction: `hydro.cfll` is answered with `hydro.cfl`, `hdyro.cfl` likewise (E15.2).
+
+**PAR12.** A value must have its parameter's declared type, with exactly one conversion: an integer given for a `float` parameter is accepted and converted to a float. A boolean is not accepted for an `int` or `float` parameter, a float is not accepted for an `int` parameter even when its value is whole, and a string is never converted to another type, except a value with a unit (PAR09). For a list, every element is checked in the same way.
+*Rationale:* Writing `cfl = 1` for a Courant number of one is natural and unambiguous, so it is accepted (D15 §4). Every other conversion would hide a likely mistake: `nx1 = 4000.0` suggests a misunderstanding of the parameter, `"0.4"` a quoting error, and a boolean accepted as a number would let `true` stand for 1. The explicit rule about booleans is needed because Python treats them as integers.
+
+**PAR13.** A value must satisfy its parameter's check, if one is declared. The check applies to the value in code units, after any conversion (PAR09). The message states the condition in the words of the declaration.
+*Rationale:* Types alone do not catch a Courant number of 1.5 or a negative number of cells. The check is the module's knowledge of what makes sense, and the words of the declaration let the user see what was expected without reading the module's code: "'hydro.cfl' must be in (0, 1], got 1.5".
+
+**PAR14.** Resolving the parameters of a run reports every mistake at once, as one error, before any value is used. Each mistake is reported with the parameter's name, the origin of the value (PAR10), the value, and what was expected.
+*Rationale:* Reporting one mistake at a time makes a user with three mistakes in a file run three times to find them. One error listing all of them, each pointing at its source, fixes the file in one pass. Raising it before any value is used guarantees that no part of a run starts with parameters that are partly wrong.
+
+### Restarts
+
+A restarted run continues the original run, so its parameters are by default exactly the values the original used, recorded in the restart file (D13.5), rather than the defaults, which may since have changed. Only what is explicitly given anew, in a parameter file or as an override, can change them. A restart is lenient about the record itself: it continues whenever it can, and reports what it could not take over instead of refusing. Some parameters may then be changed on purpose: a later end time, more frequent outputs, a different number of workers. Others may not, because the restart file would no longer describe the run: the mesh, the registered variables, the equation of state. Each parameter's declaration says which it is (PAR01).
+
+**PAR15.** On restart, the record of the original run (PAR19) takes the place of the defaults as the lowest layer, so that every parameter not given anew keeps the value of the original run. A declared parameter missing from the record takes its default, and a name in the record that is no longer declared is ignored; both are reported (PAR17), neither is refused.
+*Rationale:* The record holds the values the original run actually used, which is what a continuation must start from, so a restart needs no parameter file at all. A parameter missing from the record can only have been declared since the restart file was written, by a newer version of a module, and its default is the only value available. A recorded parameter that is no longer declared was removed from a module since, typically because it no longer had any use; refusing the restart for it would make a long run impossible to continue after an update. Reporting both cases keeps them visible, so that a user can check that the continuation still means what the original run meant.
+
+**PAR16.** On restart, the parameter file and the overrides may change only the parameters declared changeable; a changeable parameter they do not give keeps its recorded value. A value equal to the recorded one is not a change. A change to a fixed parameter is never accepted: it is refused, stating that the parameter is fixed by the restart file.
+*Rationale:* This is D14.7: changeable parameters change, and fixed ones would make the restart file inconsistent with the run. Treating an equal value as no change lets a user restart with the original parameter file unchanged, which is the common case, without being refused for every fixed parameter the file repeats.
+
+**PAR17.** On restart, the resolved set lists every parameter whose value differs from the record, with the recorded and the new value, every declared parameter missing from the record, with the default it took, and every recorded name that was ignored, with its recorded value.
+*Rationale:* D14.7 requires that changes made on restart are recorded, in the history's header and in the provenance of later files. This list is what the writers record and the driver logs, and what tells a reader of the outputs that the second half of a run was made with, for example, a different output schedule, or by a newer version of a module (PAR15).
+
+### Records and access
+
+Once resolved, the parameters of a run do not change. Modules read the values they declared, and the outputs and restart files store a record of all of them (D14.2), from which a restart starts again (PAR15).
+
+**PAR18.** The resolved parameters can be read by name, each value of its declared type and in code units (or, for a parameter in kelvin, in kelvin), and cannot be changed once resolved.
+*Rationale:* Modules read their parameters at set-up and convert or store them as they need (D12.1). A value that could change afterwards would no longer match the record in the outputs. Values of the declared type and in code units, a float for a `float` parameter even when an integer or a value with a unit was given, spare every module from converting them again; the kernels work in code units only.
+
+**PAR19.** The resolved parameters convert to a record of plain values, one per name and in code units, that can be written as JSON and read back. Resolving again with the record as the restart layer (PAR15) gives the same values, identical bit for bit.
+*Rationale:* The record is what outputs carry (D14.2, in JSON according to D15 §4) and what a restart starts from (D13.5). Recording values in code units, after conversion, means a restart never converts again, so it cannot be affected by a change of the constants (UNI10) between the original run and its continuation. A restart continues bit for bit only if every value, every float in particular, survives the record exactly (UNI14 for the unit system, by the same reasoning). E15.2 found JSON exact for all the types of PAR03.
+
+### Templates
+
+A user who starts a new run needs to know which parameters exist, what they mean, and what their defaults are. `mhdpy parameters` answers this by writing a template parameter file for a problem (D15.5), which the user then edits.
+
+**PAR20.** A template parameter file can be written for a set of declarations. It is a TOML document with one table per section, giving every parameter at its default value, as declared (with its unit, where the default has one), with its documentation, unit, condition and restart behaviour as comments. Read back as a parameter file without changes, it resolves to exactly the defaults.
+*Rationale:* D15 §4 requires that the template of every problem is accepted unchanged by `mhdpy run`; resolving it to exactly the defaults is the strongest form of that. The comments make the template the user's reference while editing, so that the documentation of a parameter is at hand where its value is set. TOML is written by mhdpy itself: the standard library reads TOML but does not write it, and the types of PAR03 are simple enough to write exactly.
+
+### Dependencies
+
+**PAR21.** The parameter component depends on nothing beyond Python's standard library. The unit system of a run is passed to it for conversions, not imported by it.
+*Rationale:* E15.2 showed that dataclasses, `tomllib`, `difflib` and `json` suffice. Conversions are the unit system's (UNI20); receiving the unit system of a run, rather than importing the module, keeps NumPy, on which the unit system depends, out of this component, and lets a dimensionless run resolve its parameters without any unit system at all. The component is used by every layer and by the command line before anything else is loaded, so keeping it light keeps every start-up fast; a validation library (D15.2, option C) would add a dependency for what the standard library already does.
+
+## Open points
+
+- No open points at present. The units of parameters were settled on 2026-10-14: every numeric parameter declares its unit (PAR04), plain numbers are in code units, and physical values are given with their unit and converted by the unit system (PAR09, UNI19, UNI20).

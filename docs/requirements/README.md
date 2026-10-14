@@ -58,4 +58,5 @@ The verification matrix of D02.9 is compiled from these references: which requir
 
 | Prefix | Component | Layer | Document |
 |---|---|---|---|
+| `PAR` | Parameters | L0 | [L0-foundation/parameters.md](L0-foundation/parameters.md) |
 | `UNI` | Units | L0 | [L0-foundation/units.md](L0-foundation/units.md) |

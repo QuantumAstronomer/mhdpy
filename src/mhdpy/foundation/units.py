@@ -38,7 +38,7 @@ import math
 import re
 from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Self
+from typing import NamedTuple, Self
 
 import numpy as np
 import numpy.typing as npt
@@ -46,7 +46,7 @@ import numpy.typing as npt
 from mhdpy.foundation import constants
 
 ## The public interface of this module (D15.7): only names listed here are meant for use outside it.
-__all__ = ["UnitSystem", "parse"]
+__all__ = ["SYMBOLS", "Symbol", "UnitSystem", "parse"]
 
 ## The label of each named unit's cgs unit (UNI04), exactly as it is to appear in the headers of the history and the
 ## attributes of outputs (D14). Units are written with their cgs names where those exist (dyn, erg), and exponents with
@@ -71,6 +71,47 @@ _LABELS = {
 }
 # fmt: on
 
+
+class Symbol(NamedTuple):
+    """A unit symbol of a value with a unit (UNI19): its value in cgs and its dimensions.
+
+    The dimensions are the exponents of length, mass, time and temperature, a dimension that does not occur left out:
+    ``{"length": -3, "mass": 1}`` for the dimensions of a density.
+    """
+
+    value: float
+    dimensions: dict[str, float]
+
+
+## The unit symbols a value may be written with (UNI19), each with its value in cgs and its dimensions. The cgs symbols
+## are the units the labels are written in (UNI04), so every label can be read back: cm, g and s are the base units,
+## with value 1; dyn, erg and the gauss G follow from them, and K, the kelvin, is a dimension of its own, since code
+## units have no temperature dimension (UNI10). The other symbols are the astronomical units problems are posed in,
+## with the values of the constants (UNI11), and km, exactly 1e5 cm, for velocities in km s^-1. SI units are left out
+## on purpose, so that a value is never written half in one system and half in the other.
+# fmt: off
+SYMBOLS: dict[str, Symbol] = {
+    "cm":   Symbol(1.0,                         {"length":  1                                           }),
+    "g":    Symbol(1.0,                         {                "mass": 1                              }),
+    "s":    Symbol(1.0,                         {                             "time":  1                }),
+    "K":    Symbol(1.0,                         {                                       "temperature": 1}),
+    "dyn":  Symbol(1.0,                         {"length":  1,   "mass": 1,   "time": -2                }),
+    "erg":  Symbol(1.0,                         {"length":  2,   "mass": 1,   "time": -2                }),
+    "G":    Symbol(1.0,                         {"length": -0.5, "mass": 0.5, "time": -1                }),
+    "km":   Symbol(1e5,                         {"length":  1                                           }),
+    "au":   Symbol(constants.ASTRONOMICAL_UNIT, {"length":  1                                           }),
+    "pc":   Symbol(constants.PARSEC,            {"length":  1                                           }),
+    "kpc":  Symbol(constants.KILOPARSEC,        {"length":  1                                           }),
+    "Mpc":  Symbol(constants.MEGAPARSEC,        {"length":  1                                           }),
+    "Rsun": Symbol(constants.SOLAR_RADIUS,      {"length":  1                                           }),
+    "Msun": Symbol(constants.SOLAR_MASS,        {                "mass": 1                              }),
+    "Lsun": Symbol(constants.SOLAR_LUMINOSITY,  {"length":  2,   "mass": 1,   "time": -3                }),
+    "yr":   Symbol(constants.JULIAN_YEAR,       {                             "time":  1                }),
+    "Myr":  Symbol(constants.MEGAYEAR,          {                             "time":  1                }),
+    "Gyr":  Symbol(constants.GIGAYEAR,          {                             "time":  1                }),
+}
+# fmt: on
+
 ## The two parts of a value with a unit (UNI19), as regular expressions: patterns that a string either matches or not.
 ## A number: an optional sign, digits with an optional decimal point (or a point followed by digits), and an optional
 ## exponent, as "-2.5", "1e-27" or ".5". A factor: a symbol of letters, optionally followed by ^ and an exponent that is
@@ -84,8 +125,8 @@ def parse(text: str) -> tuple[float, dict[str, float]]:
     """Return the number and the unit factors of a value with a unit, such as ``"1e-27 g cm^-3"`` (UNI19).
 
     A value with a unit is a number and a unit expression, separated by spaces: factors separated by spaces, each a
-    unit symbol with an optional exponent, written with ``^``. Any number of spaces may separate the parts, and spaces
-    around the value are ignored.
+    unit symbol of ``SYMBOLS`` with an optional exponent, written with ``^``. Any number of spaces may separate the
+    parts, and spaces around the value are ignored.
 
     Parameters
     ----------
@@ -115,6 +156,10 @@ def parse(text: str) -> tuple[float, dict[str, float]]:
         if match is None:
             raise ValueError(f"{factor!r} in {text!r} is not a unit symbol with an optional exponent, such as 'cm^-3'.")
         symbol, exponent = match.groups()
+
+        ## Only the symbols of the table are units; anything else, a misspelling or an SI unit, is refused by name.
+        if symbol not in SYMBOLS:
+            raise ValueError(f"Unknown unit symbol {symbol!r} in {text!r}; the symbols are {', '.join(SYMBOLS)}.")
         factors[symbol] = factors.get(symbol, 0.0) + (float(exponent) if exponent is not None else 1.0)
     return float(parts[0]), factors
 

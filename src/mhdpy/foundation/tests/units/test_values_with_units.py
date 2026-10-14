@@ -4,7 +4,7 @@ import re
 
 import pytest
 
-from mhdpy.foundation import units
+from mhdpy.foundation import constants, units
 
 ## A test that is planned but not written yet. Its body is pytest.fail("Not written yet."), which this marker declares
 ## an expected failure ("xfail"), so the suite stays green while the test is visibly unfinished: pytest reports it as
@@ -39,6 +39,33 @@ MALFORMED_EXAMPLES = [
     "10 cm^-3.2",   ## an exponent that is not an integer or a half-integer
     "10 cm^2.0",    ## an integer exponent written with a decimal point
 ]
+# fmt: on
+
+## The unit symbols of UNI19, each with its value in cgs and its dimensions: the exponents of length, mass, time and
+## temperature, a dimension that does not occur left out. This table is the specification the unit system's own table
+## is checked against. The cgs symbols are the units themselves (value 1), dyn, erg and G follow from them, km is
+## exactly 1e5 cm, and the astronomical symbols take the values of the constants, which are tested on their own (UNI11).
+# fmt: off
+SYMBOLS: dict[str, tuple[float, dict[str, float]]] = {
+    "cm":   (1.0,                         {"length":  1                                             }),
+    "g":    (1.0,                         {                "mass": 1                                }),
+    "s":    (1.0,                         {                             "time":  1                  }),
+    "K":    (1.0,                         {                                       "temperature": 1  }),
+    "dyn":  (1.0,                         {"length":  1,   "mass": 1,   "time": -2                  }),
+    "erg":  (1.0,                         {"length":  2,   "mass": 1,   "time": -2                  }),
+    "G":    (1.0,                         {"length": -0.5, "mass": 0.5, "time": -1                  }),
+    "km":   (1e5,                         {"length":  1                                             }),
+    "au":   (constants.ASTRONOMICAL_UNIT, {"length":  1                                             }),
+    "pc":   (constants.PARSEC,            {"length":  1                                             }),
+    "kpc":  (constants.KILOPARSEC,        {"length":  1                                             }),
+    "Mpc":  (constants.MEGAPARSEC,        {"length":  1                                             }),
+    "Rsun": (constants.SOLAR_RADIUS,      {"length":  1                                             }),
+    "Msun": (constants.SOLAR_MASS,        {                "mass": 1                                }),
+    "Lsun": (constants.SOLAR_LUMINOSITY,  {"length":  2,   "mass": 1,   "time": -3                  }),
+    "yr":   (constants.JULIAN_YEAR,       {                             "time":  1                  }),
+    "Myr":  (constants.MEGAYEAR,          {                             "time":  1                  }),
+    "Gyr":  (constants.GIGAYEAR,          {                             "time":  1                  }),
+}
 # fmt: on
 
 
@@ -80,10 +107,12 @@ class TestValuesWithUnits:
         with pytest.raises(ValueError, match=re.escape(repr(text))):
             units.parse(text)
 
-    @NOT_WRITTEN
     def test_half_integer_exponents(self) -> None:
         """Check that an exponent may be a half-integer written with a decimal point, such as g^0.5 (UNI19)."""
-        pytest.fail("Not written yet.")
+        ## The gauss in base units, g^0.5 cm^-0.5 s^-1, with positive and negative half-integers, and a larger one.
+        ## Halves are exact in double precision, so the exponents can be compared with ==.
+        assert units.parse("1 g^0.5 cm^-0.5 s^-1") == (1.0, {"g": 0.5, "cm": -0.5, "s": -1})
+        assert units.parse("2 s^-1.5") == (2.0, {"s": -1.5})
 
     @NOT_WRITTEN
     def test_every_label_is_a_unit_expression(self) -> None:
@@ -93,22 +122,38 @@ class TestValuesWithUnits:
         """
         pytest.fail("Not written yet.")
 
-    @NOT_WRITTEN
-    def test_symbols_have_their_values(self) -> None:
+    ## Run this test once for each symbol of the table above.
+    @pytest.mark.parametrize("symbol", list(SYMBOLS))
+    def test_symbols_have_their_values(self, symbol: str) -> None:
         """Check the value in cgs and the dimensions of every unit symbol (UNI19).
 
         The cgs symbols have the values of their units (cm, g, s, K are 1; dyn, erg and G follow from them), km is
         exactly 1e5 cm, and the astronomical symbols have the values of the constants of UNI11.
         """
-        pytest.fail("Not written yet.")
+        value, dimensions = SYMBOLS[symbol]
 
-    @NOT_WRITTEN
-    def test_unknown_symbol_is_refused(self) -> None:
+        ## The unit system's table holds the same symbols as the specification, no more and no fewer. A symbol added
+        ## to one table but not the other fails here, in every case.
+        assert set(units.SYMBOLS) == set(SYMBOLS)
+
+        ## Each value is exact: 1, 1e5 or a constant, taken over without any arithmetic, so == is right.
+        assert units.SYMBOLS[symbol].value == value
+        assert units.SYMBOLS[symbol].dimensions == dimensions
+
+    ## Run this test for a misspelt symbol, SI units, and a known symbol in the wrong case: each string with the symbol
+    ## that must be named in the message.
+    @pytest.mark.parametrize(
+        ("text", "symbol"), [("10 Mry", "Mry"), ("1 m", "m"), ("1 kg", "kg"), ("1 KM s^-1", "KM"), ("1 g CM^-3", "CM")]
+    )
+    def test_unknown_symbol_is_refused(self, text: str, symbol: str) -> None:
         """Check that a unit symbol that is not one of UNI19 is refused, naming the symbol (UNI19).
 
         A misspelt symbol ("Mry") and an SI unit ("m", "kg") alike.
         """
-        pytest.fail("Not written yet.")
+        ## The message names the unknown symbol, in quotes; the string itself is named too, but the symbol is what
+        ## tells the user which part of the string to correct.
+        with pytest.raises(ValueError, match=re.escape(repr(symbol))):
+            units.parse(text)
 
     ## ---- How a value with a unit is converted to code units (UNI20) ----
 

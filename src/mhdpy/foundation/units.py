@@ -35,6 +35,7 @@ tested in the accompanying test package ``tests/units/``, one module per group o
 """
 
 import math
+import re
 from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Self
@@ -45,7 +46,7 @@ import numpy.typing as npt
 from mhdpy.foundation import constants
 
 ## The public interface of this module (D15.7): only names listed here are meant for use outside it.
-__all__ = ["UnitSystem"]
+__all__ = ["UnitSystem", "parse"]
 
 ## The label of each named unit's cgs unit (UNI04), exactly as it is to appear in the headers of the history and the
 ## attributes of outputs (D14). Units are written with their cgs names where those exist (dyn, erg), and exponents with
@@ -69,6 +70,53 @@ _LABELS = {
     "magnetic_field"    : "G",
 }
 # fmt: on
+
+## The two parts of a value with a unit (UNI19), as regular expressions: patterns that a string either matches or not.
+## A number: an optional sign, digits with an optional decimal point (or a point followed by digits), and an optional
+## exponent, as "-2.5", "1e-27" or ".5". A factor: a symbol of letters, optionally followed by ^ and an exponent that is
+## an integer ("-3") or a half-integer written with a decimal point ("0.5", "-1.5"). The parentheses mark the parts the
+## code reads back: (?: ...) groups without capturing, ( ... ) captures the symbol and the exponent of a factor.
+_NUMBER = re.compile(r"[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?")
+_FACTOR = re.compile(r"([A-Za-z]+)(?:\^(-?\d+(?:\.5)?))?")
+
+
+def parse(text: str) -> tuple[float, dict[str, float]]:
+    """Return the number and the unit factors of a value with a unit, such as ``"1e-27 g cm^-3"`` (UNI19).
+
+    A value with a unit is a number and a unit expression, separated by spaces: factors separated by spaces, each a
+    unit symbol with an optional exponent, written with ``^``. Any number of spaces may separate the parts, and spaces
+    around the value are ignored.
+
+    Parameters
+    ----------
+    text : str
+        The value with its unit.
+
+    Returns
+    -------
+    number : float
+        The number, as written.
+    factors : dict
+        Each symbol of the expression with its exponent: ``{"g": 1, "cm": -3}`` for ``"g cm^-3"``.
+    """
+    ## Split the value into its parts. str.split() without an argument splits at every run of spaces (or other
+    ## whitespace) and ignores the spaces around the value, which carry no meaning. The first part is the number, and
+    ## the others are the factors of the unit expression; there must be at least one.
+    parts = text.split()
+    if len(parts) < 2 or not _NUMBER.fullmatch(parts[0]):
+        raise ValueError(f"A value with a unit must be a number, a space and a unit, such as '10 Myr', got {text!r}.")
+
+    ## Read the factors one by one. fullmatch requires the whole factor to match, so "g/cm^3" is refused rather than
+    ## partly read. A factor without an exponent has the exponent 1. A symbol written twice adds up its exponents, as
+    ## "cm cm" is cm^2.
+    factors: dict[str, float] = {}
+    for factor in parts[1:]:
+        match = _FACTOR.fullmatch(factor)
+        if match is None:
+            raise ValueError(f"{factor!r} in {text!r} is not a unit symbol with an optional exponent, such as 'cm^-3'.")
+        symbol, exponent = match.groups()
+        factors[symbol] = factors.get(symbol, 0.0) + (float(exponent) if exponent is not None else 1.0)
+    return float(parts[0]), factors
 
 
 ## frozen=True: the fields cannot be changed after creation, as UNI12 requires; it also gives the unit system an

@@ -53,14 +53,17 @@ A unit system relates code units to cgs. It is defined by three numbers, the cod
 which every other unit follows; the factor 4 pi is absorbed into the magnetic field, so that no 4 pi appears in the
 equations either. It converts numbers and arrays between code units and cgs, converts between temperature and the ratio
 of pressure to density through the mean molecular weight, and converts the physical constants of ``constants.py`` to
-code units. It cannot be changed once created, and it converts to a record of plain values and back, bit for bit.
+code units. It also reads values written with a unit, such as "100 pc" or "1e-27 g cm^-3", and converts them to code
+units, refusing a value whose dimensions are not those expected. It cannot be changed once created, and it converts to
+a record of plain values and back, bit for bit.
 
 Within mhdpy, the unit system belongs to the foundation (layer L0) and is used at the edges of a simulation, never in
 its computation. Physics modules that need physical constants, such as cooling or self-gravity, receive them converted
 to code units at set-up (D12). Outputs and the history record the unit system and label their values with cgs units
 (D14), and restart files record it, so that a continued run converts exactly as the original did (D13). A simulation
 without a unit system is dimensionless and runs entirely in code units; with one, it computes the same state, bit for
-bit (UNI15-UNI17).
+bit (UNI15-UNI17). Physical values enter a run as parameters written with their unit, which the unit system of the run
+converts (PAR09).
 
 For example, a unit system of 1 kpc, 1e5 solar masses and 1 Myr, and some of its conversions::
 
@@ -71,6 +74,7 @@ For example, a unit system of 1 kpc, 1e5 solar masses and 1 Myr, and some of its
     density_cgs = density * system.density          ## code units to g cm^-3
     temperature = system.temperature(pressure / density, mu=0.6)
     G = system.constant("GRAVITATIONAL_CONSTANT")   ## G in code units
+    radius = system.to_code_units("100 pc", "length")  ## 0.1 in code units of length
 
-The requirements this module fulfils are in ``docs/requirements/L0-foundation/units.md`` (UNI01-UNI18), and they are
+The requirements this module fulfils are in ``docs/requirements/L0-foundation/units.md`` (UNI01-UNI20), and they are
 tested in the accompanying test package ``tests/units/``, one module per group of requirements.

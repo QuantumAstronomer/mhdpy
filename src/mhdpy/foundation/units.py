@@ -11,14 +11,17 @@ A unit system relates code units to cgs. It is defined by three numbers, the cod
 which every other unit follows; the factor 4 pi is absorbed into the magnetic field, so that no 4 pi appears in the
 equations either. It converts numbers and arrays between code units and cgs, converts between temperature and the ratio
 of pressure to density through the mean molecular weight, and converts the physical constants of ``constants.py`` to
-code units. It cannot be changed once created, and it converts to a record of plain values and back, bit for bit.
+code units. It also reads values written with a unit, such as "100 pc" or "1e-27 g cm^-3", and converts them to code
+units, refusing a value whose dimensions are not those expected. It cannot be changed once created, and it converts to
+a record of plain values and back, bit for bit.
 
 Within mhdpy, the unit system belongs to the foundation (layer L0) and is used at the edges of a simulation, never in
 its computation. Physics modules that need physical constants, such as cooling or self-gravity, receive them converted
 to code units at set-up (D12). Outputs and the history record the unit system and label their values with cgs units
 (D14), and restart files record it, so that a continued run converts exactly as the original did (D13). A simulation
 without a unit system is dimensionless and runs entirely in code units; with one, it computes the same state, bit for
-bit (UNI15-UNI17).
+bit (UNI15-UNI17). Physical values enter a run as parameters written with their unit, which the unit system of the run
+converts (PAR09).
 
 For example, a unit system of 1 kpc, 1e5 solar masses and 1 Myr, and some of its conversions::
 
@@ -29,8 +32,9 @@ For example, a unit system of 1 kpc, 1e5 solar masses and 1 Myr, and some of its
     density_cgs = density * system.density          ## code units to g cm^-3
     temperature = system.temperature(pressure / density, mu=0.6)
     G = system.constant("GRAVITATIONAL_CONSTANT")   ## G in code units
+    radius = system.to_code_units("100 pc", "length")  ## 0.1 in code units of length
 
-The requirements this module fulfils are in ``docs/requirements/L0-foundation/units.md`` (UNI01-UNI18), and they are
+The requirements this module fulfils are in ``docs/requirements/L0-foundation/units.md`` (UNI01-UNI20), and they are
 tested in the accompanying test package ``tests/units/``, one module per group of requirements.
 """
 
@@ -162,6 +166,21 @@ def parse(text: str) -> tuple[float, dict[str, float]]:
             raise ValueError(f"Unknown unit symbol {symbol!r} in {text!r}; the symbols are {', '.join(SYMBOLS)}.")
         factors[symbol] = factors.get(symbol, 0.0) + (float(exponent) if exponent is not None else 1.0)
     return float(parts[0]), factors
+
+
+def _dimensions(factors: Mapping[str, float]) -> dict[str, float]:
+    """Return the dimensions of a unit expression, given as its factors, such as ``{"g": 1, "cm": -3}`` (UNI20).
+
+    The dimensions of each symbol, multiplied by its exponent, are summed over the factors. A dimension whose exponents
+    cancel, as the mass does in ``erg g^-1``, is left out, as one that does not occur.
+    """
+    ## Exponents are integers and half-integers, and so are their products and sums up to a quarter: all exact in
+    ## double precision, so the dimensions can be compared with ==.
+    dimensions: dict[str, float] = {}
+    for symbol, exponent in factors.items():
+        for dimension, power in SYMBOLS[symbol].dimensions.items():
+            dimensions[dimension] = dimensions.get(dimension, 0.0) + power * exponent
+    return {dimension: power for dimension, power in dimensions.items() if power != 0}
 
 
 ## frozen=True: the fields cannot be changed after creation, as UNI12 requires; it also gives the unit system an
@@ -352,6 +371,8 @@ class UnitSystem:
         ## The * in the signature makes the exponents keyword-only, so unit(length=-3, mass=1) reads as what it means
         ## and a call such as unit(-3, 1), whose meaning depends on the order, is refused. The default 0 leaves out a
         ## dimension: x**0 is exactly 1. Each power is accurate to about 1 ulp, the product to within 4 ulp (UNI02).
+        ## That holds while the partial product L^a M^b lies within the range of normal doubles, which only dimensions
+        ## far beyond those of any physical quantity leave (see the note on UNI02).
         return self.length**length * self.mass**mass * self.time**time
 
     def label(self, name: str) -> str:
@@ -499,3 +520,53 @@ class UnitSystem:
             time=float(record["time"]),
             mu=None if mu is None else float(mu),
         )
+
+    def to_code_units(self, text: str, unit: str | Mapping[str, float]) -> float:
+        """Return a value with a unit, such as ``"100 pc"``, in code units of the given unit (UNI20).
+
+        The value's unit must have the dimensions of the given unit. A temperature dimension stays in kelvin, since
+        code units have none (UNI10): ``"1e6 K"`` is 1e6 in code units.
+
+        Parameters
+        ----------
+        text : str
+            The value with its unit (UNI19).
+        unit : str or mapping
+            The unit to convert to: ``"dimensionless"``; the name of a unit, such as ``"density"`` or
+            ``"magnetic_field"``; or dimensions, as the exponents of length, mass, time and temperature, such as
+            ``{"length": 1, "time": -1}``.
+
+        Returns
+        -------
+        float
+            The value in code units.
+        """
+        number, factors = parse(text)
+
+        ## The dimensions the value must have, and the code unit it is divided by. A named unit takes its dimensions
+        ## from its label, which is a unit expression itself (UNI19), so they cannot disagree with what the label
+        ## says. The label is looked up first: an unknown name raises a KeyError that names it, before getattr could
+        ## find a method of the same name. Its code unit is the named unit itself, which for the magnetic field
+        ## includes the factor sqrt(4 pi) (UNI07). Dimensions given as exponents take their code unit from UNI02, with
+        ## no factor for temperature, and their zero exponents are left out, as _dimensions leaves them out.
+        if unit == "dimensionless":
+            dimensions, code_unit = {}, 1.0
+        elif isinstance(unit, str):
+            dimensions = _dimensions(parse(f"1 {_LABELS[unit]}")[1])
+            code_unit = getattr(self, unit)
+        else:
+            dimensions = {dimension: power for dimension, power in unit.items() if power != 0}
+            code_unit = self.unit(length=unit.get("length", 0), mass=unit.get("mass", 0), time=unit.get("time", 0))
+
+        ## A value whose dimensions differ is refused rather than converted into a number without meaning. This also
+        ## refuses a misspelt dimension, such as "lenght", which no unit expression has.
+        found = _dimensions(factors)
+        if found != dimensions:
+            raise ValueError(f"{text!r} has the dimensions {found}, not those of {unit!r}, {dimensions}.")
+
+        ## The value of the expression in cgs, the product of its symbols' values raised to their exponents, divided
+        ## by the code unit. Dividing before multiplying by the number keeps the intermediate result of order of the
+        ## ratio of the two units, so that a large or small number cannot overflow on the way. float() returns a plain
+        ## Python float even when the code unit is an np.float64.
+        cgs = math.prod(SYMBOLS[symbol].value ** exponent for symbol, exponent in factors.items())
+        return float(number * (cgs / code_unit))

@@ -1,17 +1,16 @@
 """Tests of values with a unit: how they are written (UNI19) and converted to code units (UNI20)."""
 
+import math
 import re
+from decimal import Decimal, localcontext
 
+import numpy as np
 import pytest
+from hypothesis import given
+from hypothesis import strategies as st
 
 from mhdpy.foundation import constants, units
-
-## A test that is planned but not written yet. Its body is pytest.fail("Not written yet."), which this marker declares
-## an expected failure ("xfail"), so the suite stays green while the test is visibly unfinished: pytest reports it as
-## "x" rather than as passed or failed. raises= accepts only that deliberate failure, so a stub that crashed for any
-## other reason would still fail. strict=True turns a stub that unexpectedly passes into a failure, so the marker cannot
-## be forgotten once the test is written. When a test is written, its marker is removed.
-NOT_WRITTEN = pytest.mark.xfail(reason="not written yet", raises=pytest.fail.Exception, strict=True)
+from mhdpy.foundation.tests.units.reference import LABELS, LENGTH, MASS, NAMED_UNITS, PI, TIME
 
 ## Examples of values with a unit, each with the number and the factors it must be read as (UNI19): a symbol on its
 ## own, factors with negative exponents, a temperature, a negative number, and a named cgs unit among others.
@@ -68,6 +67,51 @@ SYMBOLS: dict[str, tuple[float, dict[str, float]]] = {
 }
 # fmt: on
 
+## The dimensions of the magnetic field in gauss, g^0.5 cm^-0.5 s^-1. The magnetic field is not among NAMED_UNITS,
+## because its code unit is not a product of powers of the base units (UNI07), but its label has dimensions all the
+## same.
+MAGNETIC_FIELD = {"length": -0.5, "mass": 0.5, "time": -1}
+
+## The exponents the conversion test draws its factors with: integers and half-integers up to 1 in magnitude. With up
+## to three factors, larger exponents give dimensions such as L^-6 M^-5 T^9, whose code unit loses its precision on the
+## way (L^-6 M^-5 is smaller than the smallest normal double before T^9 brings it back), a limit of UNI02 rather than
+## of the conversion.
+EXPONENTS = [-1.0, -0.5, 0.5, 1.0]
+
+
+def dimensions(factors: dict[str, float]) -> dict[str, float]:
+    """Return the dimensions of a unit expression, from the table above.
+
+    The dimensions of each symbol, multiplied by its exponent, are summed over the factors, and a dimension whose
+    exponents cancel is left out, as one that does not occur.
+    """
+    total: dict[str, float] = {}
+    for symbol, exponent in factors.items():
+        for dimension, power in SYMBOLS[symbol][1].items():
+            total[dimension] = total.get(dimension, 0.0) + power * exponent
+    return {dimension: power for dimension, power in total.items() if power != 0}
+
+
+def exact(number: float, factors: dict[str, float]) -> float:
+    """Return a value with a unit in code units of its own dimensions, computed exactly and rounded once (UNI20).
+
+    The number times the value of the expression in cgs, divided by the code unit of the expression's dimensions, all
+    at 50 digits from the double-precision values of the symbols and the code units. A temperature dimension adds no
+    factor, as it stays in kelvin.
+    """
+    found = dimensions(factors)
+    with localcontext() as context:
+        context.prec = 50
+        cgs = Decimal(number)
+        for symbol, exponent in factors.items():
+            cgs *= Decimal(SYMBOLS[symbol][0]) ** Decimal(exponent)
+        code_unit = (
+            Decimal(LENGTH) ** Decimal(found.get("length", 0))
+            * Decimal(MASS) ** Decimal(found.get("mass", 0))
+            * Decimal(TIME) ** Decimal(found.get("time", 0))
+        )
+        return float(cgs / code_unit)
+
 
 class TestValuesWithUnits:
     """UNI19-UNI20: a value with a unit, such as "100 pc", is read and converted to code units."""
@@ -114,13 +158,16 @@ class TestValuesWithUnits:
         assert units.parse("1 g^0.5 cm^-0.5 s^-1") == (1.0, {"g": 0.5, "cm": -0.5, "s": -1})
         assert units.parse("2 s^-1.5") == (2.0, {"s": -1.5})
 
-    @NOT_WRITTEN
-    def test_every_label_is_a_unit_expression(self) -> None:
+    ## Run this test once for every named unit with a label, the magnetic field included.
+    @pytest.mark.parametrize("name", list(LABELS))
+    def test_every_label_is_a_unit_expression(self, system: units.UnitSystem, name: str) -> None:
         """Check that the label of every named unit can be read as a unit expression (UNI04, UNI19).
 
         Its dimensions must be those of the named unit, so that the unit a file reports is a unit a user can write.
         """
-        pytest.fail("Not written yet.")
+        ## A label is a unit expression without a number, so it is read with the number 1 in front.
+        _, factors = units.parse(f"1 {system.label(name)}")
+        assert dimensions(factors) == {**NAMED_UNITS, "magnetic_field": MAGNETIC_FIELD}[name]
 
     ## Run this test once for each symbol of the table above.
     @pytest.mark.parametrize("symbol", list(SYMBOLS))
@@ -157,45 +204,113 @@ class TestValuesWithUnits:
 
     ## ---- How a value with a unit is converted to code units (UNI20) ----
 
-    @NOT_WRITTEN
-    def test_conversion_to_code_units(self) -> None:
+    ## Hypothesis draws a number and one to three factors, each a symbol of the table with an exponent of EXPONENTS, and
+    ## the test writes the value with a unit from them, as "123.4 pc^-0.5 Msun". st.dictionaries draws each symbol at
+    ## most once. The numbers lie between 1e-6 and 1e6: the number enters by a single multiplication, so its size
+    ## matters little, and a sign, being exact, not at all. The ranges are chosen so that every value and every code
+    ## unit lies well within the range of doubles, and no draw needs to be discarded.
+    @given(
+        number=st.floats(min_value=1e-6, max_value=1e6),
+        factors=st.dictionaries(st.sampled_from(list(SYMBOLS)), st.sampled_from(EXPONENTS), min_size=1, max_size=3),
+    )
+    def test_conversion_to_code_units(self, system: units.UnitSystem, number: float, factors: dict[str, float]) -> None:
         """Check that a value with a unit converts to code units for given dimensions, to within 8 ulp (UNI20).
 
         The reference is computed exactly, at 50 digits, from the double-precision values of the symbols and the code
         units.
         """
-        pytest.fail("Not written yet.")
+        ## repr writes the number so that it reads back as the same double; :g writes an exponent without a trailing
+        ## .0, as UNI19 requires of integers ("-1", "0.5").
+        text = f"{number!r} " + " ".join(f"{symbol}^{exponent:g}" for symbol, exponent in factors.items())
+        actual = system.to_code_units(text, dimensions(factors))
 
-    @NOT_WRITTEN
-    def test_conversion_for_a_named_unit(self) -> None:
+        ## The powers and products of the expression and of the code unit, the division and the multiplication by the
+        ## number each round once. In a million random conversions the largest error was 4 ulp, half the tolerance.
+        expected = exact(number, factors)
+        assert abs(actual - expected) <= 8 * math.ulp(expected), text
+
+    ## Run this test once for every named unit of UNI03.
+    @pytest.mark.parametrize("name", list(NAMED_UNITS))
+    def test_conversion_for_a_named_unit(self, system: units.UnitSystem, name: str) -> None:
         """Check that converting for a named unit, such as density, gives the same as for its dimensions (UNI20)."""
-        pytest.fail("Not written yet.")
+        ## A value in the unit of the label, converted once for the name and once for the dimensions. A named unit is
+        ## computed from its dimensions by the same arithmetic (UNI03), so the two must agree exactly.
+        text = f"2.5 {LABELS[name]}"
+        assert system.to_code_units(text, name) == system.to_code_units(text, NAMED_UNITS[name])
 
-    @NOT_WRITTEN
-    def test_magnetic_field_uses_its_named_unit(self) -> None:
+    def test_magnetic_field_uses_its_named_unit(self, system: units.UnitSystem) -> None:
         """Check that a field in gauss converts with the code unit of the magnetic field, sqrt(4 pi) included (UNI20).
 
         A field of "1e-6 G" must convert to 1e-6 gauss divided by the code unit of UNI07.
         """
-        pytest.fail("Not written yet.")
+        actual = system.to_code_units("1e-6 G", "magnetic_field")
 
-    @NOT_WRITTEN
-    def test_temperature_stays_in_kelvin(self) -> None:
+        ## The exact reference: 1e-6 gauss divided by sqrt(4 pi p_u), with p_u = M / (L T^2) the code unit of pressure,
+        ## as in the test of UNI07.
+        with localcontext() as context:
+            context.prec = 50
+            pressure = Decimal(MASS) / (Decimal(LENGTH) * Decimal(TIME) ** 2)
+            expected = float(Decimal(1e-6) / (4 * PI * pressure).sqrt())
+        assert abs(actual - expected) <= 8 * math.ulp(expected)
+
+        ## Converted for the dimensions of the gauss instead, the same field comes out larger by sqrt(4 pi): the factor
+        ## that the name of the unit is there to include. The tolerance allows for a few ulp in either value.
+        by_dimensions = system.to_code_units("1e-6 G", MAGNETIC_FIELD)
+        assert math.isclose(by_dimensions, actual * np.sqrt(4 * np.pi), rel_tol=1e-14)
+
+    def test_temperature_stays_in_kelvin(self, system: units.UnitSystem) -> None:
         """Check that the temperature dimension of a value stays in kelvin (UNI20).
 
         A value of "1e6 K" in kelvin is 1e6, and in a unit such as erg K^-1 only the energy is converted to code units.
         """
-        pytest.fail("Not written yet.")
+        ## A temperature alone is not converted at all, so it comes out exactly as written.
+        assert system.to_code_units("1e6 K", {"temperature": 1}) == 1e6
 
-    @NOT_WRITTEN
-    def test_dimensionless_value(self) -> None:
-        """Check that a value whose expression has no dimensions converts for a dimensionless unit unchanged (UNI20)."""
-        pytest.fail("Not written yet.")
+        ## Boltzmann's constant in erg K^-1: the erg is converted to code units of energy, the kelvin is kept.
+        kelvin_dimensions = {"length": 2, "mass": 1, "time": -2, "temperature": -1}
+        actual = system.to_code_units("1.380649e-16 erg K^-1", kelvin_dimensions)
+        expected = exact(1.380649e-16, {"erg": 1, "K": -1})
+        assert abs(actual - expected) <= 8 * math.ulp(expected)
 
-    @NOT_WRITTEN
-    def test_wrong_dimensions_are_refused(self) -> None:
+    def test_dimensionless_value(self, system: units.UnitSystem) -> None:
+        """Check that a value whose expression has no dimensions converts for a dimensionless unit (UNI20).
+
+        Its value in code units is the number its expression stands for, as "2 km cm^-1" is 2e5.
+        """
+        ## km is exactly 1e5 cm, so this conversion is exact. Dimensions given as exponents that are all zero are the
+        ## same as dimensionless.
+        assert system.to_code_units("2 km cm^-1", "dimensionless") == 2e5
+        assert system.to_code_units("2 km cm^-1", {"length": 0, "mass": 0, "time": 0, "temperature": 0}) == 2e5
+
+        ## A Myr is a million years, but yr^-1 is the inverse of the year rounded to double precision, so this one is
+        ## exact only to within the tolerance of UNI20.
+        actual = system.to_code_units("1 Myr yr^-1", "dimensionless")
+        assert abs(actual - 1e6) <= 8 * math.ulp(1e6)
+
+    ## Run this test for each value with a unit and a given unit of other dimensions: lengths and densities given for a
+    ## time and a pressure, a temperature for a dimensionless unit, a field without the time dimension, and dimensions
+    ## with a misspelt name. ids=str names each case by its two values.
+    @pytest.mark.parametrize(
+        ("text", "unit"),
+        [
+            ("1 pc", "time"),
+            ("1 pc", {"time": 1}),
+            ("1e-27 g cm^-3", "pressure"),
+            ("1e6 K", "dimensionless"),
+            ("1e-6 G", {"length": -0.5, "mass": 0.5}),
+            ("10 km s^-1", {"lenght": 1, "time": -1}),
+        ],
+        ids=str,
+    )
+    def test_wrong_dimensions_are_refused(
+        self, system: units.UnitSystem, text: str, unit: str | dict[str, float]
+    ) -> None:
         """Check that a value whose dimensions differ from those of the given unit is refused, naming both (UNI20).
 
         For example, "1 pc", a length, given for a time.
         """
-        pytest.fail("Not written yet.")
+        ## The message names the value and the unit it was given for, each as Python writes it.
+        with pytest.raises(ValueError) as refusal:
+            system.to_code_units(text, unit)
+        assert repr(text) in str(refusal.value)
+        assert repr(unit) in str(refusal.value)

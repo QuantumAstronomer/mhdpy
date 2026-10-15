@@ -1,3 +1,5 @@
-py.install_sources('__init__.py', 'constants.py', 'notation.py', 'units.py', subdir: 'mhdpy/foundation')
+py.install_sources('__init__.py', subdir: 'mhdpy/foundation')
 
-subdir('tests')
+## Each component of the layer is a package of its own, with its tests in a tests/ package next to its modules (D01.4).
+subdir('units')
+subdir('parameters')

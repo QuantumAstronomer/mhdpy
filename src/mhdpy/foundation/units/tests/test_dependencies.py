@@ -22,14 +22,17 @@ for name in sorted(set(sys.modules) - before):
     print(name)
 """
 
-    ## Run this test for each module of the unit system, with the third-party packages it may use: NumPy for the units
-    ## and the constants they use, none at all for the notation, which the parameters read without NumPy (PAR21).
+    ## Run this test for each module of the unit system, with the third-party packages it may use: NumPy for the unit
+    ## system and the constants it uses, none at all for the notation, which the parameters read without NumPy (PAR21).
+    ## The package itself, whose __init__.py runs before any of its modules is imported, must import nothing either:
+    ## otherwise importing the notation would import NumPy all the same.
     @pytest.mark.parametrize(
         ("module", "allowed"),
         [
-            ("mhdpy.foundation.units", {"numpy"}),
-            ("mhdpy.foundation.constants", {"numpy"}),
-            ("mhdpy.foundation.notation", set[str]()),
+            ("mhdpy.foundation.units.system", {"numpy"}),
+            ("mhdpy.foundation.units.constants", {"numpy"}),
+            ("mhdpy.foundation.units.notation", set[str]()),
+            ("mhdpy.foundation.units", set[str]()),
         ],
     )
     def test_no_further_dependencies(self, module: str, allowed: set[str]) -> None:

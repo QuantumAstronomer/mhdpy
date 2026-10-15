@@ -6,8 +6,8 @@ from decimal import Decimal, localcontext
 
 import pytest
 
-from mhdpy.foundation import units
-from mhdpy.foundation.tests.units.reference import CODE_UNITS, LABELS, LENGTH, MASS, NAMED_UNITS, TIME
+from mhdpy.foundation.units.system import UnitSystem
+from mhdpy.foundation.units.tests.reference import CODE_UNITS, LABELS, LENGTH, MASS, NAMED_UNITS, TIME
 
 
 class TestDefinition:
@@ -18,7 +18,7 @@ class TestDefinition:
     @pytest.mark.parametrize("name", ["length", "mass", "time"])
     def test_defined_by_three_code_units(self, name: str) -> None:
         """Check that a unit system keeps its three defining code units exactly as given (UNI01)."""
-        system = units.UnitSystem(length=LENGTH, mass=MASS, time=TIME)
+        system = UnitSystem(length=LENGTH, mass=MASS, time=TIME)
 
         ## getattr(system, "mass") is the same as system.mass: it reads the attribute whose name is in the variable.
         ## The value read back must be exactly the value given. Exact equality of floats is right here, because no
@@ -42,9 +42,9 @@ class TestDefinition:
         ## so the test also checks that the message names the offending unit: an error about "mass" when the length
         ## is wrong would fail it.
         with pytest.raises(ValueError, match=name):
-            units.UnitSystem(**arguments)
+            UnitSystem(**arguments)
 
-    def test_unit_from_dimensions(self, system: units.UnitSystem) -> None:
+    def test_unit_from_dimensions(self, system: UnitSystem) -> None:
         """Check that the unit of dimensions L^a M^b T^c is the code units' product to those powers (UNI02).
 
         The product must agree to within 4 ulp, for integer and half-integer exponents alike.
@@ -78,7 +78,7 @@ class TestDefinition:
     ## Run this test once for every named unit. Each key of NAMED_UNITS becomes a separate test case, reported for
     ## example as test_named_units_follow_from_dimensions[density].
     @pytest.mark.parametrize("name", list(NAMED_UNITS))
-    def test_named_units_follow_from_dimensions(self, system: units.UnitSystem, name: str) -> None:
+    def test_named_units_follow_from_dimensions(self, system: UnitSystem, name: str) -> None:
         """Check that every named unit equals the unit computed from its dimensions, to within 4 ulp (UNI03)."""
         named = getattr(system, name)
 
@@ -91,7 +91,7 @@ class TestDefinition:
     ## Run this test once for every named unit: those of UNI03, and the magnetic field of UNI07, whose unit is not a
     ## product of base units and so is not in NAMED_UNITS.
     @pytest.mark.parametrize("name", [*NAMED_UNITS, "magnetic_field"])
-    def test_named_unit_labels(self, system: units.UnitSystem, name: str) -> None:
+    def test_named_unit_labels(self, system: UnitSystem, name: str) -> None:
         """Check that every named unit has the label of its cgs unit, as written in file headers (UNI04)."""
         ## The expected label is looked up in LABELS. A named unit missing from that table makes this lookup fail with
         ## a KeyError, so a new named unit cannot be added without deciding on its label.

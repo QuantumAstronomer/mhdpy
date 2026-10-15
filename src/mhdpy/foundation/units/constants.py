@@ -8,7 +8,7 @@ the hydrogen atom, and the IAU resolutions of 2012 and 2015 for the astronomical
 ``SOURCES``, which the record of a unit system carries into outputs and restart files, so that a file states which
 values it was made with even after they have been revised.
 
-The values are in cgs. The unit system (``units.py``) converts a physical constant to code units by its dimensions,
+The values are in cgs. The unit system (``system.py``) converts a physical constant to code units by its dimensions,
 listed in ``DIMENSIONS``; a constant that contains the kelvin keeps it, since code units have no temperature dimension.
 The astronomical units serve to define unit systems in the units astrophysical problems are posed in, such as 1 kpc,
 1e5 solar masses and 1 Myr; they are not converted to code units themselves.
@@ -20,7 +20,7 @@ here in double precision would add rounding errors of its own. Each is NumPy's d
 like the units, so that conversions stay in double precision.
 
 The requirements are UNI10 and UNI11 in ``docs/requirements/L0-foundation/units.md``, tested in
-``tests/units/test_constants.py``.
+``tests/test_constants.py``.
 """
 
 import numpy as np

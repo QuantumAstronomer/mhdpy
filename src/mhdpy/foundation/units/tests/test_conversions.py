@@ -7,8 +7,8 @@ import pytest
 from hypothesis import assume, given
 from hypothesis import strategies as st
 
-from mhdpy.foundation import units
-from mhdpy.foundation.tests.units.reference import NAMED_UNITS, within_range
+from mhdpy.foundation.units.system import UnitSystem
+from mhdpy.foundation.units.tests.reference import NAMED_UNITS, within_range
 
 
 class TestConversions:
@@ -16,7 +16,7 @@ class TestConversions:
 
     ## Run this test once for every named unit, as the tests of UNI03 and UNI04 do.
     @pytest.mark.parametrize("name", list(NAMED_UNITS))
-    def test_conversion_of_numbers(self, system: units.UnitSystem, name: str) -> None:
+    def test_conversion_of_numbers(self, system: UnitSystem, name: str) -> None:
         """Check that a number converts to cgs by multiplication with its unit and back by division (UNI05)."""
         unit = getattr(system, name)
 
@@ -34,7 +34,7 @@ class TestConversions:
     ## types are single and double precision floats and 64-bit integers, as arrays of initial conditions may come.
     @pytest.mark.parametrize("name", list(NAMED_UNITS))
     @pytest.mark.parametrize("dtype", [np.float32, np.float64, np.int64])
-    def test_conversion_of_arrays(self, system: units.UnitSystem, name: str, dtype: type[np.generic]) -> None:
+    def test_conversion_of_arrays(self, system: UnitSystem, name: str, dtype: type[np.generic]) -> None:
         """Check that arrays convert elementwise, keep their shape and come out in double precision (UNI05).
 
         The result must be in double precision whatever the precision of the input array.
@@ -63,7 +63,7 @@ class TestConversions:
     ## doubles, including the very large, the very small and the negative; NaN and infinities are excluded, as UNI06
     ## concerns finite values only. st.sampled_from draws one of the given names.
     @given(value=st.floats(allow_nan=False, allow_infinity=False), name=st.sampled_from(list(NAMED_UNITS)))
-    def test_round_trip_from_code_units(self, system: units.UnitSystem, value: float, name: str) -> None:
+    def test_round_trip_from_code_units(self, system: UnitSystem, value: float, name: str) -> None:
         """Check that converting from code units to cgs and back reproduces a value to within 2 ulp (UNI06)."""
         unit = getattr(system, name)
 
@@ -85,7 +85,7 @@ class TestConversions:
 
     ## The same, starting from a value in cgs.
     @given(value=st.floats(allow_nan=False, allow_infinity=False), name=st.sampled_from(list(NAMED_UNITS)))
-    def test_round_trip_from_cgs(self, system: units.UnitSystem, value: float, name: str) -> None:
+    def test_round_trip_from_cgs(self, system: UnitSystem, value: float, name: str) -> None:
         """Check that converting from cgs to code units and back reproduces a value to within 2 ulp (UNI06)."""
         unit = getattr(system, name)
 

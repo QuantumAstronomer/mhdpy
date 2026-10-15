@@ -9,5 +9,5 @@ py.install_sources(
   'test_records.py',
   'test_templates.py',
   'test_dependencies.py',
-  subdir: 'mhdpy/foundation/tests/parameters',
+  subdir: 'mhdpy/foundation/parameters/tests',
 )

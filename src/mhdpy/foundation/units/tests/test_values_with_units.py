@@ -9,8 +9,9 @@ import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
-from mhdpy.foundation import constants, notation, units
-from mhdpy.foundation.tests.units.reference import LABELS, LENGTH, MASS, NAMED_UNITS, PI, TIME
+from mhdpy.foundation.units import constants, notation
+from mhdpy.foundation.units.system import SYMBOL_VALUES, UnitSystem
+from mhdpy.foundation.units.tests.reference import LABELS, LENGTH, MASS, NAMED_UNITS, PI, TIME
 
 ## Examples of values with a unit, each with the number and the factors it must be read as (UNI19): a symbol on its
 ## own, factors with negative exponents, a temperature, a negative number, and a named cgs unit among others.
@@ -161,7 +162,7 @@ class TestValuesWithUnits:
 
     ## Run this test once for every named unit with a label, the magnetic field included.
     @pytest.mark.parametrize("name", list(LABELS))
-    def test_every_label_is_a_unit_expression(self, system: units.UnitSystem, name: str) -> None:
+    def test_every_label_is_a_unit_expression(self, system: UnitSystem, name: str) -> None:
         """Check that the label of every named unit can be read as a unit expression (UNI04, UNI19).
 
         Its dimensions must be those of the named unit, so that the unit a file reports is a unit a user can write.
@@ -183,10 +184,10 @@ class TestValuesWithUnits:
         ## The notation's table of dimensions and the unit system's table of values hold the same symbols as the
         ## specification, no more and no fewer. A symbol added to one table but not another fails here, in every case.
         assert set(notation.SYMBOLS) == set(SYMBOLS)
-        assert set(units.SYMBOL_VALUES) == set(SYMBOLS)
+        assert set(SYMBOL_VALUES) == set(SYMBOLS)
 
         ## Each value is exact: 1, 1e5 or a constant, taken over without any arithmetic, so == is right.
-        assert units.SYMBOL_VALUES[symbol] == value
+        assert SYMBOL_VALUES[symbol] == value
         assert notation.SYMBOLS[symbol] == dimensions
 
     ## Run this test for a misspelt symbol, SI units, and a known symbol in the wrong case: each string with the symbol
@@ -215,7 +216,7 @@ class TestValuesWithUnits:
         number=st.floats(min_value=1e-6, max_value=1e6),
         factors=st.dictionaries(st.sampled_from(list(SYMBOLS)), st.sampled_from(EXPONENTS), min_size=1, max_size=3),
     )
-    def test_conversion_to_code_units(self, system: units.UnitSystem, number: float, factors: dict[str, float]) -> None:
+    def test_conversion_to_code_units(self, system: UnitSystem, number: float, factors: dict[str, float]) -> None:
         """Check that a value with a unit converts to code units for given dimensions, to within 8 ulp (UNI20).
 
         The reference is computed exactly, at 50 digits, from the double-precision values of the symbols and the code
@@ -233,14 +234,14 @@ class TestValuesWithUnits:
 
     ## Run this test once for every named unit of UNI03.
     @pytest.mark.parametrize("name", list(NAMED_UNITS))
-    def test_conversion_for_a_named_unit(self, system: units.UnitSystem, name: str) -> None:
+    def test_conversion_for_a_named_unit(self, system: UnitSystem, name: str) -> None:
         """Check that converting for a named unit, such as density, gives the same as for its dimensions (UNI20)."""
         ## A value in the unit of the label, converted once for the name and once for the dimensions. A named unit is
         ## computed from its dimensions by the same arithmetic (UNI03), so the two must agree exactly.
         text = f"2.5 {LABELS[name]}"
         assert system.to_code_units(text, name) == system.to_code_units(text, NAMED_UNITS[name])
 
-    def test_magnetic_field_uses_its_named_unit(self, system: units.UnitSystem) -> None:
+    def test_magnetic_field_uses_its_named_unit(self, system: UnitSystem) -> None:
         """Check that a field in gauss converts with the code unit of the magnetic field, sqrt(4 pi) included (UNI20).
 
         A field of "1e-6 G" must convert to 1e-6 gauss divided by the code unit of UNI07.
@@ -260,7 +261,7 @@ class TestValuesWithUnits:
         by_dimensions = system.to_code_units("1e-6 G", MAGNETIC_FIELD)
         assert math.isclose(by_dimensions, actual * np.sqrt(4 * np.pi), rel_tol=1e-14)
 
-    def test_temperature_stays_in_kelvin(self, system: units.UnitSystem) -> None:
+    def test_temperature_stays_in_kelvin(self, system: UnitSystem) -> None:
         """Check that the temperature dimension of a value stays in kelvin (UNI20).
 
         A value of "1e6 K" in kelvin is 1e6, and in a unit such as erg K^-1 only the energy is converted to code units.
@@ -274,7 +275,7 @@ class TestValuesWithUnits:
         expected = exact(1.380649e-16, {"erg": 1, "K": -1})
         assert abs(actual - expected) <= 8 * math.ulp(expected)
 
-    def test_dimensionless_value(self, system: units.UnitSystem) -> None:
+    def test_dimensionless_value(self, system: UnitSystem) -> None:
         """Check that a value whose expression has no dimensions converts for a dimensionless unit (UNI20).
 
         Its value in code units is the number its expression stands for, as "2 km cm^-1" is 2e5.
@@ -304,9 +305,7 @@ class TestValuesWithUnits:
         ],
         ids=str,
     )
-    def test_wrong_dimensions_are_refused(
-        self, system: units.UnitSystem, text: str, unit: str | dict[str, float]
-    ) -> None:
+    def test_wrong_dimensions_are_refused(self, system: UnitSystem, text: str, unit: str | dict[str, float]) -> None:
         """Check that a value whose dimensions differ from those of the given unit is refused, naming both (UNI20).
 
         For example, "1 pc", a length, given for a time.

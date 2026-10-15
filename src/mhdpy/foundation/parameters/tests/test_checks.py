@@ -2,7 +2,7 @@
 
 import pytest
 
-from mhdpy.foundation.tests.parameters import NOT_WRITTEN
+from mhdpy.foundation.parameters.tests import NOT_WRITTEN
 
 
 class TestChecks:

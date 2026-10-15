@@ -9,7 +9,7 @@ optional exponent written with ^, so that every label mhdpy writes is also a uni
 This module knows how units are written, not what they are worth. It holds the unit symbols with their dimensions, the
 labels of the named units, a reader for values with a unit, and the dimensions of a unit expression: everything needed
 to check that a value has the right dimensions, and nothing needed to convert it. The values of the symbols in cgs,
-which come from the physical constants, and the conversion to code units are the unit system's (``units.py``).
+which come from the physical constants, and the conversion to code units are the unit system's (``system.py``).
 
 The split is what lets the parameters check their declarations without the unit system (PAR21). A module declares the
 unit of each numeric parameter, and the parameters check that a named unit exists and that a default such as "100 pc"
@@ -19,14 +19,14 @@ standard library (UNI18).
 
 For example, reading a value with a unit and finding its dimensions::
 
-    from mhdpy.foundation import notation
+    from mhdpy.foundation.units import notation
 
     number, factors = notation.parse("1e-27 g cm^-3")    ## 1e-27, {"g": 1.0, "cm": -3.0}
     notation.dimensions(factors)                         ## {"mass": 1.0, "length": -3.0}
     notation.LABELS["density"]                           ## "g cm^-3"
 
 The requirements this module fulfils are in ``docs/requirements/L0-foundation/units.md`` (UNI04, UNI18, UNI19, UNI20),
-and they are tested with the unit system, in the test package ``tests/units/``.
+and they are tested with the unit system, in the test package ``tests/`` next to this module.
 """
 
 import re
@@ -64,7 +64,7 @@ LABELS = {
 ## and K, the kelvin, is a dimension of its own, since code units have no temperature dimension (UNI10). The other
 ## symbols are the astronomical units problems are posed in, and km, for velocities in km s^-1. SI units are left out
 ## on purpose, so that a value is never written half in one system and half in the other. The value of each symbol in
-## cgs is in the unit system (units.SYMBOL_VALUES).
+## cgs is in the unit system (system.SYMBOL_VALUES).
 # fmt: off
 SYMBOLS: dict[str, dict[str, float]] = {
     "cm":   {"length":  1                                           },

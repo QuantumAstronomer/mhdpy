@@ -12,5 +12,5 @@ py.install_sources(
   'test_dimensionless.py',
   'test_values_with_units.py',
   'test_dependencies.py',
-  subdir: 'mhdpy/foundation/tests/units',
+  subdir: 'mhdpy/foundation/units/tests',
 )

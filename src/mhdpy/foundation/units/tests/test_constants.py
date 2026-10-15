@@ -10,8 +10,9 @@ from decimal import Decimal, localcontext
 import numpy as np
 import pytest
 
-from mhdpy.foundation import constants, units
-from mhdpy.foundation.tests.units.reference import PI
+from mhdpy.foundation.units import constants
+from mhdpy.foundation.units.system import UnitSystem
+from mhdpy.foundation.units.tests.reference import PI
 
 ## The measured constants of UNI10 as CODATA 2022 publishes them, in SI, each with the exact factor that converts it to
 ## cgs: a metre is 100 cm, a kilogram 1000 g, a joule 1e7 erg. The values are written as strings, so that the decimal
@@ -167,7 +168,7 @@ class TestPhysicalConstants:
 
     ## Run this test once for each physical constant of UNI10.
     @pytest.mark.parametrize("name", list(DIMENSIONS))
-    def test_constants_in_code_units(self, system: units.UnitSystem, name: str) -> None:
+    def test_constants_in_code_units(self, system: UnitSystem, name: str) -> None:
         """Check that every constant converts to code units by its dimensions (UNI10).
 
         A constant containing the kelvin, such as k_B, keeps it: code units have no temperature dimension.
@@ -202,7 +203,7 @@ class TestPhysicalConstants:
 
         The example of the requirement: 1 kpc, 1e5 solar masses and 1 Myr.
         """
-        system = units.UnitSystem(length=constants.KILOPARSEC, mass=1e5 * constants.SOLAR_MASS, time=constants.MEGAYEAR)
+        system = UnitSystem(length=constants.KILOPARSEC, mass=1e5 * constants.SOLAR_MASS, time=constants.MEGAYEAR)
         references = astronomical_references()
 
         ## The kiloparsec and the megayear are kept exactly as given (UNI01), so they are the doubles nearest to their

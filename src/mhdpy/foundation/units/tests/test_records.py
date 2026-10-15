@@ -8,8 +8,9 @@ import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
-from mhdpy.foundation import constants, units
-from mhdpy.foundation.tests.units.reference import LENGTH, MASS, TIME
+from mhdpy.foundation.units import constants
+from mhdpy.foundation.units.system import UnitSystem
+from mhdpy.foundation.units.tests.reference import LENGTH, MASS, TIME
 
 
 class TestRecords:
@@ -21,7 +22,7 @@ class TestRecords:
         """Check that changing a unit system after its creation is refused (UNI12)."""
         ## A unit system of its own rather than the shared fixture: should the refusal fail, the change must not reach
         ## the unit system the other tests use.
-        system = units.UnitSystem(length=LENGTH, mass=MASS, time=TIME, mu=0.6)
+        system = UnitSystem(length=LENGTH, mass=MASS, time=TIME, mu=0.6)
 
         ## setattr(system, "mass", 1.0) is the same as system.mass = 1.0, and delattr(system, "mass") as del
         ## system.mass. A frozen dataclass refuses both with a FrozenInstanceError, for its fields and for any new
@@ -32,18 +33,18 @@ class TestRecords:
             delattr(system, name)
 
         ## The refused change has left the unit system as it was.
-        assert system == units.UnitSystem(length=LENGTH, mass=MASS, time=TIME, mu=0.6)
+        assert system == UnitSystem(length=LENGTH, mass=MASS, time=TIME, mu=0.6)
 
     def test_equality(self) -> None:
         """Check that two unit systems are equal if and only if their defining values are equal (UNI13).
 
         The defining values are the three code units and the default mean molecular weight.
         """
-        system = units.UnitSystem(length=LENGTH, mass=MASS, time=TIME, mu=0.6)
+        system = UnitSystem(length=LENGTH, mass=MASS, time=TIME, mu=0.6)
 
         ## Two unit systems created from the same values are equal, though they are different objects. Equal objects
         ## must also have equal hashes, so that a unit system can serve as the key of a dictionary.
-        same = units.UnitSystem(length=LENGTH, mass=MASS, time=TIME, mu=0.6)
+        same = UnitSystem(length=LENGTH, mass=MASS, time=TIME, mu=0.6)
         assert same is not system
         assert same == system
         assert hash(same) == hash(system)
@@ -78,7 +79,7 @@ class TestRecords:
 
         Every value must be identical bit for bit.
         """
-        system = units.UnitSystem(length=length, mass=mass, time=time, mu=mu)
+        system = UnitSystem(length=length, mass=mass, time=time, mu=mu)
         record = system.to_record()
 
         ## The record consists of plain values only, Python's own floats and strings, which any file format can
@@ -94,14 +95,14 @@ class TestRecords:
 
         ## The unit system created from the stored record is equal to the original (UNI13), and every defining value
         ## is identical bit for bit: float.hex() writes the exact bits of a double, sign, exponent and digits.
-        restored = units.UnitSystem.from_record(stored)
+        restored = UnitSystem.from_record(stored)
         assert restored == system
         for name in ("length", "mass", "time"):
             assert float(getattr(restored, name)).hex() == float(getattr(system, name)).hex()
         if mu is not None:
             assert restored.mu is not None and float(restored.mu).hex() == float(mu).hex()
 
-    def test_record_names_sources(self, system: units.UnitSystem) -> None:
+    def test_record_names_sources(self, system: UnitSystem) -> None:
         """Check that the record names the sources of the constants (UNI14).
 
         The sources are CODATA 2022, AME 2020, and the IAU resolutions of 2012 and 2015.

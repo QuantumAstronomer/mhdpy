@@ -8,8 +8,9 @@ import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
-from mhdpy.foundation import constants, units
-from mhdpy.foundation.tests.units.reference import LENGTH, MASS, TIME
+from mhdpy.foundation.units import constants
+from mhdpy.foundation.units.system import UnitSystem
+from mhdpy.foundation.units.tests.reference import LENGTH, MASS, TIME
 
 
 class TestTemperature:
@@ -24,9 +25,7 @@ class TestTemperature:
         p_over_rho=st.floats(min_value=1e-100, max_value=1e100),
         mu=st.floats(min_value=0.1, max_value=10.0),
     )
-    def test_temperature_from_pressure_over_density(
-        self, system: units.UnitSystem, p_over_rho: float, mu: float
-    ) -> None:
+    def test_temperature_from_pressure_over_density(self, system: UnitSystem, p_over_rho: float, mu: float) -> None:
         """Check that T = mu m_H (p / rho) / k_B for a ratio p / rho in code units (UNI08).
 
         The mean molecular weight mu is in units of the mass of the hydrogen atom m_H.
@@ -58,9 +57,7 @@ class TestTemperature:
         temperature=st.floats(min_value=1e-100, max_value=1e100),
         mu=st.floats(min_value=0.1, max_value=10.0),
     )
-    def test_pressure_over_density_from_temperature(
-        self, system: units.UnitSystem, temperature: float, mu: float
-    ) -> None:
+    def test_pressure_over_density_from_temperature(self, system: UnitSystem, temperature: float, mu: float) -> None:
         """Check that the conversion from temperature to p / rho in code units inverts the first (UNI08).
 
         The two conversions applied one after the other must reproduce the value to within 2 ulp.
@@ -75,7 +72,7 @@ class TestTemperature:
 
     ## Run this test once for each direction of the conversion; getattr picks the method by its name.
     @pytest.mark.parametrize("conversion", ["temperature", "pressure_over_density"])
-    def test_mean_molecular_weight_per_cell(self, system: units.UnitSystem, conversion: str) -> None:
+    def test_mean_molecular_weight_per_cell(self, system: UnitSystem, conversion: str) -> None:
         """Check that the mean molecular weight may be an array, applied cell by cell (UNI08).
 
         The array has the shape of the values to convert.
@@ -105,9 +102,7 @@ class TestTemperature:
     ## invalid code units does.
     @pytest.mark.parametrize("conversion", ["temperature", "pressure_over_density"])
     @pytest.mark.parametrize("value", [0.0, -1.0, math.inf, -math.inf, math.nan])
-    def test_invalid_mean_molecular_weight_is_refused(
-        self, system: units.UnitSystem, conversion: str, value: float
-    ) -> None:
+    def test_invalid_mean_molecular_weight_is_refused(self, system: UnitSystem, conversion: str, value: float) -> None:
         """Check that a mean molecular weight that is not positive and finite is refused (UNI08)."""
         convert = getattr(system, conversion)
 
@@ -121,7 +116,7 @@ class TestTemperature:
     ## Run this test once for each direction of the conversion.
     @pytest.mark.parametrize("conversion", ["temperature", "pressure_over_density"])
     def test_default_mean_molecular_weight(
-        self, system: units.UnitSystem, system_with_default: units.UnitSystem, conversion: str
+        self, system: UnitSystem, system_with_default: UnitSystem, conversion: str
     ) -> None:
         """Check that a default mean molecular weight is used when a conversion gives none (UNI09).
 
@@ -146,11 +141,11 @@ class TestTemperature:
     def test_invalid_default_mean_molecular_weight_is_refused(self, value: float) -> None:
         """Check that a default mean molecular weight that is not positive and finite is refused at creation (UNI09)."""
         with pytest.raises(ValueError, match="mean molecular weight"):
-            units.UnitSystem(length=LENGTH, mass=MASS, time=TIME, mu=value)
+            UnitSystem(length=LENGTH, mass=MASS, time=TIME, mu=value)
 
     ## Run this test once for each direction of the conversion.
     @pytest.mark.parametrize("conversion", ["temperature", "pressure_over_density"])
-    def test_missing_mean_molecular_weight_is_refused(self, system: units.UnitSystem, conversion: str) -> None:
+    def test_missing_mean_molecular_weight_is_refused(self, system: UnitSystem, conversion: str) -> None:
         """Check that a temperature conversion without any mean molecular weight is refused (UNI09).
 
         Without a value given to the conversion and without a default, no value may be assumed silently.

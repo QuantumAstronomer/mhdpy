@@ -7,14 +7,14 @@ import numpy as np
 from hypothesis import assume, given
 from hypothesis import strategies as st
 
-from mhdpy.foundation import units
-from mhdpy.foundation.tests.units.reference import LENGTH, MASS, PI, TIME, within_range
+from mhdpy.foundation.units.system import UnitSystem
+from mhdpy.foundation.units.tests.reference import LENGTH, MASS, PI, TIME, within_range
 
 
 class TestMagneticField:
     """UNI07: the factor 4 pi is absorbed into the magnetic field."""
 
-    def test_magnetic_field_unit(self, system: units.UnitSystem) -> None:
+    def test_magnetic_field_unit(self, system: UnitSystem) -> None:
         """Check that the code unit of the magnetic field is sqrt(4 pi p_u) gauss (UNI07).
 
         Here p_u is the code unit of pressure. The unit must agree with an exact reference to within 4 ulp.
@@ -36,7 +36,7 @@ class TestMagneticField:
 
     ## Hypothesis draws field strengths in code units from the whole range of doubles, as in the tests of UNI06.
     @given(field=st.floats(allow_nan=False, allow_infinity=False))
-    def test_magnetic_energy_density_agrees(self, system: units.UnitSystem, field: float) -> None:
+    def test_magnetic_energy_density_agrees(self, system: UnitSystem, field: float) -> None:
         """Check that a field's energy density is the same physical quantity in both systems (UNI07).
 
         B^2 / (8 pi), with B in gauss, must equal B_code^2 / 2 times the code unit of pressure, to within 4 ulp.

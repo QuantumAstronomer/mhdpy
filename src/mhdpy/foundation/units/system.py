@@ -26,8 +26,8 @@ converts (PAR09).
 
 For example, a unit system of 1 kpc, 1e5 solar masses and 1 Myr, and some of its conversions::
 
-    from mhdpy.foundation import constants
-    from mhdpy.foundation.units import UnitSystem
+    from mhdpy.foundation.units import constants
+    from mhdpy.foundation.units.system import UnitSystem
 
     system = UnitSystem(length=constants.KILOPARSEC, mass=1e5 * constants.SOLAR_MASS, time=constants.MEGAYEAR)
     density_cgs = density * system.density          ## code units to g cm^-3
@@ -36,7 +36,7 @@ For example, a unit system of 1 kpc, 1e5 solar masses and 1 Myr, and some of its
     radius = system.to_code_units("100 pc", "length")  ## 0.1 in code units of length
 
 The requirements this module fulfils are in ``docs/requirements/L0-foundation/units.md`` (UNI01-UNI20), and they are
-tested in the accompanying test package ``tests/units/``, one module per group of requirements.
+tested in the test package ``tests/`` next to this module, one module per group of requirements.
 """
 
 import math
@@ -47,7 +47,7 @@ from typing import Self
 import numpy as np
 import numpy.typing as npt
 
-from mhdpy.foundation import constants, notation
+from mhdpy.foundation.units import constants, notation
 
 ## The public interface of this module (D15.7): only names listed here are meant for use outside it.
 __all__ = ["SYMBOL_VALUES", "UnitSystem"]
@@ -348,8 +348,8 @@ class UnitSystem:
         Parameters
         ----------
         name : str
-            The name of the constant, as its name in ``mhdpy.foundation.constants``: ``"GRAVITATIONAL_CONSTANT"`` for
-            ``constants.GRAVITATIONAL_CONSTANT``.
+            The name of the constant, as its name in ``mhdpy.foundation.units.constants``:
+            ``"GRAVITATIONAL_CONSTANT"`` for ``constants.GRAVITATIONAL_CONSTANT``.
 
         Returns
         -------

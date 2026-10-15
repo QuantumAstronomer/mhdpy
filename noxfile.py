@@ -27,8 +27,8 @@ nox.options.default_venv_backend = "none"
 ## The two ways of running the kernels (D04.3), selected by the environment variable MHDPY_KERNELS.
 KERNELS = ["compiled", "uncompiled"]
 
-## The layers of mhdpy that are packages of their own, such as src/mhdpy/foundation: every subpackage of mhdpy except
-## its tests. Each has a README.md made of the docstrings of the package and its public modules.
+## The layers of mhdpy, such as src/mhdpy/foundation: every subpackage of mhdpy except its tests. Each has a README.md
+## made of the docstrings of the layer, of its components (its own subpackages) and of their public modules.
 LAYERS = sorted(path.parent for path in Path("src/mhdpy").glob("*/__init__.py") if path.parent.name != "tests")
 
 
@@ -39,10 +39,22 @@ def docstring(path: Path) -> str:
     return ast.get_docstring(ast.parse(path.read_text())) or ""
 
 
-def layer_readme(layer: Path) -> str:
-    """Return the README of a layer: the docstring of its package, then that of each public module (D16).
+def public_modules(package: Path) -> list[Path]:
+    """Return the public modules of a package, in alphabetical order: those whose name does not start with "_"."""
+    return [module for module in sorted(package.glob("*.py")) if not module.name.startswith("_")]
 
-    Modules are public unless their name starts with an underscore; the tests of the layer are not part of it.
+
+def components(package: Path) -> list[Path]:
+    """Return the components of a layer, in alphabetical order: its subpackages, except tests (D01.4)."""
+    return sorted(path.parent for path in package.glob("*/__init__.py") if path.parent.name != "tests")
+
+
+def layer_readme(layer: Path) -> str:
+    """Return the README of a layer, made of the docstrings of its packages and their public modules (D16).
+
+    First the docstring of the layer, then a section per component: the docstring of its package, followed by that of
+    each of its public modules. Modules directly in the layer, if any, get a section each, before the components. Tests
+    are not part of a layer's description.
     """
     name = ".".join(layer.parts[1:])  ## src/mhdpy/foundation -> mhdpy.foundation
     sections = [
@@ -51,9 +63,12 @@ def layer_readme(layer: Path) -> str:
         "docstrings, not this file. `uv run nox` checks that the two agree. -->",
         docstring(layer / "__init__.py"),
     ]
-    for module in sorted(layer.glob("*.py")):
-        if not module.name.startswith("_"):
-            sections += [f"## `{name}.{module.stem}`", docstring(module)]
+    for module in public_modules(layer):
+        sections += [f"## `{name}.{module.stem}`", docstring(module)]
+    for component in components(layer):
+        sections += [f"## `{name}.{component.name}`", docstring(component / "__init__.py")]
+        for module in public_modules(component):
+            sections += [f"### `{name}.{component.name}.{module.stem}`", docstring(module)]
     return "\n\n".join(sections) + "\n"
 
 

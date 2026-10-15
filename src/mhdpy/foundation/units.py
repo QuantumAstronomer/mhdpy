@@ -11,9 +11,10 @@ A unit system relates code units to cgs. It is defined by three numbers, the cod
 which every other unit follows; the factor 4 pi is absorbed into the magnetic field, so that no 4 pi appears in the
 equations either. It converts numbers and arrays between code units and cgs, converts between temperature and the ratio
 of pressure to density through the mean molecular weight, and converts the physical constants of ``constants.py`` to
-code units. It also reads values written with a unit, such as "100 pc" or "1e-27 g cm^-3", and converts them to code
-units, refusing a value whose dimensions are not those expected. It cannot be changed once created, and it converts to
-a record of plain values and back, bit for bit.
+code units. It also converts values written with a unit, such as "100 pc" or "1e-27 g cm^-3", to code units, refusing
+a value whose dimensions are not those expected; how such values are written, and their dimensions, is the notation's
+(``notation.py``), while their values in cgs and their conversion are the unit system's. It cannot be changed once
+created, and it converts to a record of plain values and back, bit for bit.
 
 Within mhdpy, the unit system belongs to the foundation (layer L0) and is used at the edges of a simulation, never in
 its computation. Physics modules that need physical constants, such as cooling or self-gravity, receive them converted
@@ -39,148 +40,45 @@ tested in the accompanying test package ``tests/units/``, one module per group o
 """
 
 import math
-import re
 from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import NamedTuple, Self
+from typing import Self
 
 import numpy as np
 import numpy.typing as npt
 
-from mhdpy.foundation import constants
+from mhdpy.foundation import constants, notation
 
 ## The public interface of this module (D15.7): only names listed here are meant for use outside it.
-__all__ = ["SYMBOLS", "Symbol", "UnitSystem", "parse"]
+__all__ = ["SYMBOL_VALUES", "UnitSystem"]
 
-## The label of each named unit's cgs unit (UNI04), exactly as it is to appear in the headers of the history and the
-## attributes of outputs (D14). Units are written with their cgs names where those exist (dyn, erg), and exponents with
-## ^. The labels do not depend on the code units, only on the cgs units the values convert to, so one table serves every
-## unit system. The leading underscore marks the table as internal; it is read through UnitSystem.label.
+## The value in cgs of each unit symbol of the notation (UNI19), the counterpart of notation.SYMBOLS, which gives their
+## dimensions. The cgs symbols are the units themselves, with value 1, km is exactly 1e5 cm, and the astronomical
+## symbols take the values of the constants (UNI11), so a value with a unit converts with the same constants as
+## everything else in mhdpy. The values are kept here rather than in the notation because they need the constants, and
+## with them NumPy, which the notation must do without (UNI18).
 # fmt: off
-_LABELS = {
-    "length"            : "cm",
-    "mass"              : "g",
-    "time"              : "s",
-    "velocity"          : "cm s^-1",
-    "acceleration"      : "cm s^-2",
-    "density"           : "g cm^-3",
-    "momentum_density"  : "g cm^-2 s^-1",
-    "mass_flux"         : "g cm^-2 s^-1",
-    "pressure"          : "dyn cm^-2",
-    "energy_density"    : "erg cm^-3",
-    "energy"            : "erg",
-    "specific_energy"   : "erg g^-1",
-    "energy_flux"       : "erg cm^-2 s^-1",
-    "magnetic_field"    : "G",
+SYMBOL_VALUES: dict[str, float] = {
+    "cm":   1.0,
+    "g":    1.0,
+    "s":    1.0,
+    "K":    1.0,
+    "dyn":  1.0,
+    "erg":  1.0,
+    "G":    1.0,
+    "km":   1e5,
+    "au":   constants.ASTRONOMICAL_UNIT,
+    "pc":   constants.PARSEC,
+    "kpc":  constants.KILOPARSEC,
+    "Mpc":  constants.MEGAPARSEC,
+    "Rsun": constants.SOLAR_RADIUS,
+    "Msun": constants.SOLAR_MASS,
+    "Lsun": constants.SOLAR_LUMINOSITY,
+    "yr":   constants.JULIAN_YEAR,
+    "Myr":  constants.MEGAYEAR,
+    "Gyr":  constants.GIGAYEAR,
 }
 # fmt: on
-
-
-class Symbol(NamedTuple):
-    """A unit symbol of a value with a unit (UNI19): its value in cgs and its dimensions.
-
-    The dimensions are the exponents of length, mass, time and temperature, a dimension that does not occur left out:
-    ``{"length": -3, "mass": 1}`` for the dimensions of a density.
-    """
-
-    value: float
-    dimensions: dict[str, float]
-
-
-## The unit symbols a value may be written with (UNI19), each with its value in cgs and its dimensions. The cgs symbols
-## are the units the labels are written in (UNI04), so every label can be read back: cm, g and s are the base units,
-## with value 1; dyn, erg and the gauss G follow from them, and K, the kelvin, is a dimension of its own, since code
-## units have no temperature dimension (UNI10). The other symbols are the astronomical units problems are posed in,
-## with the values of the constants (UNI11), and km, exactly 1e5 cm, for velocities in km s^-1. SI units are left out
-## on purpose, so that a value is never written half in one system and half in the other.
-# fmt: off
-SYMBOLS: dict[str, Symbol] = {
-    "cm":   Symbol(1.0,                         {"length":  1                                           }),
-    "g":    Symbol(1.0,                         {                "mass": 1                              }),
-    "s":    Symbol(1.0,                         {                             "time":  1                }),
-    "K":    Symbol(1.0,                         {                                       "temperature": 1}),
-    "dyn":  Symbol(1.0,                         {"length":  1,   "mass": 1,   "time": -2                }),
-    "erg":  Symbol(1.0,                         {"length":  2,   "mass": 1,   "time": -2                }),
-    "G":    Symbol(1.0,                         {"length": -0.5, "mass": 0.5, "time": -1                }),
-    "km":   Symbol(1e5,                         {"length":  1                                           }),
-    "au":   Symbol(constants.ASTRONOMICAL_UNIT, {"length":  1                                           }),
-    "pc":   Symbol(constants.PARSEC,            {"length":  1                                           }),
-    "kpc":  Symbol(constants.KILOPARSEC,        {"length":  1                                           }),
-    "Mpc":  Symbol(constants.MEGAPARSEC,        {"length":  1                                           }),
-    "Rsun": Symbol(constants.SOLAR_RADIUS,      {"length":  1                                           }),
-    "Msun": Symbol(constants.SOLAR_MASS,        {                "mass": 1                              }),
-    "Lsun": Symbol(constants.SOLAR_LUMINOSITY,  {"length":  2,   "mass": 1,   "time": -3                }),
-    "yr":   Symbol(constants.JULIAN_YEAR,       {                             "time":  1                }),
-    "Myr":  Symbol(constants.MEGAYEAR,          {                             "time":  1                }),
-    "Gyr":  Symbol(constants.GIGAYEAR,          {                             "time":  1                }),
-}
-# fmt: on
-
-## The two parts of a value with a unit (UNI19), as regular expressions: patterns that a string either matches or not.
-## A number: an optional sign, digits with an optional decimal point (or a point followed by digits), and an optional
-## exponent, as "-2.5", "1e-27" or ".5". A factor: a symbol of letters, optionally followed by ^ and an exponent that is
-## an integer ("-3") or a half-integer written with a decimal point ("0.5", "-1.5"). The parentheses mark the parts the
-## code reads back: (?: ...) groups without capturing, ( ... ) captures the symbol and the exponent of a factor.
-_NUMBER = re.compile(r"[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?")
-_FACTOR = re.compile(r"([A-Za-z]+)(?:\^(-?\d+(?:\.5)?))?")
-
-
-def parse(text: str) -> tuple[float, dict[str, float]]:
-    """Return the number and the unit factors of a value with a unit, such as ``"1e-27 g cm^-3"`` (UNI19).
-
-    A value with a unit is a number and a unit expression, separated by spaces: factors separated by spaces, each a
-    unit symbol of ``SYMBOLS`` with an optional exponent, written with ``^``. Any number of spaces may separate the
-    parts, and spaces around the value are ignored.
-
-    Parameters
-    ----------
-    text : str
-        The value with its unit.
-
-    Returns
-    -------
-    number : float
-        The number, as written.
-    factors : dict
-        Each symbol of the expression with its exponent: ``{"g": 1, "cm": -3}`` for ``"g cm^-3"``.
-    """
-    ## Split the value into its parts. str.split() without an argument splits at every run of spaces (or other
-    ## whitespace) and ignores the spaces around the value, which carry no meaning. The first part is the number, and
-    ## the others are the factors of the unit expression; there must be at least one.
-    parts = text.split()
-    if len(parts) < 2 or not _NUMBER.fullmatch(parts[0]):
-        raise ValueError(f"A value with a unit must be a number, a space and a unit, such as '10 Myr', got {text!r}.")
-
-    ## Read the factors one by one. fullmatch requires the whole factor to match, so "g/cm^3" is refused rather than
-    ## partly read. A factor without an exponent has the exponent 1. A symbol written twice adds up its exponents, as
-    ## "cm cm" is cm^2.
-    factors: dict[str, float] = {}
-    for factor in parts[1:]:
-        match = _FACTOR.fullmatch(factor)
-        if match is None:
-            raise ValueError(f"{factor!r} in {text!r} is not a unit symbol with an optional exponent, such as 'cm^-3'.")
-        symbol, exponent = match.groups()
-
-        ## Only the symbols of the table are units; anything else, a misspelling or an SI unit, is refused by name.
-        if symbol not in SYMBOLS:
-            raise ValueError(f"Unknown unit symbol {symbol!r} in {text!r}; the symbols are {', '.join(SYMBOLS)}.")
-        factors[symbol] = factors.get(symbol, 0.0) + (float(exponent) if exponent is not None else 1.0)
-    return float(parts[0]), factors
-
-
-def _dimensions(factors: Mapping[str, float]) -> dict[str, float]:
-    """Return the dimensions of a unit expression, given as its factors, such as ``{"g": 1, "cm": -3}`` (UNI20).
-
-    The dimensions of each symbol, multiplied by its exponent, are summed over the factors. A dimension whose exponents
-    cancel, as the mass does in ``erg g^-1``, is left out, as one that does not occur.
-    """
-    ## Exponents are integers and half-integers, and so are their products and sums up to a quarter: all exact in
-    ## double precision, so the dimensions can be compared with ==.
-    dimensions: dict[str, float] = {}
-    for symbol, exponent in factors.items():
-        for dimension, power in SYMBOLS[symbol].dimensions.items():
-            dimensions[dimension] = dimensions.get(dimension, 0.0) + power * exponent
-    return {dimension: power for dimension, power in dimensions.items() if power != 0}
 
 
 ## frozen=True: the fields cannot be changed after creation, as UNI12 requires; it also gives the unit system an
@@ -389,7 +287,7 @@ class UnitSystem:
             The label of the unit in cgs, as it is written in the headers of the history and in outputs.
         """
         ## A lookup in the table of labels. An unknown name raises a KeyError that names it.
-        return _LABELS[name]
+        return notation.LABELS[name]
 
     def temperature(
         self, p_over_rho: npt.ArrayLike, *, mu: npt.ArrayLike | None = None
@@ -541,18 +439,18 @@ class UnitSystem:
         float
             The value in code units.
         """
-        number, factors = parse(text)
+        number, factors = notation.parse(text)
 
         ## The dimensions the value must have, and the code unit it is divided by. A named unit takes its dimensions
         ## from its label, which is a unit expression itself (UNI19), so they cannot disagree with what the label
         ## says. The label is looked up first: an unknown name raises a KeyError that names it, before getattr could
         ## find a method of the same name. Its code unit is the named unit itself, which for the magnetic field
         ## includes the factor sqrt(4 pi) (UNI07). Dimensions given as exponents take their code unit from UNI02, with
-        ## no factor for temperature, and their zero exponents are left out, as _dimensions leaves them out.
+        ## no factor for temperature, and their zero exponents are left out, as notation.dimensions does.
         if unit == "dimensionless":
             dimensions, code_unit = {}, 1.0
         elif isinstance(unit, str):
-            dimensions = _dimensions(parse(f"1 {_LABELS[unit]}")[1])
+            dimensions = notation.dimensions(notation.parse(f"1 {notation.LABELS[unit]}")[1])
             code_unit = getattr(self, unit)
         else:
             dimensions = {dimension: power for dimension, power in unit.items() if power != 0}
@@ -560,7 +458,7 @@ class UnitSystem:
 
         ## A value whose dimensions differ is refused rather than converted into a number without meaning. This also
         ## refuses a misspelt dimension, such as "lenght", which no unit expression has.
-        found = _dimensions(factors)
+        found = notation.dimensions(factors)
         if found != dimensions:
             raise ValueError(f"{text!r} has the dimensions {found}, not those of {unit!r}, {dimensions}.")
 
@@ -568,5 +466,5 @@ class UnitSystem:
         ## by the code unit. Dividing before multiplying by the number keeps the intermediate result of order of the
         ## ratio of the two units, so that a large or small number cannot overflow on the way. float() returns a plain
         ## Python float even when the code unit is an np.float64.
-        cgs = math.prod(SYMBOLS[symbol].value ** exponent for symbol, exponent in factors.items())
+        cgs = math.prod(SYMBOL_VALUES[symbol] ** exponent for symbol, exponent in factors.items())
         return float(number * (cgs / code_unit))

@@ -1,4 +1,4 @@
-"""Tests of the dependencies of the unit system (UNI18)."""
+"""Tests of the dependencies of the unit system and its notation (UNI18)."""
 
 import subprocess
 import sys
@@ -7,7 +7,7 @@ import pytest
 
 
 class TestDependencies:
-    """UNI18: the unit system needs nothing beyond the standard library and NumPy."""
+    """UNI18: the unit system needs nothing beyond the standard library and NumPy, its notation not even NumPy."""
 
     ## A small program that imports one module and prints the name of every module that importing it loaded, one per
     ## line. sys.modules holds every module loaded so far; whatever is in it after the import but not before was
@@ -22,10 +22,21 @@ for name in sorted(set(sys.modules) - before):
     print(name)
 """
 
-    ## Run this test for both modules of the unit system: the units and the constants they use.
-    @pytest.mark.parametrize("module", ["mhdpy.foundation.units", "mhdpy.foundation.constants"])
-    def test_no_further_dependencies(self, module: str) -> None:
-        """Check that importing the unit system imports no third-party package other than NumPy (UNI18)."""
+    ## Run this test for each module of the unit system, with the third-party packages it may use: NumPy for the units
+    ## and the constants they use, none at all for the notation, which the parameters read without NumPy (PAR21).
+    @pytest.mark.parametrize(
+        ("module", "allowed"),
+        [
+            ("mhdpy.foundation.units", {"numpy"}),
+            ("mhdpy.foundation.constants", {"numpy"}),
+            ("mhdpy.foundation.notation", set[str]()),
+        ],
+    )
+    def test_no_further_dependencies(self, module: str, allowed: set[str]) -> None:
+        """Check that importing the unit system imports no third-party package other than NumPy (UNI18).
+
+        Importing the notation imports no third-party package at all, NumPy included.
+        """
         ## The program runs in a fresh Python interpreter, the one running the tests (sys.executable), because this
         ## one has long since imported pytest, Hypothesis and the unit system itself.
         result = subprocess.run(
@@ -36,6 +47,6 @@ for name in sorted(set(sys.modules) - before):
         packages = {name.split(".")[0] for name in result.stdout.split()}
 
         ## sys.stdlib_module_names lists every module of Python's standard library. What is neither in it, nor mhdpy
-        ## itself, nor NumPy, is a further dependency. The set must be empty; if not, the assert shows it.
-        further = packages - sys.stdlib_module_names - {"mhdpy", "numpy"}
+        ## itself, nor an allowed package, is a further dependency. The set must be empty; if not, the assert shows it.
+        further = packages - sys.stdlib_module_names - {"mhdpy"} - allowed
         assert further == set()

@@ -9,7 +9,7 @@ import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
-from mhdpy.foundation import constants, units
+from mhdpy.foundation import constants, notation, units
 from mhdpy.foundation.tests.units.reference import LABELS, LENGTH, MASS, NAMED_UNITS, PI, TIME
 
 ## Examples of values with a unit, each with the number and the factors it must be read as (UNI19): a symbol on its
@@ -41,9 +41,10 @@ MALFORMED_EXAMPLES = [
 # fmt: on
 
 ## The unit symbols of UNI19, each with its value in cgs and its dimensions: the exponents of length, mass, time and
-## temperature, a dimension that does not occur left out. This table is the specification the unit system's own table
-## is checked against. The cgs symbols are the units themselves (value 1), dyn, erg and G follow from them, km is
-## exactly 1e5 cm, and the astronomical symbols take the values of the constants, which are tested on their own (UNI11).
+## temperature, a dimension that does not occur left out. This table is the specification the tables of the notation and
+## the unit system are checked against. The cgs symbols are the units themselves (value 1), dyn, erg and G follow from
+## them, km is exactly 1e5 cm, and the astronomical symbols take the values of the constants, which are tested on their
+## own (UNI11).
 # fmt: off
 SYMBOLS: dict[str, tuple[float, dict[str, float]]] = {
     "cm":   (1.0,                         {"length":  1                                             }),
@@ -127,7 +128,7 @@ class TestValuesWithUnits:
         The number is read as a float, and the expression as its factors: each symbol with its exponent, 1 when none
         is written.
         """
-        value, read = units.parse(text)
+        value, read = notation.parse(text)
 
         ## The number is read exactly as written, so == is right: float("1e-27") is the double nearest to 1e-27, as is
         ## the literal 1e-27 in the list above. It is a float even when written without a decimal point, as "10".
@@ -149,14 +150,14 @@ class TestValuesWithUnits:
         ## The message must contain the string as Python writes it, in quotes. match= is a regular expression, in which
         ## characters such as ^ and . have meanings of their own; re.escape makes them match literally.
         with pytest.raises(ValueError, match=re.escape(repr(text))):
-            units.parse(text)
+            notation.parse(text)
 
     def test_half_integer_exponents(self) -> None:
         """Check that an exponent may be a half-integer written with a decimal point, such as g^0.5 (UNI19)."""
         ## The gauss in base units, g^0.5 cm^-0.5 s^-1, with positive and negative half-integers, and a larger one.
         ## Halves are exact in double precision, so the exponents can be compared with ==.
-        assert units.parse("1 g^0.5 cm^-0.5 s^-1") == (1.0, {"g": 0.5, "cm": -0.5, "s": -1})
-        assert units.parse("2 s^-1.5") == (2.0, {"s": -1.5})
+        assert notation.parse("1 g^0.5 cm^-0.5 s^-1") == (1.0, {"g": 0.5, "cm": -0.5, "s": -1})
+        assert notation.parse("2 s^-1.5") == (2.0, {"s": -1.5})
 
     ## Run this test once for every named unit with a label, the magnetic field included.
     @pytest.mark.parametrize("name", list(LABELS))
@@ -166,7 +167,7 @@ class TestValuesWithUnits:
         Its dimensions must be those of the named unit, so that the unit a file reports is a unit a user can write.
         """
         ## A label is a unit expression without a number, so it is read with the number 1 in front.
-        _, factors = units.parse(f"1 {system.label(name)}")
+        _, factors = notation.parse(f"1 {system.label(name)}")
         assert dimensions(factors) == {**NAMED_UNITS, "magnetic_field": MAGNETIC_FIELD}[name]
 
     ## Run this test once for each symbol of the table above.
@@ -179,13 +180,14 @@ class TestValuesWithUnits:
         """
         value, dimensions = SYMBOLS[symbol]
 
-        ## The unit system's table holds the same symbols as the specification, no more and no fewer. A symbol added
-        ## to one table but not the other fails here, in every case.
-        assert set(units.SYMBOLS) == set(SYMBOLS)
+        ## The notation's table of dimensions and the unit system's table of values hold the same symbols as the
+        ## specification, no more and no fewer. A symbol added to one table but not another fails here, in every case.
+        assert set(notation.SYMBOLS) == set(SYMBOLS)
+        assert set(units.SYMBOL_VALUES) == set(SYMBOLS)
 
         ## Each value is exact: 1, 1e5 or a constant, taken over without any arithmetic, so == is right.
-        assert units.SYMBOLS[symbol].value == value
-        assert units.SYMBOLS[symbol].dimensions == dimensions
+        assert units.SYMBOL_VALUES[symbol] == value
+        assert notation.SYMBOLS[symbol] == dimensions
 
     ## Run this test for a misspelt symbol, SI units, and a known symbol in the wrong case: each string with the symbol
     ## that must be named in the message.
@@ -200,7 +202,7 @@ class TestValuesWithUnits:
         ## The message names the unknown symbol, in quotes; the string itself is named too, but the symbol is what
         ## tells the user which part of the string to correct.
         with pytest.raises(ValueError, match=re.escape(repr(symbol))):
-            units.parse(text)
+            notation.parse(text)
 
     ## ---- How a value with a unit is converted to code units (UNI20) ----
 

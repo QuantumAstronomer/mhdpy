@@ -5,9 +5,10 @@
 Layer L0 of mhdpy, the foundation: the services every other layer builds on.
 
 The foundation is the bottom layer of mhdpy's layered architecture (``docs/architecture.md`` §3). It holds what every
-higher layer needs and what depends on nothing above it: the unit system and the physical constants, and, as they are
-built, the compute kernels in compiled and uncompiled form, the worker threads and reductions, the declared parameters
-and logging. Nothing in this layer knows about meshes, physics modules or simulations.
+higher layer needs and what depends on nothing above it: the unit system, the notation of units and the physical
+constants, and, as they are built, the compute kernels in compiled and uncompiled form, the worker threads and
+reductions, the declared parameters and logging. Nothing in this layer knows about meshes, physics modules or
+simulations.
 
 Each module of the layer describes its purpose in its docstring. The layer's ``README.md`` collects these docstrings in
 one place; it is generated from them with ``uv run nox -s readmes``, and ``uv run nox`` checks that the two agree.
@@ -38,6 +39,38 @@ like the units, so that conversions stay in double precision.
 The requirements are UNI10 and UNI11 in ``docs/requirements/L0-foundation/units.md``, tested in
 ``tests/units/test_constants.py``.
 
+## `mhdpy.foundation.notation`
+
+The notation of units in mhdpy: how a unit is written, and what dimensions it has.
+
+Physical values enter mhdpy as text, written with their unit: a parameter such as a cloud radius of "100 pc" or an
+ambient density of "1e-27 g cm^-3" (PAR09). Values leave it with their unit as text too: the headers of the history and
+the attributes of outputs label every quantity with its cgs unit, such as "g cm^-3" for a density (D14). Both use one
+notation, defined here: a unit expression is one or more factors separated by spaces, each a unit symbol with an
+optional exponent written with ^, so that every label mhdpy writes is also a unit a user can write (UNI19).
+
+This module knows how units are written, not what they are worth. It holds the unit symbols with their dimensions, the
+labels of the named units, a reader for values with a unit, and the dimensions of a unit expression: everything needed
+to check that a value has the right dimensions, and nothing needed to convert it. The values of the symbols in cgs,
+which come from the physical constants, and the conversion to code units are the unit system's (``units.py``).
+
+The split is what lets the parameters check their declarations without the unit system (PAR21). A module declares the
+unit of each numeric parameter, and the parameters check that a named unit exists and that a default such as "100 pc"
+has the dimensions declared, as soon as the module is declared. The unit system, with NumPy behind it, is needed only to
+convert, and is passed to the parameters by a run that has one. This module therefore depends on nothing beyond Python's
+standard library (UNI18).
+
+For example, reading a value with a unit and finding its dimensions::
+
+    from mhdpy.foundation import notation
+
+    number, factors = notation.parse("1e-27 g cm^-3")    ## 1e-27, {"g": 1.0, "cm": -3.0}
+    notation.dimensions(factors)                         ## {"mass": 1.0, "length": -3.0}
+    notation.LABELS["density"]                           ## "g cm^-3"
+
+The requirements this module fulfils are in ``docs/requirements/L0-foundation/units.md`` (UNI04, UNI18, UNI19, UNI20),
+and they are tested with the unit system, in the test package ``tests/units/``.
+
 ## `mhdpy.foundation.units`
 
 The unit system of mhdpy: the relation between code units and physical units (cgs).
@@ -53,9 +86,10 @@ A unit system relates code units to cgs. It is defined by three numbers, the cod
 which every other unit follows; the factor 4 pi is absorbed into the magnetic field, so that no 4 pi appears in the
 equations either. It converts numbers and arrays between code units and cgs, converts between temperature and the ratio
 of pressure to density through the mean molecular weight, and converts the physical constants of ``constants.py`` to
-code units. It also reads values written with a unit, such as "100 pc" or "1e-27 g cm^-3", and converts them to code
-units, refusing a value whose dimensions are not those expected. It cannot be changed once created, and it converts to
-a record of plain values and back, bit for bit.
+code units. It also converts values written with a unit, such as "100 pc" or "1e-27 g cm^-3", to code units, refusing
+a value whose dimensions are not those expected; how such values are written, and their dimensions, is the notation's
+(``notation.py``), while their values in cgs and their conversion are the unit system's. It cannot be changed once
+created, and it converts to a record of plain values and back, bit for bit.
 
 Within mhdpy, the unit system belongs to the foundation (layer L0) and is used at the edges of a simulation, never in
 its computation. Physics modules that need physical constants, such as cooling or self-gravity, receive them converted

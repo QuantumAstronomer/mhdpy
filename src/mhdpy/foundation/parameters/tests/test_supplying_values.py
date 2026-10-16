@@ -9,6 +9,8 @@ import pytest
 from mhdpy.foundation.parameters.declarations import Declarations, Parameter
 from mhdpy.foundation.parameters.resolution import resolve
 from mhdpy.foundation.parameters.tests import NOT_WRITTEN
+from mhdpy.foundation.units.constants import MEGAYEAR, PARSEC, SOLAR_MASS
+from mhdpy.foundation.units.system import UnitSystem
 
 ## The parameters of a small run: a parameter of every type, in four sections, and a number a table deeper, in the table
 ## snapshot of the section output. Their defaults are the bottom layer of every test of PAR06-PAR08.
@@ -67,6 +69,41 @@ BARE_WORDS = [
 
 ## The default of each parameter, by its name: what every parameter resolves to without a file or overrides.
 DEFAULTS = {parameter.name: parameter.default for parameter in DECLARATIONS.parameters}
+
+## The parameters of a problem posed in physical units: a length, a time whose default is given with a unit, a velocity,
+## a list of densities, a temperature in kelvin and a dimensionless number (PAR09).
+PHYSICAL = Declarations(
+    parameters=[
+        Parameter(name="problem.radius", type=float, default=1.0, doc="The radius of the cloud.", unit="length"),
+        Parameter(name="problem.time", type=float, default="10 Myr", doc="The time the run ends at.", unit="time"),
+        Parameter(name="problem.velocity", type=float, default=0.0, doc="The velocity of the cloud.", unit="velocity"),
+        Parameter(
+            name="problem.densities",
+            type=list[float],
+            default=[1.0],
+            doc="The densities of the layers of the cloud.",
+            unit="density",
+        ),
+        Parameter(
+            name="problem.temperature",
+            type=float,
+            default=1e4,
+            doc="The temperature of the cloud.",
+            unit={"temperature": 1},
+        ),
+        Parameter(
+            name="problem.mach",
+            type=float,
+            default=2.0,
+            doc="The Mach number of the shock.",
+            unit="dimensionless",
+        ),
+    ]
+)
+
+## The unit system of the runs in physical units: code units of 1 pc, 1 solar mass and 1 Myr. The conversion itself is
+## tested with the unit system (UNI20); here it is the same conversion, applied to the values of the parameters.
+UNITS = UnitSystem(length=PARSEC, mass=SOLAR_MASS, time=MEGAYEAR)
 
 
 def parameter_file(folder: Path, text: str) -> Path:
@@ -191,44 +228,75 @@ class TestSupplyingValues:
 
     ## ---- Values with a unit (PAR09) ----
 
-    @NOT_WRITTEN
-    def test_value_with_unit_is_converted(self) -> None:
+    def test_value_with_unit_is_converted(self, tmp_path: Path) -> None:
         """Check that a value with a unit is converted to code units by the run's unit system (PAR09, UNI20).
 
         In every layer: the default, the parameter file and the overrides.
         """
-        pytest.fail("Not written yet.")
+        ## problem.time is given with a unit by its default, problem.radius by the file, and problem.velocity by an
+        ## override, written as on a command line without quotes: not valid TOML, so taken as a string (PAR08).
+        file = parameter_file(tmp_path, '[problem]\nradius = "100 pc"\n')
+        parameters = resolve(PHYSICAL, file=file, overrides=["problem.velocity=10 km s^-1"], units=UNITS)
 
-    @NOT_WRITTEN
+        assert parameters["problem.time"] == UNITS.to_code_units("10 Myr", "time")
+        assert parameters["problem.radius"] == UNITS.to_code_units("100 pc", "length")
+        assert parameters["problem.velocity"] == UNITS.to_code_units("10 km s^-1", "velocity")
+
     def test_list_elements_with_units_are_converted(self) -> None:
         """Check that each element of a list may be given with a unit, and is converted on its own (PAR09)."""
-        pytest.fail("Not written yet.")
+        ## One element with a unit and one plain number, in code units already, which stays as it is.
+        overrides = {"problem.densities": ["1e-24 g cm^-3", 2.0]}
+        parameters = resolve(PHYSICAL, overrides=overrides, units=UNITS)
+        assert parameters["problem.densities"] == [UNITS.to_code_units("1e-24 g cm^-3", "density"), 2.0]
 
-    @NOT_WRITTEN
-    def test_plain_number_is_in_code_units(self) -> None:
+    @pytest.mark.parametrize("units", [None, UNITS], ids=["without unit system", "with unit system"])
+    def test_plain_number_is_in_code_units(self, units: UnitSystem | None) -> None:
         """Check that a plain number is taken as a value in code units, with or without a unit system (PAR09).
 
         For a parameter in kelvin, a plain number is in kelvin.
         """
-        pytest.fail("Not written yet.")
+        ## Plain numbers for every parameter with dimensions, problem.time among them: its default with a unit is then
+        ## not used, and needs no unit system.
+        overrides = {
+            "problem.radius": 2.0,
+            "problem.time": 3.0,
+            "problem.velocity": 4.0,
+            "problem.densities": [1.0, 0.5],
+            "problem.temperature": 1e6,
+        }
+        parameters = resolve(PHYSICAL, overrides=overrides, units=units)
+        assert {name: parameters[name] for name in overrides} == overrides
 
-    @NOT_WRITTEN
-    def test_value_with_unit_without_unit_system_is_refused(self) -> None:
+    ## The default of problem.time is "10 Myr": resolved without overrides, the default is the value with a unit.
+    @pytest.mark.parametrize(
+        ("overrides", "name"),
+        [([], "problem.time"), (["problem.time=1.0", "problem.radius=100 pc"], "problem.radius")],
+        ids=["default", "override"],
+    )
+    def test_value_with_unit_without_unit_system_is_refused(self, overrides: list[str], name: str) -> None:
         """Check that a value with a unit is refused when the run has no unit system, a default included (PAR09)."""
-        pytest.fail("Not written yet.")
+        with pytest.raises(ValueError, match=re.escape(repr(name))):
+            resolve(PHYSICAL, overrides=overrides)
 
-    @NOT_WRITTEN
-    def test_value_with_wrong_dimensions_is_refused(self) -> None:
+    @pytest.mark.parametrize(
+        ("override", "name"),
+        [("problem.time=100 pc", "problem.time"), ('problem.densities=["1 pc"]', "problem.densities")],
+        ids=["single value", "element of a list"],
+    )
+    def test_value_with_wrong_dimensions_is_refused(self, override: str, name: str) -> None:
         """Check that a value whose unit has other dimensions than the parameter's is refused (PAR09).
 
         For example "100 pc", a length, given for a time.
         """
-        pytest.fail("Not written yet.")
+        with pytest.raises(ValueError, match=re.escape(repr(name))):
+            resolve(PHYSICAL, overrides=[override], units=UNITS)
 
-    @NOT_WRITTEN
-    def test_dimensionless_parameter_takes_plain_numbers_only(self) -> None:
+    ## A string of a number alone, '"2"', is no plain number either: a number written in quotes is a string in TOML.
+    @pytest.mark.parametrize("override", ["problem.mach=2 cm", 'problem.mach="2"'])
+    def test_dimensionless_parameter_takes_plain_numbers_only(self, override: str) -> None:
         """Check that a value with a unit given for a dimensionless parameter is refused (PAR09)."""
-        pytest.fail("Not written yet.")
+        with pytest.raises(ValueError, match=re.escape("'problem.mach'")):
+            resolve(PHYSICAL, overrides=[override], units=UNITS)
 
     ## ---- Origins (PAR10) ----
 

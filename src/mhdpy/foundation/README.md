@@ -127,15 +127,20 @@ parameter scan or a quick test. Overrides come from the command line, as strings
 Python, as a dictionary; values in strings are read as TOML, the same as in a parameter file, and a value that is not
 valid TOML, such as a bare word, as a string (PAR08).
 
+A number on its own is a value in code units. A value with a unit, a string such as ``"100 pc"`` given for a number in
+any layer, is converted to code units by the unit system of the run (PAR09). It is refused if the run has no unit
+system, if the parameter is dimensionless, or if its unit has other dimensions than the parameter's. The unit system is
+passed in by the run; this module only asks it for its conversion, and never imports it, nor NumPy behind it (PAR21).
+
 Resolving gives the parameters of the run as one read-only mapping from each name to its value. The driver (L6)
 resolves the declarations of all the modules in a run once, before the run starts, and hands each module the values it
 declared.
 
-For example, a run with a parameter file and one override::
+For example, a run with a parameter file, one override and a unit system::
 
     from mhdpy.foundation.parameters.resolution import resolve
 
-    parameters = resolve(declarations, file="run.toml", overrides=["hydro.cfl=0.3"])
+    parameters = resolve(declarations, file="run.toml", overrides=["hydro.cfl=0.3"], units=units)
     parameters["hydro.cfl"]                         ## 0.3
 
 The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR06-PAR10), and they

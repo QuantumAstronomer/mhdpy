@@ -124,7 +124,8 @@ The values of a run come in layers, each replacing the values of the layer below
 declared defaults, then a parameter file, then overrides (PAR06). The defaults suit most runs; a parameter file, in
 TOML, holds the choices of one run and is kept with it; overrides vary one or two values without editing the file, for a
 parameter scan or a quick test. Overrides come from the command line, as strings such as ``"hydro.cfl=0.3"``, or from
-Python, as a dictionary; values in strings are read as TOML, the same as in a parameter file (PAR08).
+Python, as a dictionary; values in strings are read as TOML, the same as in a parameter file, and a value that is not
+valid TOML, such as a bare word, as a string (PAR08).
 
 Resolving gives the parameters of the run as one read-only mapping from each name to its value. The driver (L6)
 resolves the declarations of all the modules in a run once, before the run starts, and hands each module the values it

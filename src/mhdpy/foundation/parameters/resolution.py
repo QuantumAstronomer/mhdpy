@@ -4,7 +4,8 @@ The values of a run come in layers, each replacing the values of the layer below
 declared defaults, then a parameter file, then overrides (PAR06). The defaults suit most runs; a parameter file, in
 TOML, holds the choices of one run and is kept with it; overrides vary one or two values without editing the file, for a
 parameter scan or a quick test. Overrides come from the command line, as strings such as ``"hydro.cfl=0.3"``, or from
-Python, as a dictionary; values in strings are read as TOML, the same as in a parameter file (PAR08).
+Python, as a dictionary; values in strings are read as TOML, the same as in a parameter file, and a value that is not
+valid TOML, such as a bare word, as a string (PAR08).
 
 Resolving gives the parameters of the run as one read-only mapping from each name to its value. The driver (L6)
 resolves the declarations of all the modules in a run once, before the run starts, and hands each module the values it
@@ -94,18 +95,41 @@ def _read_file(path: str | os.PathLike[str]) -> dict[str, Any]:
     return _flatten(document)
 
 
+def _read_value(text: str) -> Any:
+    """Return the value of an override string, read as a TOML value, or as a string if it is not one (PAR08)."""
+    ## Read as the value of a one-line TOML document, so that "0.3" is a float and "true" a boolean, as in a file.
+    try:
+        return tomllib.loads(f"value = {text}")["value"]
+    except tomllib.TOMLDecodeError:
+        ## A bare word such as "no" is not a TOML value. Taken as a string, without the spaces around it, it is refused
+        ## for its type where the parameter is not a string, with a message about the parameter rather than about
+        ## TOML syntax (PAR12).
+        return text.strip()
+
+
 def _read_overrides(overrides: Mapping[str, Any] | Sequence[str]) -> dict[str, Any]:
-    """Return the values of the overrides by their names, a later override replacing an earlier one (PAR06, PAR08)."""
+    """Return the values of the overrides by their names, a later override replacing an earlier one (PAR06, PAR08).
+
+    An override string without "=" is refused, naming the string, as is a single string in place of a list of them.
+    """
     if isinstance(overrides, Mapping):
         return _flatten(overrides)
 
-    ## Strings of the form name=value: the name is everything before the first "=", the value everything after it,
-    ## read as the value of a one-line TOML document, so that "0.3" is a float and "true" a boolean, as in a file.
+    ## A string is itself a sequence of strings, one per character, so that a single override passed without a list
+    ## around it would be read character by character, and refused for its first character, which has no "=".
+    if isinstance(overrides, str):
+        raise TypeError(
+            f"The overrides must be a dictionary or a list of strings, such as [{overrides!r}], not a string."
+        )
+
+    ## Strings of the form name=value: the name is everything before the first "=", the value everything after it.
     ## Assigning in order makes a later override of the same name replace an earlier one.
     values: dict[str, Any] = {}
     for override in overrides:
-        name, _, text = override.partition("=")
-        values[name.strip()] = tomllib.loads(f"value = {text}")["value"]
+        name, equals, text = override.partition("=")
+        if not equals:
+            raise ValueError(f"The override {override!r} is not of the form name=value, such as 'hydro.cfl=0.3'.")
+        values[name.strip()] = _read_value(text)
     return values
 
 
@@ -119,7 +143,9 @@ def resolve(
 
     Each layer replaces the values of the layer below it for the parameters it gives: the defaults, then the file, then
     the overrides, of which a later one replaces an earlier one. A parameter given by no layer keeps its default. A
-    parameter file that is not valid TOML is refused with a ValueError, naming the file and the position of the error.
+    parameter file that is not valid TOML is refused with a ValueError, naming the file and the position of the error,
+    as is an override string without "=", naming the string. A single override string in place of a list of them is
+    refused with a TypeError.
 
     Parameters
     ----------
@@ -129,7 +155,8 @@ def resolve(
         The parameter file, a TOML document. Without it, no value comes from a file.
     overrides : mapping or sequence of str, optional
         Values that replace those of the file and the defaults: a dictionary, by dotted names or nested as in a TOML
-        document, or strings of the form ``"name=value"``, with the value written as in TOML.
+        document, or strings of the form ``"name=value"``, with the value written as in TOML; a value that is not
+        valid TOML, such as a bare word, is taken as a string.
 
     Returns
     -------

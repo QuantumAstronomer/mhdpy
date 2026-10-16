@@ -2,6 +2,7 @@
 
 import re
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -9,12 +10,13 @@ from mhdpy.foundation.parameters.declarations import Declarations, Parameter
 from mhdpy.foundation.parameters.resolution import resolve
 from mhdpy.foundation.parameters.tests import NOT_WRITTEN
 
-## The parameters of a small run: three numbers in two sections, a list, and a number a table deeper, in the table
-## snapshot of the section output. Their defaults are the bottom layer of every test of PAR06 and PAR07.
+## The parameters of a small run: a parameter of every type, in four sections, and a number a table deeper, in the table
+## snapshot of the section output. Their defaults are the bottom layer of every test of PAR06-PAR08.
 DECLARATIONS = Declarations(
     parameters=[
         Parameter(name="hydro.cfl", type=float, default=0.4, doc="The Courant number.", unit="dimensionless"),
         Parameter(name="hydro.gamma", type=float, default=5 / 3, doc="The adiabatic index.", unit="dimensionless"),
+        Parameter(name="hydro.solver", type=str, default="hllc", doc="The Riemann solver."),
         Parameter(name="mesh.nx1", type=int, default=64, doc="The number of cells along x1.", unit="dimensionless"),
         Parameter(name="output.variables", type=list[str], default=["rho"], doc="The variables written."),
         Parameter(
@@ -24,6 +26,7 @@ DECLARATIONS = Declarations(
             doc="The number of steps between snapshots.",
             unit="dimensionless",
         ),
+        Parameter(name="cooling.enabled", type=bool, default=False, doc="Whether the gas cools radiatively."),
     ]
 )
 
@@ -35,6 +38,32 @@ FILE_FORMS = {
     "dotted keys in a table": "[hydro]\ncfl = 0.3\n\n[output]\nsnapshot.every = 10\n",
     "inline tables": "hydro = { cfl = 0.3 }\noutput = { snapshot = { every = 10 } }\n",
 }
+
+## The same two values in each form a dictionary of overrides may take: by dotted names, nested as a TOML document is
+## read, and the two mixed (PAR08).
+DICTIONARY_FORMS: dict[str, dict[str, Any]] = {
+    "dotted names": {"hydro.cfl": 0.3, "output.snapshot.every": 10},
+    "nested": {"hydro": {"cfl": 0.3}, "output": {"snapshot": {"every": 10}}},
+    "mixed": {"hydro": {"cfl": 0.3}, "output.snapshot": {"every": 10}},
+}
+
+## Override strings with a value of each type, written as in TOML, with the name and the value each gives (PAR08). The
+## last has spaces around the "=", as a string in quotes on a command line may.
+STRING_OVERRIDES = [
+    ("hydro.cfl=0.3", "hydro.cfl", 0.3),
+    ("mesh.nx1=128", "mesh.nx1", 128),
+    ("cooling.enabled=true", "cooling.enabled", True),
+    ('hydro.solver="hlld"', "hydro.solver", "hlld"),
+    ('output.variables=["rho", "pressure"]', "output.variables", ["rho", "pressure"]),
+    ("mesh.nx1 = 128", "mesh.nx1", 128),
+]
+
+## Override strings whose value is not valid TOML, a bare word without quotes, with the string each gives (PAR08).
+BARE_WORDS = [
+    ("hydro.solver=hlld", "hlld"),
+    ("hydro.solver = hlld", "hlld"),
+    ("hydro.solver=roe fix", "roe fix"),
+]
 
 ## The default of each parameter, by its name: what every parameter resolves to without a file or overrides.
 DEFAULTS = {parameter.name: parameter.default for parameter in DECLARATIONS.parameters}
@@ -116,33 +145,49 @@ class TestSupplyingValues:
 
     ## ---- Overrides (PAR08) ----
 
-    @NOT_WRITTEN
-    def test_overrides_as_dictionary(self) -> None:
+    @pytest.mark.parametrize("overrides", list(DICTIONARY_FORMS.values()), ids=list(DICTIONARY_FORMS))
+    def test_overrides_as_dictionary(self, overrides: dict[str, Any]) -> None:
         """Check that overrides given as a dictionary, with dotted names or nested as in TOML, give the same (PAR08)."""
-        pytest.fail("Not written yet.")
+        parameters = resolve(DECLARATIONS, overrides=overrides)
+        assert dict(parameters) == DEFAULTS | {"hydro.cfl": 0.3, "output.snapshot.every": 10}
 
-    @NOT_WRITTEN
-    def test_overrides_as_strings(self) -> None:
+    @pytest.mark.parametrize(("override", "name", "value"), STRING_OVERRIDES, ids=[o for o, _, _ in STRING_OVERRIDES])
+    def test_overrides_as_strings(self, override: str, name: str, value: Any) -> None:
         """Check that an override "name=value" is read with its value as TOML (PAR08).
 
-        "hydro.cfl=0.3" gives a float, "cooling.enabled=true" a boolean, "output.variables=["rho"]" a list, and
-        "problem.radius="100 pc"" a string.
+        "hydro.cfl=0.3" gives a float, "mesh.nx1=128" an integer, "cooling.enabled=true" a boolean,
+        'hydro.solver="hlld"' a string and 'output.variables=["rho", "pressure"]' a list.
         """
-        pytest.fail("Not written yet.")
+        parameters = resolve(DECLARATIONS, overrides=[override])
 
-    @NOT_WRITTEN
-    def test_invalid_value_is_taken_as_string(self) -> None:
-        """Check that a value that is not valid TOML is taken as a string (PAR08).
+        ## The type is compared as well, as == alone cannot tell them apart in Python: 1 == 1.0 == True.
+        assert parameters[name] == value
+        assert type(parameters[name]) is type(value)
 
-        "cooling.enabled=no" is then refused for its type, with a message about the parameter rather than about TOML
-        syntax (PAR12).
+    @pytest.mark.parametrize(("override", "value"), BARE_WORDS, ids=[override for override, _ in BARE_WORDS])
+    def test_invalid_value_is_taken_as_string(self, override: str, value: str) -> None:
+        """Check that a value that is not valid TOML is taken as a string, without the spaces around it (PAR08).
+
+        A bare word such as "cooling.enabled=no" is then refused for its type, with a message about the parameter
+        rather than about TOML syntax; that is tested with the types (PAR12).
         """
-        pytest.fail("Not written yet.")
+        parameters = resolve(DECLARATIONS, overrides=[override])
+        assert parameters["hydro.solver"] == value
 
-    @NOT_WRITTEN
-    def test_override_without_equals_is_refused(self) -> None:
+    @pytest.mark.parametrize("override", ["hydro.cfl 0.3", "hydro.cfl"])
+    def test_override_without_equals_is_refused(self, override: str) -> None:
         """Check that an override string without "=", such as "hydro.cfl 0.3", is refused, naming the string (PAR08)."""
-        pytest.fail("Not written yet.")
+        with pytest.raises(ValueError, match=re.escape(repr(override))):
+            resolve(DECLARATIONS, overrides=[override])
+
+    def test_single_string_is_refused(self) -> None:
+        """Check that a single override string given in place of a list of them is refused, naming it (PAR08).
+
+        A string is itself a sequence of strings, one per character, and would otherwise be read as one override per
+        character. The message advises passing a list.
+        """
+        with pytest.raises(TypeError, match=re.escape("['hydro.cfl=0.3']")):
+            resolve(DECLARATIONS, overrides="hydro.cfl=0.3")
 
     ## ---- Values with a unit (PAR09) ----
 

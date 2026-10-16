@@ -63,6 +63,53 @@ MALFORMED_NAMES = [
 ]
 # fmt: on
 
+## Types of PAR03, each with a default the declaration accepts and the unit it needs. Besides a default of the type
+## itself, a float takes an integer, which PAR12 accepts and converts, and a value with a unit (PAR09), alone or in a
+## list. Any, for the same reason as in DECLARATIONS.
+# fmt: off
+ACCEPTED: list[tuple[Any, Any, Any]] = [
+    (bool,        True,                None           ),
+    (int,         64,                  "dimensionless"),
+    (float,       0.4,                 "dimensionless"),
+    (float,       1,                   "dimensionless"),
+    (float,       "100 pc",            {"length": 1}  ),
+    (str,         "hllc",              None           ),
+    (list[bool],  [True, False],       None           ),
+    (list[int],   [1, 2],              "dimensionless"),
+    (list[float], [0.1, 2],            "dimensionless"),
+    (list[float], ["1 pc", 2.5],       {"length": 1}  ),
+    (list[str],   ["rho", "pressure"], None           ),
+]
+
+## Types outside PAR03, each refused for the reason in its comment.
+UNSUPPORTED: list[Any] = [
+    dict,               ## a mapping
+    tuple,              ## a tuple, not a list
+    complex,            ## a number TOML cannot write
+    type(None),         ## no value at all
+    list,               ## a list without the type of its elements
+    list[int | str],    ## a list of mixed types
+    list[list[int]],    ## a list of lists
+    dict[str, float],   ## a mapping with typed keys and values
+]
+
+## Defaults that are not of their declared type, by the rules of PAR12, each with the unit its type needs.
+WRONG_DEFAULTS: list[tuple[Any, Any, Any]] = [
+    (int,         64.0,             "dimensionless"),  ## a float for an int, although whole
+    (int,         True,             "dimensionless"),  ## a boolean for an int, though Python counts it one
+    (int,         "64",             "dimensionless"),  ## a string for an int
+    (float,       False,            "dimensionless"),  ## a boolean for a float
+    (float,       "0.4",            "dimensionless"),  ## a string for a float that is not a value with a unit
+    (bool,        1,                None           ),  ## an integer for a bool
+    (bool,        "true",           None           ),  ## a string for a bool
+    (str,         1.0,              None           ),  ## a number for a str
+    (list[float], 0.4,              "dimensionless"),  ## a single value for a list
+    (list[str],   ("rho",),         None           ),  ## a tuple for a list
+    (list[int],   [1, 2.0],         "dimensionless"),  ## an element of the wrong type
+    (list[float], [0.1, "x"],       "dimensionless"),  ## an element that is not a value with a unit
+]
+# fmt: on
+
 
 class TestDeclarations:
     """PAR01-PAR05: a parameter exists because a module declares it, with everything mhdpy needs to know about it."""
@@ -154,32 +201,65 @@ class TestDeclarations:
 
     ## ---- Types (PAR03) ----
 
-    @NOT_WRITTEN
-    def test_supported_types_are_accepted(self) -> None:
-        """Check that bool, int, float, str and lists of each are accepted as types (PAR03)."""
-        pytest.fail("Not written yet.")
+    ## Run this test once for each type and default of ACCEPTED, named by both.
+    @pytest.mark.parametrize(("type_", "default", "unit"), ACCEPTED, ids=[f"{t}-{d!r}" for t, d, _ in ACCEPTED])
+    def test_supported_types_are_accepted(self, type_: Any, default: Any, unit: Any) -> None:
+        """Check that bool, int, float, str and lists of each are accepted as types, with defaults of them (PAR03).
 
-    @NOT_WRITTEN
-    def test_unsupported_type_is_refused(self) -> None:
-        """Check that any other type, such as dict, tuple or complex, or a list of mixed types, is refused (PAR03)."""
-        pytest.fail("Not written yet.")
+        A float also takes an integer default and a default with a unit, alone or in a list (PAR12, PAR09).
+        """
+        ## type_, with a trailing underscore, because the name type is Python's own.
+        parameter = Parameter(name="test.value", type=type_, default=default, doc="A parameter.", unit=unit)
+        assert parameter.type == type_
+        assert parameter.default == default
 
-    @NOT_WRITTEN
-    def test_default_of_wrong_type_is_refused(self) -> None:
+    ## Run this test once for each type of UNSUPPORTED.
+    @pytest.mark.parametrize("type_", UNSUPPORTED, ids=str)
+    def test_unsupported_type_is_refused(self, type_: Any) -> None:
+        """Check that any other type, such as dict, tuple or complex, or a list of mixed types, is refused (PAR03).
+
+        The refusal is a TypeError, as Python's own for a value of the wrong type, and names the parameter.
+        """
+        with pytest.raises(TypeError, match="'test.value'"):
+            Parameter(name="test.value", type=type_, default=None, doc="A parameter.")
+
+    ## Run this test once for each type and default of WRONG_DEFAULTS, named by both.
+    @pytest.mark.parametrize(
+        ("type_", "default", "unit"), WRONG_DEFAULTS, ids=[f"{t}-{d!r}" for t, d, _ in WRONG_DEFAULTS]
+    )
+    def test_default_of_wrong_type_is_refused(self, type_: Any, default: Any, unit: Any) -> None:
         """Check that a default that is not of the declared type is refused, naming the parameter (PAR03).
 
         By the rules of PAR12: a float default for an int parameter is refused, an int default for a float parameter
-        is not.
+        is not (see the test above).
         """
-        pytest.fail("Not written yet.")
+        with pytest.raises(TypeError, match="'test.value'"):
+            Parameter(name="test.value", type=type_, default=default, doc="A parameter.", unit=unit)
 
-    @NOT_WRITTEN
     def test_default_failing_its_check_is_refused(self) -> None:
         """Check that a default that does not satisfy the declared check is refused, naming the parameter (PAR03).
 
         A plain default is checked when declared; a default with a unit is checked when resolved, in code units (PAR13).
         """
-        pytest.fail("Not written yet.")
+        in_unit_interval = Check(lambda value: 0 < value <= 1, "in (0, 1]")
+
+        ## The message names the parameter and states the condition in the words of the declaration.
+        with pytest.raises(ValueError, match=re.escape("'hydro.cfl' must be in (0, 1]")):
+            Parameter(
+                name="hydro.cfl",
+                type=float,
+                default=1.5,
+                doc="The Courant number.",
+                unit="dimensionless",
+                check=in_unit_interval,
+            )
+
+        ## A default with a unit cannot be checked yet: the condition applies in code units, and a declaration knows no
+        ## unit system. So a negative radius is accepted here, and refused when the parameters are resolved.
+        positive = Check(lambda value: value > 0, "positive")
+        Parameter(
+            name="cloud.radius", type=float, default="-100 pc", doc="A radius.", unit={"length": 1}, check=positive
+        )
 
     @NOT_WRITTEN
     def test_default_with_wrong_dimensions_is_refused(self) -> None:

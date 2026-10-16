@@ -31,7 +31,9 @@ import re
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from types import GenericAlias
-from typing import Any
+from typing import Any, TypeIs, get_args, get_origin
+
+from mhdpy.foundation.units import notation
 
 ## The public interface of this module (D15.7): only names listed here are meant for use outside it.
 __all__ = ["Check", "Parameter"]
@@ -41,6 +43,71 @@ __all__ = ["Check", "Parameter"]
 ## Python identifier, in ASCII only, which makes every part a bare key in TOML and a section on the command line without
 ## quoting. Python's own str.isidentifier would also accept letters outside ASCII, which TOML does not.
 _NAME = re.compile(r"[a-z_][a-z0-9_]*(?:\.[a-z_][a-z0-9_]*)+")
+
+
+## The four types of PAR03 a value, or every element of a list, may have: exactly those TOML writes without ambiguity
+## and JSON records exactly.
+_SCALARS = (bool, int, float, str)
+
+
+def _element_type(type_: type | GenericAlias) -> type | None:
+    """Return the type of a parameter's single values: the type itself, or the type of a list's elements (PAR03).
+
+    None means that the type is not one of PAR03: neither one of the four types, nor a list of one of them.
+    """
+    ## get_origin(list[float]) is list and get_args(list[float]) is (float,); for list itself, without the type of its
+    ## elements, get_origin is None. Comparing the arguments with (scalar,) refuses list[int | str] and list[int, str].
+    for scalar in _SCALARS:
+        if type_ is scalar or (get_origin(type_) is list and get_args(type_) == (scalar,)):
+            return scalar
+    return None
+
+
+def _type_name(type_: object) -> str:
+    """Return the name of a type as it is written in Python, such as ``float`` or ``list[float]``, for messages."""
+    ## A generic type such as list[float] is written by str(); its __name__ would be "list" alone.
+    return str(type_) if isinstance(type_, GenericAlias) else getattr(type_, "__name__", repr(type_))
+
+
+def _is_list(value: object) -> TypeIs[list[object]]:
+    """Return whether a value is a list, telling the type checker that its elements may be of any type."""
+    ## TypeIs makes the type checker treat the value as list[object] where this returns True, rather than as a list of
+    ## elements of unknown type, which strict type checking refuses to iterate over.
+    return isinstance(value, list)
+
+
+def _has_unit(text: str) -> bool:
+    """Return whether a string is a value with a unit (UNI19), such as ``"100 pc"``."""
+    try:
+        notation.parse(text)
+    except ValueError:
+        return False
+    return True
+
+
+def _of_type(value: object, scalar: type) -> bool:
+    """Return whether a single value is of one of the four types of PAR03, by the rules of PAR12.
+
+    An integer is accepted for a float, and a string only if it is a value with a unit (PAR09); a boolean is accepted
+    for nothing but a bool, and a float is not accepted for an int even when its value is whole.
+    """
+    ## bool is a subclass of int in Python, so True would pass for an integer: it is told apart first.
+    if isinstance(value, bool):
+        return scalar is bool
+    if scalar is float:
+        return isinstance(value, int | float) or (isinstance(value, str) and _has_unit(value))
+
+    ## For the others the type must be exactly the declared one: type(64.0) is float, not int.
+    return type(value) is scalar
+
+
+def _fits(default: Any, type_: type | GenericAlias, scalar: type) -> bool:
+    """Return whether a default is of its parameter's type: a single value, or a list whose every element is (PAR03)."""
+    if get_origin(type_) is not list:
+        return _of_type(default, scalar)
+
+    ## A list takes a list only, not a tuple or a single value, and every one of its elements is checked alike.
+    return _is_list(default) and all(_of_type(value, scalar) for value in default)
 
 
 ## frozen=True: a check cannot be changed once made, like the declaration it belongs to. A dataclass rather than a
@@ -138,3 +205,25 @@ class Parameter:
         ## description, or one of spaces only, says nothing.
         if self.check is not None and not self.check.description.strip():
             raise ValueError(f"The check of {self.name!r} has no description in words, such as 'in (0, 1]'.")
+
+        ## The type must be one of PAR03, and the default of that type. Both are refused with a TypeError, as Python
+        ## refuses a value of the wrong type.
+        scalar = _element_type(self.type)
+        if scalar is None:
+            raise TypeError(
+                f"The type {_type_name(self.type)} of {self.name!r} is not bool, int, float, str or a list of one."
+            )
+        if not _fits(self.default, self.type, scalar):
+            raise TypeError(
+                f"The default {self.default!r} of {self.name!r} is not of its type, {_type_name(self.type)}."
+            )
+
+        ## The check applies to a plain default now. A default given with a unit, a string for a float, alone or in a
+        ## list, is checked when the parameters are resolved: the condition applies in code units, and a declaration
+        ## knows no unit system (PAR13).
+        with_unit = scalar is float and (
+            isinstance(self.default, str)
+            or (_is_list(self.default) and any(isinstance(value, str) for value in self.default))
+        )
+        if self.check is not None and not with_unit and not self.check.condition(self.default):
+            raise ValueError(f"The default of {self.name!r} must be {self.check.description}, got {self.default!r}.")

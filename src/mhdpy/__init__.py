@@ -10,7 +10,8 @@ The package is in early development: its foundation layer (L0) is being built, s
 
 from importlib.metadata import version
 
-from mhdpy import _kernel_mode
+## Imported under a name with an underscore, so that it does not appear as part of mhdpy's own interface (mhdpy.mode).
+from mhdpy.foundation.kernels import mode as _kernel_mode
 
 ## Must run before any kernel is imported: selects compiled or uncompiled kernels (MHDPY_KERNELS, D04.3).
 _kernel_mode.install()

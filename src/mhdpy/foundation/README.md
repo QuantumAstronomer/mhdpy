@@ -5,14 +5,62 @@
 Layer L0 of mhdpy, the foundation: the services every other layer builds on.
 
 The foundation is the bottom layer of mhdpy's layered architecture (``docs/architecture.md`` §3). It holds what every
-higher layer needs and what depends on nothing above it: the unit system with its notation and the physical constants,
-the parameters, and, as they are built, the compute kernels in compiled and uncompiled form, the worker threads and
+higher layer needs and what depends on nothing above it: the switch between compiled and uncompiled kernels, the unit
+system with its notation and the physical constants, the parameters, and, as they are built, the worker threads and
 reductions, and logging. Nothing in this layer knows about meshes, physics modules or simulations.
 
-Each component of the layer is a package of its own, such as ``units`` and ``parameters``, with its tests in a package
-``tests/`` next to its modules (D01.4). Every package and module describes its purpose in its docstring. The layer's
-``README.md`` collects these docstrings in one place, a section per component; it is generated from them with ``uv run
-nox -s readmes``, and ``uv run nox`` checks that the two agree.
+Each component of the layer is a package of its own, such as ``kernels``, ``units`` and ``parameters``, with its tests
+in a package ``tests/`` next to its modules (D01.4). Every package and module describes its purpose in its docstring.
+The layer's ``README.md`` collects these docstrings in one place, a section per component; it is generated from them
+with ``uv run nox -s readmes``, and ``uv run nox`` checks that the two agree.
+
+## `mhdpy.foundation.kernels`
+
+The kernels of mhdpy, compiled or uncompiled: the switch between the two, and the first kernel (decision D04).
+
+A kernel is a function that does the numerical work on the arrays of a block: a reconstruction, a Riemann solver, an
+update. Kernels are written once, as ``.py`` files in Cython's pure Python mode, and run in two ways (D04.1, D04.3).
+Compiled, by meson into extension modules, they run at the speed a production run needs; uncompiled, as plain Python,
+they can be measured for coverage and stepped through in a debugger. The tests check that both ways give bit-for-bit
+identical results. The kernels themselves belong to the layers that use them; this package holds what every kernel
+relies on:
+
+- ``mode.py``, the switch: the environment variable ``MHDPY_KERNELS`` selects compiled kernels (the default) or
+  uncompiled ones, for the whole package, when mhdpy is imported.
+- ``backend.py``, the first and simplest kernel: it reports whether the kernels run compiled, and in doing so shows
+  that the build compiles kernels at all.
+
+Like every component, this package imports none of its modules itself; ``mhdpy/__init__.py`` imports the switch, before
+any kernel is imported. The tests are in the test package ``tests/`` next to the modules.
+
+### `mhdpy.foundation.kernels.backend`
+
+The first kernel of mhdpy: facts about the compute backend that the rest of the package needs at run time.
+
+This module is compiled by meson like every kernel (D04.1), and it is the simplest one possible: a function that reports
+whether it runs compiled. Since all kernels run in the same mode (``mode.py``), that tells the rest of mhdpy, and the
+tests, how every kernel runs. It is also the proof that the build compiles kernels at all: a wheel whose kernels failed
+to compile would report False here, and its tests would fail.
+
+The type checker reads the stub ``backend.pyi`` next to this file, because it cannot interpret Cython's types in a
+kernel's source.
+
+### `mhdpy.foundation.kernels.mode`
+
+The switch between compiled and uncompiled kernels: run mhdpy's kernels compiled (the default) or as plain Python.
+
+Kernels are written in Cython's pure Python mode, so every kernel exists twice in an installation: as a compiled
+extension module and as its ``.py`` source, installed next to it under the same name (D04.1). Python always imports the
+compiled module. Setting the environment variable ``MHDPY_KERNELS=uncompiled`` before mhdpy is imported makes every
+module of mhdpy load from its source instead (D04.3).
+
+The uncompiled kernels are there for checking, not for running simulations. Coverage is measured with them, because
+coverage cannot look inside compiled code, and a debugger can step through them; the tests of each kernel check that
+both ways give bit-for-bit identical results, comparing the selected kernels with an uncompiled copy loaded next to
+them. ``uv run nox`` runs every test both ways and combines the coverage of the two runs (D16).
+
+The switch acts when mhdpy is imported: ``mhdpy/__init__.py`` calls ``install`` before any kernel is imported, and an
+unknown value of ``MHDPY_KERNELS`` is refused there and then. The tests are in ``tests/test_backend.py``.
 
 ## `mhdpy.foundation.parameters`
 

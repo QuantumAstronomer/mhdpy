@@ -95,7 +95,7 @@ include = ["src", "noxfile.py"]
 ## D04: pyright cannot interpret Cython's types in kernel sources, so their diagnostics are ignored. "ignore" rather
 ## than "exclude", because the editor (Pylance) still reports excluded files while they are open. Each kernel is typed
 ## for its callers by a .pyi stub next to it.
-ignore = ["src/mhdpy/_backend.py"]
+ignore = ["src/mhdpy/foundation/kernels/backend.py"]
 ## The lowest supported Python version (D01.2), so that no newer language feature slips in unnoticed.
 pythonVersion = "3.13"
 typeCheckingMode = "strict"

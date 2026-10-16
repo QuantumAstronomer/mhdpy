@@ -1,10 +1,17 @@
-"""Run mhdpy's kernels compiled (the default) or uncompiled, as plain Python (decision D04.3).
+"""The switch between compiled and uncompiled kernels: run mhdpy's kernels compiled (the default) or as plain Python.
 
 Kernels are written in Cython's pure Python mode, so every kernel exists twice in an installation: as a compiled
-extension module and as its ``.py`` source, installed next to it. Python always imports the compiled module. Setting the
-environment variable ``MHDPY_KERNELS=uncompiled`` before mhdpy is imported makes every module of mhdpy load from its
-source instead. Coverage is measured that way, because coverage cannot look inside compiled code; the tests check that
-both ways give bit-for-bit identical results.
+extension module and as its ``.py`` source, installed next to it under the same name (D04.1). Python always imports the
+compiled module. Setting the environment variable ``MHDPY_KERNELS=uncompiled`` before mhdpy is imported makes every
+module of mhdpy load from its source instead (D04.3).
+
+The uncompiled kernels are there for checking, not for running simulations. Coverage is measured with them, because
+coverage cannot look inside compiled code, and a debugger can step through them; the tests of each kernel check that
+both ways give bit-for-bit identical results, comparing the selected kernels with an uncompiled copy loaded next to
+them. ``uv run nox`` runs every test both ways and combines the coverage of the two runs (D16).
+
+The switch acts when mhdpy is imported: ``mhdpy/__init__.py`` calls ``install`` before any kernel is imported, and an
+unknown value of ``MHDPY_KERNELS`` is refused there and then. The tests are in ``tests/test_backend.py``.
 """
 
 import importlib.resources

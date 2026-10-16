@@ -14,7 +14,9 @@ passed in by the run; this module only asks it for its conversion, and never imp
 
 Resolving gives the parameters of the run as one read-only mapping from each name to its value. The driver (L6)
 resolves the declarations of all the modules in a run once, before the run starts, and hands each module the values it
-declared.
+declared. Next to the values, the parameters record the origin of each: the layer it came from, the parameter file by
+name, and the value as it was given there, such as ``"100 pc"`` (PAR10). The driver logs the values that are not
+defaults when a run starts, and every mistake is reported with its origin (PAR14).
 
 For example, a run with a parameter file, one override and a unit system::
 
@@ -22,6 +24,7 @@ For example, a run with a parameter file, one override and a unit system::
 
     parameters = resolve(declarations, file="run.toml", overrides=["hydro.cfl=0.3"], units=units)
     parameters["hydro.cfl"]                         ## 0.3
+    parameters.origins["hydro.cfl"].source          ## "override"
 
 The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR06-PAR10), and they
 are tested in ``tests/test_supplying_values.py``.
@@ -30,13 +33,15 @@ are tested in ``tests/test_supplying_values.py``.
 import os
 import tomllib
 from collections.abc import Iterator, Mapping, Sequence
-from typing import Any, Protocol, TypeIs
+from dataclasses import dataclass
+from types import MappingProxyType
+from typing import Any, Literal, Protocol, TypeIs
 
 from mhdpy.foundation.parameters.declarations import Declarations, Parameter
 from mhdpy.foundation.units import notation
 
 ## The public interface of this module (D15.7): only names listed here are meant for use outside it.
-__all__ = ["Parameters", "UnitConverter", "resolve"]
+__all__ = ["Origin", "Parameters", "UnitConverter", "resolve"]
 
 
 class UnitConverter(Protocol):
@@ -52,16 +57,44 @@ class UnitConverter(Protocol):
         ...
 
 
+## frozen=True and kw_only=True, as for a declaration: an origin cannot be changed once recorded, and its items are
+## given by name, Origin(source="file", value=0.3, file="run.toml").
+@dataclass(frozen=True, kw_only=True)
+class Origin:
+    """Where the value of a parameter came from, and the value as it was given there (PAR10).
+
+    Parameters
+    ----------
+    source : {"default", "file", "override"}
+        The layer that gave the value: the declared default, the parameter file or an override.
+    value : bool, int, float, str or list
+        The value as it was given, before any conversion: for a value with a unit the string, such as ``"100 pc"``,
+        and for a list the whole list. The value in code units is the one the parameters give by name.
+    file : str, optional
+        The name of the parameter file, as it was passed to ``resolve``, if the value came from it; None otherwise.
+    """
+
+    ## A Literal, so that the type checker refuses a comparison with a misspelt layer, such as source == "defaults".
+    ## The restart record joins the layers with the restarts (PAR15).
+    source: Literal["default", "file", "override"]
+    value: Any
+    file: str | None = None
+
+
 class Parameters(Mapping[str, Any]):
     """The resolved parameters of a run: each name with its value, read by name and never changed (PAR06, PAR18).
 
     A mapping, so that a value is read as ``parameters["hydro.cfl"]``, and the names and values can be gone through
-    as those of a dictionary. It has no way of changing a value: Mapping, unlike dict, defines no assignment.
+    as those of a dictionary. It has no way of changing a value: Mapping, unlike dict, defines no assignment. The
+    origin of each value is recorded next to it, in ``origins`` (PAR10).
     """
 
-    def __init__(self, values: Mapping[str, Any]) -> None:
-        ## A copy, so that the parameters cannot be changed through the dictionary they were made from either.
+    def __init__(self, values: Mapping[str, Any], origins: Mapping[str, Origin]) -> None:
+        ## Copies, so that the parameters cannot be changed through the dictionaries they were made from either. The
+        ## origins are kept behind a MappingProxyType, a read-only view of a dictionary, since they are handed out
+        ## as they are.
         self._values = dict(values)
+        self._origins = MappingProxyType(dict(origins))
 
     def __getitem__(self, name: str) -> Any:
         """Return the value of a parameter by its name."""
@@ -74,6 +107,11 @@ class Parameters(Mapping[str, Any]):
     def __len__(self) -> int:
         """Return the number of parameters."""
         return len(self._values)
+
+    @property
+    def origins(self) -> Mapping[str, Origin]:
+        """The origin of the value of each parameter, by its name: where it came from and how it was given (PAR10)."""
+        return self._origins
 
 
 def _is_table(value: object) -> TypeIs[Mapping[str, Any]]:
@@ -226,16 +264,24 @@ def resolve(
     Returns
     -------
     parameters : Parameters
-        The value of every declared parameter, by its name.
+        The value of every declared parameter, by its name, and its origin, in ``parameters.origins``.
     """
-    ## The layers, from the bottom up: each update replaces the values of the names it gives, and leaves the others.
-    values = {parameter.name: parameter.default for parameter in declarations.parameters}
+    ## The layers, from the bottom up, each recording the origin of the values it gives, with the value as given: each
+    ## replaces the origins of the names it gives, and leaves the others (PAR10).
+    origins = {
+        parameter.name: Origin(source="default", value=parameter.default) for parameter in declarations.parameters
+    }
     if file is not None:
-        values.update(_read_file(file))
-    values.update(_read_overrides(overrides))
+        ## The name as passed, a path turned into its string, as the user wrote it.
+        file_name = os.fspath(file)
+        for name, value in _read_file(file).items():
+            origins[name] = Origin(source="file", value=value, file=file_name)
+    for name, value in _read_overrides(overrides).items():
+        origins[name] = Origin(source="override", value=value)
 
-    ## Values with a unit are converted once the layers are combined, so that a default with a unit needs a unit
-    ## system only if no other layer replaces it (PAR06, PAR09).
+    ## The values, from the values as given, those with a unit converted once the layers are combined, so that a
+    ## default with a unit needs a unit system only if no other layer replaces it (PAR06, PAR09).
+    values = {name: origin.value for name, origin in origins.items()}
     for parameter in declarations.parameters:
         values[parameter.name] = _to_code_units(parameter, values[parameter.name], units)
-    return Parameters(values)
+    return Parameters(values, origins)

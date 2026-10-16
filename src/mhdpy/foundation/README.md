@@ -134,7 +134,9 @@ passed in by the run; this module only asks it for its conversion, and never imp
 
 Resolving gives the parameters of the run as one read-only mapping from each name to its value. The driver (L6)
 resolves the declarations of all the modules in a run once, before the run starts, and hands each module the values it
-declared.
+declared. Next to the values, the parameters record the origin of each: the layer it came from, the parameter file by
+name, and the value as it was given there, such as ``"100 pc"`` (PAR10). The driver logs the values that are not
+defaults when a run starts, and every mistake is reported with its origin (PAR14).
 
 For example, a run with a parameter file, one override and a unit system::
 
@@ -142,6 +144,7 @@ For example, a run with a parameter file, one override and a unit system::
 
     parameters = resolve(declarations, file="run.toml", overrides=["hydro.cfl=0.3"], units=units)
     parameters["hydro.cfl"]                         ## 0.3
+    parameters.origins["hydro.cfl"].source          ## "override"
 
 The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR06-PAR10), and they
 are tested in ``tests/test_supplying_values.py``.

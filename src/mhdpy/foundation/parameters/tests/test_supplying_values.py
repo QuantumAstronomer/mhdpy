@@ -7,8 +7,7 @@ from typing import Any
 import pytest
 
 from mhdpy.foundation.parameters.declarations import Declarations, Parameter
-from mhdpy.foundation.parameters.resolution import resolve
-from mhdpy.foundation.parameters.tests import NOT_WRITTEN
+from mhdpy.foundation.parameters.resolution import Origin, resolve
 from mhdpy.foundation.units.constants import MEGAYEAR, PARSEC, SOLAR_MASS
 from mhdpy.foundation.units.system import UnitSystem
 
@@ -300,18 +299,38 @@ class TestSupplyingValues:
 
     ## ---- Origins (PAR10) ----
 
-    @NOT_WRITTEN
-    def test_origin_is_recorded(self) -> None:
+    def test_origin_is_recorded(self, tmp_path: Path) -> None:
         """Check that each resolved value records its origin: the default, the parameter file by name, or an override.
 
         The origin of a value from the restart record is tested with the restarts (PAR10, PAR15).
         """
-        pytest.fail("Not written yet.")
+        ## hydro.cfl is given by the file and an override, hydro.gamma by the file alone, mesh.nx1 by an override alone,
+        ## and the other parameters by no layer.
+        file = parameter_file(tmp_path, "[hydro]\ncfl = 0.3\ngamma = 1.4\n")
+        parameters = resolve(DECLARATIONS, file=file, overrides=["hydro.cfl=0.2", "mesh.nx1=128"])
+        origins = parameters.origins
 
-    @NOT_WRITTEN
-    def test_value_as_given_is_recorded(self) -> None:
+        ## One origin for every declared parameter, from the highest layer that gives it. The file is named only for a
+        ## value that came from it, by the name it was passed as.
+        assert set(origins) == set(DEFAULTS)
+        assert origins["hydro.cfl"] == Origin(source="override", value=0.2)
+        assert origins["hydro.gamma"] == Origin(source="file", value=1.4, file=str(file))
+        assert origins["mesh.nx1"] == Origin(source="override", value=128)
+        assert origins["hydro.solver"] == Origin(source="default", value="hllc")
+
+    def test_value_as_given_is_recorded(self, tmp_path: Path) -> None:
         """Check that each resolved value records the value as it was given: for a value with a unit, the string.
 
         "100 pc" is kept next to its value in code units (PAR10).
         """
-        pytest.fail("Not written yet.")
+        file = parameter_file(tmp_path, '[problem]\nradius = "100 pc"\n')
+        overrides = {"problem.densities": ["1e-24 g cm^-3", 2.0]}
+        parameters = resolve(PHYSICAL, file=file, overrides=overrides, units=UNITS)
+        origins = parameters.origins
+
+        ## The value in code units is read by name; its origin keeps the string as given. A list is kept whole, and a
+        ## default with a unit, problem.time, as declared.
+        assert parameters["problem.radius"] == UNITS.to_code_units("100 pc", "length")
+        assert origins["problem.radius"].value == "100 pc"
+        assert origins["problem.densities"].value == ["1e-24 g cm^-3", 2.0]
+        assert origins["problem.time"].value == "10 Myr"

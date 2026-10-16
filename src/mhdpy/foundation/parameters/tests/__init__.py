@@ -1,8 +1,10 @@
 """Tests of the parameters: requirements PAR01-PAR23 (docs/requirements/L0-foundation/parameters.md).
 
 One test module per group of requirements in that document, each with a class of the same scope; each test names the
-requirements it checks in its docstring.
+requirements it checks in its docstring. What several test modules need is defined here once.
 """
+
+from pathlib import Path
 
 import pytest
 
@@ -13,3 +15,10 @@ import pytest
 ## be forgotten once the test is written. When a test is written, its marker is removed, and when no test uses the
 ## marker any more, so is this definition.
 NOT_WRITTEN = pytest.mark.xfail(reason="not written yet", raises=pytest.fail.Exception, strict=True)
+
+
+def parameter_file(folder: Path, text: str) -> Path:
+    """Return the path of a parameter file with the given text, written in a folder of the test's own."""
+    path = folder / "run.toml"
+    path.write_text(text)
+    return path

@@ -138,6 +138,11 @@ declared. Next to the values, the parameters record the origin of each: the laye
 name, and the value as it was given there, such as ``"100 pc"`` (PAR10). The driver logs the values that are not
 defaults when a run starts, and every mistake is reported with its origin (PAR14).
 
+Every value is checked against its declaration before the parameters are returned. A name that no module declared is
+refused, with the closest declared name as a suggestion where one is close enough to be a likely misspelling, so that
+a misspelt parameter never silently leaves its default in place (PAR11). The mistakes are reported together, as one
+ParameterError that lists each with its origin (PAR14).
+
 For example, a run with a parameter file, one override and a unit system::
 
     from mhdpy.foundation.parameters.resolution import resolve
@@ -146,8 +151,8 @@ For example, a run with a parameter file, one override and a unit system::
     parameters["hydro.cfl"]                         ## 0.3
     parameters.origins["hydro.cfl"].source          ## "override"
 
-The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR06-PAR10), and they
-are tested in ``tests/test_supplying_values.py``.
+The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR06-PAR14), and they
+are tested in ``tests/test_supplying_values.py`` and ``tests/test_checks.py``.
 
 ### `mhdpy.foundation.parameters.values`
 

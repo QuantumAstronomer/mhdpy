@@ -18,6 +18,11 @@ declared. Next to the values, the parameters record the origin of each: the laye
 name, and the value as it was given there, such as ``"100 pc"`` (PAR10). The driver logs the values that are not
 defaults when a run starts, and every mistake is reported with its origin (PAR14).
 
+Every value is checked against its declaration before the parameters are returned. A name that no module declared is
+refused, with the closest declared name as a suggestion where one is close enough to be a likely misspelling, so that
+a misspelt parameter never silently leaves its default in place (PAR11). The mistakes are reported together, as one
+ParameterError that lists each with its origin (PAR14).
+
 For example, a run with a parameter file, one override and a unit system::
 
     from mhdpy.foundation.parameters.resolution import resolve
@@ -26,10 +31,11 @@ For example, a run with a parameter file, one override and a unit system::
     parameters["hydro.cfl"]                         ## 0.3
     parameters.origins["hydro.cfl"].source          ## "override"
 
-The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR06-PAR10), and they
-are tested in ``tests/test_supplying_values.py``.
+The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR06-PAR14), and they
+are tested in ``tests/test_supplying_values.py`` and ``tests/test_checks.py``.
 """
 
+import difflib
 import os
 import tomllib
 from collections.abc import Iterator, Mapping, Sequence
@@ -42,7 +48,7 @@ from mhdpy.foundation.parameters.values import is_list
 from mhdpy.foundation.units import notation
 
 ## The public interface of this module (D15.7): only names listed here are meant for use outside it.
-__all__ = ["Origin", "Parameters", "UnitConverter", "resolve"]
+__all__ = ["Mistake", "Origin", "ParameterError", "Parameters", "UnitConverter", "resolve"]
 
 
 class UnitConverter(Protocol):
@@ -81,6 +87,13 @@ class Origin:
     value: Any
     file: str | None = None
 
+    def __str__(self) -> str:
+        """Return where the value came from, in words, as a report of mistakes shows it (PAR14).
+
+        "default", "override", or "parameter file" with the file's name, such as "parameter file run.toml".
+        """
+        return f"parameter file {self.file}" if self.source == "file" else self.source
+
 
 class Parameters(Mapping[str, Any]):
     """The resolved parameters of a run: each name with its value, read by name and never changed (PAR06, PAR18).
@@ -113,6 +126,55 @@ class Parameters(Mapping[str, Any]):
     def origins(self) -> Mapping[str, Origin]:
         """The origin of the value of each parameter, by its name: where it came from and how it was given (PAR10)."""
         return self._origins
+
+
+## frozen=True and kw_only=True, as for an origin: a mistake cannot be changed once found, and its items are given by
+## name.
+@dataclass(frozen=True, kw_only=True)
+class Mistake:
+    """A mistake in the value of a parameter, found when the parameters of a run are resolved (PAR11-PAR14).
+
+    Parameters
+    ----------
+    name : str
+        The name the value was given for, declared or not.
+    origin : Origin
+        Where the value came from, with the value as it was given there (PAR10).
+    message : str
+        What is wrong and what was expected, in words, starting with the name, such as
+        ``"'hydro.cfll' is not a declared parameter; did you mean 'hydro.cfl'?"``.
+    """
+
+    name: str
+    origin: Origin
+    message: str
+
+    def __str__(self) -> str:
+        """Return the mistake as a line of a report: its origin, then its message (PAR14)."""
+        return f"{self.origin}: {self.message}"
+
+
+class ParameterError(ValueError):
+    """The mistakes in the values of a run's parameters, all reported at once, as one error (PAR14).
+
+    A ValueError, as the values are wrong rather than of a wrong kind of object. Its message lists every mistake on a
+    line of its own, with its origin; ``mistakes`` holds them, for a program to go through.
+
+    Parameters
+    ----------
+    mistakes : sequence of Mistake
+        The mistakes, in the order they are reported.
+    """
+
+    def __init__(self, mistakes: Sequence[Mistake]) -> None:
+        ## A tuple, so that the mistakes cannot be changed once raised.
+        self.mistakes = tuple(mistakes)
+
+        ## The message: a heading with the number of mistakes, then each mistake on a line of its own.
+        noun = "mistake" if len(self.mistakes) == 1 else "mistakes"
+        heading = f"The parameters of the run have {len(self.mistakes)} {noun}:"
+        lines = [f"- {mistake}" for mistake in self.mistakes]
+        super().__init__("\n".join([heading, *lines]))
 
 
 def _is_table(value: object) -> TypeIs[Mapping[str, Any]]:
@@ -191,6 +253,16 @@ def _read_overrides(overrides: Mapping[str, Any] | Sequence[str]) -> dict[str, A
     return values
 
 
+def _unknown_name(name: str, origin: Origin, declared: Sequence[str]) -> Mistake:
+    """Return the mistake of a name that is not declared, with the closest declared name if one is close (PAR11)."""
+    ## difflib compares the names as strings of characters and returns the closest declared one whose similarity, a
+    ## number between 0 for nothing in common and 1 for the same name, is at least 0.6: close enough to be a likely
+    ## misspelling, as "hydro.cfll" and "hdyro.cfl" are of "hydro.cfl" (E15.2).
+    closest = difflib.get_close_matches(name, declared, n=1)
+    suggestion = f"; did you mean {closest[0]!r}?" if closest else "."
+    return Mistake(name=name, origin=origin, message=f"{name!r} is not a declared parameter{suggestion}")
+
+
 def _convert(parameter: Parameter, value: object, units: UnitConverter | None) -> object:
     """Return a single value of a parameter in code units: a value with a unit converted, any other as it is (PAR09)."""
     ## A string given for a number is a value with a unit. A plain number is in code units already, or in kelvin, and a
@@ -237,6 +309,9 @@ def resolve(
     as is an override string without "=", naming the string. A single override string in place of a list of them is
     refused with a TypeError.
 
+    A name that no parameter is declared by is refused with a ParameterError, which lists every such name with its
+    origin, and with the closest declared name where one is close enough to be a likely misspelling (PAR11, PAR14).
+
     A value with a unit, such as ``"100 pc"``, is converted to code units by the unit system, in whichever layer it is
     given, the default included. It is refused with a ValueError, naming the parameter, if there is no unit system, if
     the parameter is dimensionless, or if its unit has other dimensions than the parameter's.
@@ -272,6 +347,13 @@ def resolve(
             origins[name] = Origin(source="file", value=value, file=file_name)
     for name, value in _read_overrides(overrides).items():
         origins[name] = Origin(source="override", value=value)
+
+    ## Every name the file and the overrides give that no parameter is declared by, in the order they were given: the
+    ## names of the defaults come first in the origins, and a new name joins them where it is first given (PAR11).
+    declared = [parameter.name for parameter in declarations.parameters]
+    mistakes = [_unknown_name(name, origin, declared) for name, origin in origins.items() if name not in declared]
+    if mistakes:
+        raise ParameterError(mistakes)
 
     ## The values, from the values as given, those with a unit converted once the layers are combined, so that a
     ## default with a unit needs a unit system only if no other layer replaces it (PAR06, PAR09).

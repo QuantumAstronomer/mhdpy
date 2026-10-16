@@ -1,8 +1,24 @@
 """Tests of the checks of values against their declarations: names, types, conditions, all at once (PAR11-PAR14)."""
 
+from pathlib import Path
+
 import pytest
 
-from mhdpy.foundation.parameters.tests import NOT_WRITTEN
+from mhdpy.foundation.parameters.declarations import Declarations, Parameter
+from mhdpy.foundation.parameters.resolution import Origin, ParameterError, resolve
+from mhdpy.foundation.parameters.tests import NOT_WRITTEN, parameter_file
+
+## The parameters of a small run, one of every type of PAR03, against which the values of the tests are checked.
+DECLARATIONS = Declarations(
+    parameters=[
+        Parameter(name="hydro.cfl", type=float, default=0.4, doc="The Courant number.", unit="dimensionless"),
+        Parameter(name="hydro.gamma", type=float, default=5 / 3, doc="The adiabatic index.", unit="dimensionless"),
+        Parameter(name="hydro.solver", type=str, default="hllc", doc="The Riemann solver."),
+        Parameter(name="mesh.nx1", type=int, default=64, doc="The number of cells along x1.", unit="dimensionless"),
+        Parameter(name="output.variables", type=list[str], default=["rho"], doc="The variables written."),
+        Parameter(name="cooling.enabled", type=bool, default=False, doc="Whether the gas cools radiatively."),
+    ]
+)
 
 
 class TestChecks:
@@ -10,23 +26,44 @@ class TestChecks:
 
     ## ---- Unknown names (PAR11) ----
 
-    @NOT_WRITTEN
-    def test_unknown_name_is_refused(self) -> None:
+    def test_unknown_name_is_refused(self, tmp_path: Path) -> None:
         """Check that a name that is not declared is refused, naming it, from a file and from an override (PAR11)."""
-        pytest.fail("Not written yet.")
+        ## gravity.constant, in the file, and mesh.nx3, an override, are declared by no module of this run.
+        file = parameter_file(tmp_path, "[gravity]\nconstant = 1.0\n")
+        with pytest.raises(ParameterError) as refusal:
+            resolve(DECLARATIONS, file=file, overrides=["mesh.nx3=64"])
 
-    @NOT_WRITTEN
-    def test_misspelt_name_suggests_the_closest(self) -> None:
+        ## Both are refused together, in the order they were given, each with its origin; the message names both.
+        ## refusal.value is the error that was raised.
+        mistakes = refusal.value.mistakes
+        assert [mistake.name for mistake in mistakes] == ["gravity.constant", "mesh.nx3"]
+        assert mistakes[0].origin == Origin(source="file", value=1.0, file=str(file))
+        assert mistakes[1].origin == Origin(source="override", value=64)
+        assert "'gravity.constant'" in str(refusal.value)
+        assert "'mesh.nx3'" in str(refusal.value)
+
+    @pytest.mark.parametrize("name", ["hydro.cfll", "hdyro.cfl"])
+    def test_misspelt_name_suggests_the_closest(self, name: str) -> None:
         """Check that the message for a misspelt name suggests the closest declared name (PAR11).
 
         "hydro.cfll" and "hdyro.cfl" are both answered with "hydro.cfl".
         """
-        pytest.fail("Not written yet.")
+        with pytest.raises(ParameterError) as refusal:
+            resolve(DECLARATIONS, overrides=[f"{name}=0.3"])
 
-    @NOT_WRITTEN
+        ## The one mistake, unpacked from the tuple of mistakes, which fails if there are more.
+        (mistake,) = refusal.value.mistakes
+        assert mistake.name == name
+        assert mistake.message.endswith("did you mean 'hydro.cfl'?")
+
     def test_no_suggestion_when_nothing_is_close(self) -> None:
         """Check that a name close to no declared name is refused without a suggestion (PAR11)."""
-        pytest.fail("Not written yet.")
+        with pytest.raises(ParameterError) as refusal:
+            resolve(DECLARATIONS, overrides=["gravity.constant=1.0"])
+
+        (mistake,) = refusal.value.mistakes
+        assert "'gravity.constant'" in mistake.message
+        assert "did you mean" not in mistake.message
 
     ## ---- Types (PAR12) ----
 

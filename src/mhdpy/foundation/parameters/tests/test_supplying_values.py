@@ -8,6 +8,7 @@ import pytest
 
 from mhdpy.foundation.parameters.declarations import Declarations, Parameter
 from mhdpy.foundation.parameters.resolution import Origin, resolve
+from mhdpy.foundation.parameters.tests import parameter_file
 from mhdpy.foundation.units.constants import MEGAYEAR, PARSEC, SOLAR_MASS
 from mhdpy.foundation.units.system import UnitSystem
 
@@ -103,13 +104,6 @@ PHYSICAL = Declarations(
 ## The unit system of the runs in physical units: code units of 1 pc, 1 solar mass and 1 Myr. The conversion itself is
 ## tested with the unit system (UNI20); here it is the same conversion, applied to the values of the parameters.
 UNITS = UnitSystem(length=PARSEC, mass=SOLAR_MASS, time=MEGAYEAR)
-
-
-def parameter_file(folder: Path, text: str) -> Path:
-    """Return the path of a parameter file with the given text, written in a folder of the test's own."""
-    path = folder / "run.toml"
-    path.write_text(text)
-    return path
 
 
 class TestSupplyingValues:

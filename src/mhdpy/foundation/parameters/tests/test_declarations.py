@@ -1,8 +1,44 @@
 """Tests of the declarations of parameters: their items, names, types and units, and the set they form (PAR01-PAR05)."""
 
+from typing import Any
+
 import pytest
 
+from mhdpy.foundation.parameters.declarations import Check, Parameter
 from mhdpy.foundation.parameters.tests import NOT_WRITTEN
+
+## Declarations with every item of PAR01 given, each item by its name: a dimensionless float that may change on restart,
+## a length whose default is given with a unit, and a list of strings, which has no unit. Any, because the items are of
+## different types; the test passes them to Parameter by name, as a module would.
+DECLARATIONS: list[dict[str, Any]] = [
+    {
+        "name": "hydro.cfl",
+        "type": float,
+        "default": 0.4,
+        "doc": "The Courant number.",
+        "unit": "dimensionless",
+        "check": Check(lambda value: 0 < value <= 1, "in (0, 1]"),
+        "changeable": True,
+    },
+    {
+        "name": "cloud.radius",
+        "type": float,
+        "default": "100 pc",
+        "doc": "The radius of the cloud.",
+        "unit": {"length": 1},
+        "check": Check(lambda value: value > 0, "positive"),
+        "changeable": False,
+    },
+    {
+        "name": "output.variables",
+        "type": list[str],
+        "default": ["rho", "p"],
+        "doc": "The variables written to every snapshot.",
+        "unit": None,
+        "check": None,
+        "changeable": True,
+    },
+]
 
 
 class TestDeclarations:
@@ -10,34 +46,63 @@ class TestDeclarations:
 
     ## ---- The items of a declaration (PAR01) ----
 
-    @NOT_WRITTEN
-    def test_declaration_keeps_its_items(self) -> None:
+    ## Run this test once for each declaration above, named by the parameter's name.
+    @pytest.mark.parametrize("items", DECLARATIONS, ids=[items["name"] for items in DECLARATIONS])
+    def test_declaration_keeps_its_items(self, items: dict[str, Any]) -> None:
         """Check that a declaration keeps its name, type, default, documentation, unit, check and restart behaviour.
 
         Each item is read back exactly as declared (PAR01).
         """
-        pytest.fail("Not written yet.")
+        ## **items passes each entry of the dictionary as an argument of that name: Parameter(name="hydro.cfl", ...).
+        parameter = Parameter(**items)
 
-    @NOT_WRITTEN
+        ## Every item reads back as it was given: the default of "100 pc" as that string, not converted, since a
+        ## declaration knows no unit system; the check as the same object.
+        for item, value in items.items():
+            assert getattr(parameter, item) == value, item
+
     def test_fixed_unless_declared_changeable(self) -> None:
         """Check that a parameter declared without restart behaviour is fixed on restart (PAR01)."""
-        pytest.fail("Not written yet.")
+        parameter = Parameter(name="mesh.nx1", type=int, default=64, doc="The number of cells.", unit="dimensionless")
+        assert parameter.changeable is False
 
-    @NOT_WRITTEN
     def test_declaration_without_default_is_refused(self) -> None:
-        """Check that a declaration without a default is refused, naming the parameter (PAR01).
+        """Check that a declaration without a default is refused (PAR01).
 
         There are no required parameters: with the defaults alone, every run can start.
         """
-        pytest.fail("Not written yet.")
+        ## The default is a required item, so Python itself refuses the declaration, with a TypeError that names the
+        ## missing item. The type checker marks the call as an error as well, which is the point; the comment at the
+        ## end of the line tells it that this one is deliberate.
+        with pytest.raises(TypeError, match="default"):
+            Parameter(name="hydro.cfl", type=float, doc="The Courant number.", unit="dimensionless")  # pyright: ignore[reportCallIssue]
 
-    @NOT_WRITTEN
-    def test_check_without_description_is_refused(self) -> None:
-        """Check that a check declared without a description in words is refused (PAR01).
+    ## Run this test for empty documentation and for documentation of spaces only, neither of which documents anything.
+    @pytest.mark.parametrize("doc", ["", "   "])
+    def test_declaration_without_documentation_is_refused(self, doc: str) -> None:
+        """Check that a declaration with empty documentation is refused, naming the parameter (PAR01).
+
+        The documentation is what templates and the reference documentation show of a parameter (PAR20).
+        """
+        with pytest.raises(ValueError, match="'hydro.cfl'"):
+            Parameter(name="hydro.cfl", type=float, default=0.4, doc=doc, unit="dimensionless")
+
+    ## Run this test for an empty description and for one of spaces only, neither of which says anything.
+    @pytest.mark.parametrize("description", ["", "   "])
+    def test_check_without_description_is_refused(self, description: str) -> None:
+        """Check that a check declared without a description in words is refused, naming the parameter (PAR01).
 
         The description is what an error message states as the expected condition (PAR13).
         """
-        pytest.fail("Not written yet.")
+        with pytest.raises(ValueError, match="'hydro.cfl'"):
+            Parameter(
+                name="hydro.cfl",
+                type=float,
+                default=0.4,
+                doc="The Courant number.",
+                unit="dimensionless",
+                check=Check(lambda value: 0 < value <= 1, description),
+            )
 
     ## ---- Names (PAR02) ----
 

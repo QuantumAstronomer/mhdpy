@@ -36,6 +36,36 @@ The component is being built test-first: its requirements are in ``docs/requirem
 and its tests, in the test package ``tests/`` next to this file, are written one by one before the code that fulfils
 them.
 
+### `mhdpy.foundation.parameters.declarations`
+
+The declarations of parameters: what a module states about each parameter it needs.
+
+A parameter exists in mhdpy because a module declares it (D12.1, D15.2). Its declaration states everything the rest of
+mhdpy needs to know about it: its name, the type of its values, its value when nobody sets it, what it means, its unit,
+optionally a condition every value must satisfy, and whether it may change when a run is restarted (PAR01). Users never
+introduce parameters of their own; they only give values to declared ones, which is what makes it possible to refuse a
+misspelt name instead of silently ignoring it (PAR11).
+
+A declaration is checked as soon as it is made, so that a mistake in it is found in the module that made it, by that
+module's own tests, rather than in a user's run.
+
+For example, the Courant number of the hydrodynamics::
+
+    from mhdpy.foundation.parameters.declarations import Check, Parameter
+
+    cfl = Parameter(
+        name="hydro.cfl",
+        type=float,
+        default=0.4,
+        doc="The Courant number: the time step as a fraction of the time a signal takes to cross a cell.",
+        unit="dimensionless",
+        check=Check(lambda value: 0 < value <= 1, "in (0, 1]"),
+        changeable=True,
+    )
+
+The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR01-PAR05), and they
+are tested in ``tests/test_declarations.py``.
+
 ## `mhdpy.foundation.units`
 
 The unit system of mhdpy, with its notation and the physical constants (requirements UNI01-UNI20).

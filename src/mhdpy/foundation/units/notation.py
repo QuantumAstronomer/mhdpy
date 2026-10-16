@@ -7,9 +7,10 @@ notation, defined here: a unit expression is one or more factors separated by sp
 optional exponent written with ^, so that every label mhdpy writes is also a unit a user can write (UNI19).
 
 This module knows how units are written, not what they are worth. It holds the unit symbols with their dimensions, the
-labels of the named units, a reader for values with a unit, and the dimensions of a unit expression: everything needed
-to check that a value has the right dimensions, and nothing needed to convert it. The values of the symbols in cgs,
-which come from the physical constants, and the conversion to code units are the unit system's (``system.py``).
+labels of the named units, a reader for values with a unit, the dimensions of a unit expression, and the dimensions of a
+unit as a conversion or a parameter declares it (``"dimensionless"``, a named unit, or dimensions): everything needed to
+check that a value has the right dimensions, and nothing needed to convert it. The values of the symbols in cgs, which
+come from the physical constants, and the conversion to code units are the unit system's (``system.py``).
 
 The split is what lets the parameters check their declarations without the unit system (PAR21). A module declares the
 unit of each numeric parameter, and the parameters check that a named unit exists and that a default such as "100 pc"
@@ -31,9 +32,14 @@ and they are tested with the unit system, in the test package ``tests/`` next to
 
 import re
 from collections.abc import Mapping
+from typing import TypeIs
 
 ## The public interface of this module (D15.7): only names listed here are meant for use outside it.
-__all__ = ["LABELS", "SYMBOLS", "dimensions", "parse"]
+__all__ = ["DIMENSIONS", "LABELS", "SYMBOLS", "dimensions", "parse", "unit_dimensions"]
+
+## The dimensions a unit may be given in (UNI20, PAR04): length, mass and time, of which code units are made, and the
+## temperature, which code units do not have and which stays in kelvin (UNI10).
+DIMENSIONS = ("length", "mass", "time", "temperature")
 
 ## The label of each named unit's cgs unit (UNI04), exactly as it is to appear in the headers of the history and the
 ## attributes of outputs (D14). Units are written with their cgs names where those exist (dyn, erg), and exponents with
@@ -163,3 +169,64 @@ def dimensions(factors: Mapping[str, float]) -> dict[str, float]:
         for dimension, power in SYMBOLS[symbol].items():
             total[dimension] = total.get(dimension, 0.0) + power * exponent
     return {dimension: power for dimension, power in total.items() if power != 0}
+
+
+def _is_mapping(value: object) -> TypeIs[Mapping[object, object]]:
+    """Return whether a value is a mapping, telling the type checker that its keys and values may be of any type."""
+    return isinstance(value, Mapping)
+
+
+def unit_dimensions(unit: object) -> dict[str, float]:
+    """Return the dimensions of a unit, given in one of the three forms of a conversion or a parameter (UNI20, PAR04).
+
+    The forms are ``"dimensionless"``; the name of a named unit, such as ``"density"``, whose dimensions are those of
+    its label; or dimensions, as the exponents of length, mass, time and temperature, such as ``{"length": 1}``, each
+    a multiple of a quarter, as the dimensions of a unit expression are. A unit of any other form is refused, naming
+    what is wrong in it.
+
+    Parameters
+    ----------
+    unit : str or mapping
+        The unit, in one of the three forms.
+
+    Returns
+    -------
+    dict
+        The exponent of each dimension that occurs, as ``dimensions`` returns them: an exponent of zero is left out.
+    """
+    ## A name: "dimensionless", or a named unit, whose label is a unit expression of its own (UNI19). A misspelt name is
+    ## refused, listing those that exist, rather than raising a KeyError that names only the misspelling.
+    if isinstance(unit, str):
+        if unit == "dimensionless":
+            return {}
+        if unit not in LABELS:
+            raise ValueError(
+                f"Unknown unit {unit!r}: a unit is 'dimensionless', a named unit ({', '.join(LABELS)}), "
+                "or dimensions such as {'length': 1}."
+            )
+        return dimensions(parse(f"1 {LABELS[unit]}")[1])
+
+    ## Anything but a name must be dimensions, given as a mapping from each dimension to its exponent.
+    if not _is_mapping(unit):
+        raise ValueError(
+            f"The unit {unit!r} is not 'dimensionless', a named unit, or dimensions such as {{'length': 1}}."
+        )
+
+    ## Every name must be one of DIMENSIONS, and every exponent a number that a unit expression can have as a dimension:
+    ## a multiple of a quarter, since a symbol may have a half-integer exponent and the gauss has half-integer
+    ## dimensions, so that G^0.5 is length^-0.25 mass^0.25 time^-0.5. A boolean is refused although Python counts it a
+    ## number. float(4 * exponent).is_integer() holds exactly for multiples of a quarter, which are exact in double
+    ## precision, and is False for infinities and NaN. The dimensions are collected
+    ## one by one, each after its checks; an exponent of zero is left out, so that {"length": 0} is dimensionless, as
+    ## dimensions() leaves such exponents out.
+    result: dict[str, float] = {}
+    for dimension, exponent in unit.items():
+        if dimension not in DIMENSIONS:
+            raise ValueError(
+                f"Unknown dimension {dimension!r} in the unit {unit!r}; the dimensions are {', '.join(DIMENSIONS)}."
+            )
+        if isinstance(exponent, bool) or not isinstance(exponent, int | float) or not float(4 * exponent).is_integer():
+            raise ValueError(f"The exponent of {dimension!r} in the unit {unit!r} is not a multiple of a quarter.")
+        if exponent != 0:
+            result[str(dimension)] = float(exponent)
+    return result

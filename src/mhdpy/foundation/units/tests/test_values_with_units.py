@@ -3,6 +3,7 @@
 import math
 import re
 from decimal import Decimal, localcontext
+from typing import Any
 
 import numpy as np
 import pytest
@@ -291,8 +292,8 @@ class TestValuesWithUnits:
         assert abs(actual - 1e6) <= 8 * math.ulp(1e6)
 
     ## Run this test for each value with a unit and a given unit of other dimensions: lengths and densities given for a
-    ## time and a pressure, a temperature for a dimensionless unit, a field without the time dimension, and dimensions
-    ## with a misspelt name. ids=str names each case by its two values.
+    ## time and a pressure, a temperature for a dimensionless unit, and a field without the time dimension. ids=str
+    ## names each case by its two values.
     @pytest.mark.parametrize(
         ("text", "unit"),
         [
@@ -301,7 +302,6 @@ class TestValuesWithUnits:
             ("1e-27 g cm^-3", "pressure"),
             ("1e6 K", "dimensionless"),
             ("1e-6 G", {"length": -0.5, "mass": 0.5}),
-            ("10 km s^-1", {"lenght": 1, "time": -1}),
         ],
         ids=str,
     )
@@ -315,3 +315,17 @@ class TestValuesWithUnits:
             system.to_code_units(text, unit)
         assert repr(text) in str(refusal.value)
         assert repr(unit) in str(refusal.value)
+
+    ## Run this test for each unit of none of the three forms: a misspelt named unit, one in the wrong case, a misspelt
+    ## dimension, exponents that are not multiples of a quarter or not numbers, and a number instead of a unit. Any,
+    ## because these are deliberately not of the type a unit has.
+    @pytest.mark.parametrize(
+        "unit", ["densty", "Density", {"lenght": 1}, {"length": 0.3}, {"length": True}, {"length": "1"}, 5], ids=str
+    )
+    def test_invalid_unit_is_refused(self, system: UnitSystem, unit: Any) -> None:
+        """Check that a unit that is not dimensionless, a named unit or dimensions is refused, naming it (UNI20).
+
+        A misspelt name or dimension is refused as such, rather than as a value of other dimensions.
+        """
+        with pytest.raises(ValueError, match=re.escape(repr(unit))):
+            system.to_code_units("1 pc", unit)

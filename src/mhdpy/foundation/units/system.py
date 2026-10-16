@@ -441,23 +441,22 @@ class UnitSystem:
         """
         number, factors = notation.parse(text)
 
-        ## The dimensions the value must have, and the code unit it is divided by. A named unit takes its dimensions
-        ## from its label, which is a unit expression itself (UNI19), so they cannot disagree with what the label
-        ## says. The label is looked up first: an unknown name raises a KeyError that names it, before getattr could
-        ## find a method of the same name. Its code unit is the named unit itself, which for the magnetic field
-        ## includes the factor sqrt(4 pi) (UNI07). Dimensions given as exponents take their code unit from UNI02, with
-        ## no factor for temperature, and their zero exponents are left out, as notation.dimensions does.
-        if unit == "dimensionless":
-            dimensions, code_unit = {}, 1.0
-        elif isinstance(unit, str):
-            dimensions = notation.dimensions(notation.parse(f"1 {notation.LABELS[unit]}")[1])
+        ## The dimensions the value must have, those of the unit as the notation reads it; a unit of none of the three
+        ## forms, such as a misspelt name or dimension, is refused there, naming it. The unit is checked first, so
+        ## that getattr below can only find a named unit, never a method of the same name.
+        dimensions = notation.unit_dimensions(unit)
+
+        ## The code unit the value is divided by. A named unit is the unit itself, which for the magnetic field
+        ## includes the factor sqrt(4 pi) (UNI07). "dimensionless" and dimensions take their code unit from UNI02, with
+        ## no factor for temperature, which stays in kelvin: 1 for no dimensions at all.
+        if isinstance(unit, str) and unit != "dimensionless":
             code_unit = getattr(self, unit)
         else:
-            dimensions = {dimension: power for dimension, power in unit.items() if power != 0}
-            code_unit = self.unit(length=unit.get("length", 0), mass=unit.get("mass", 0), time=unit.get("time", 0))
+            code_unit = self.unit(
+                length=dimensions.get("length", 0), mass=dimensions.get("mass", 0), time=dimensions.get("time", 0)
+            )
 
-        ## A value whose dimensions differ is refused rather than converted into a number without meaning. This also
-        ## refuses a misspelt dimension, such as "lenght", which no unit expression has.
+        ## A value whose dimensions differ is refused rather than converted into a number without meaning.
         found = notation.dimensions(factors)
         if found != dimensions:
             raise ValueError(f"{text!r} has the dimensions {found}, not those of {unit!r}, {dimensions}.")

@@ -8,6 +8,16 @@ import pytest
 from mhdpy.foundation.parameters.declarations import Check, Parameter
 from mhdpy.foundation.parameters.tests import NOT_WRITTEN
 
+
+def label(value: object) -> str:
+    """Return the name of a value in pytest's report of a test case: a type by its name, as int, others by str().
+
+    Without it, pytest would name a type as <class 'int'>. A generic type such as list[int] is not a class, and str()
+    writes it as it is written in Python already.
+    """
+    return value.__name__ if isinstance(value, type) else str(value)
+
+
 ## Declarations with every item of PAR01 given, each item by its name: a dimensionless float that may change on restart,
 ## a length whose default is given with a unit, and a list of strings, which has no unit. Any, because the items are of
 ## different types; the test passes them to Parameter by name, as a module would.
@@ -108,6 +118,29 @@ WRONG_DEFAULTS: list[tuple[Any, Any, Any]] = [
     (list[int],   [1, 2.0],         "dimensionless"),  ## an element of the wrong type
     (list[float], [0.1, "x"],       "dimensionless"),  ## an element that is not a value with a unit
 ]
+
+## Defaults given with a unit whose dimensions differ from those of the parameter's unit, each for the reason in its
+## comment. The notation finds the dimensions of both without a unit system (PAR03, PAR21).
+WRONG_DIMENSIONS: list[tuple[Any, Any, Any]] = [
+    (float,       "100 pc",           {"time": 1}    ),  ## a length for a time
+    (float,       "100 pc",           "density"      ),  ## a length for a named unit of other dimensions
+    (float,       "100 pc",           "dimensionless"),  ## a length for a pure number
+    (float,       "1e4 K",            {"length": 1}  ),  ## a temperature for a length
+    (list[float], ["1 pc", "1 Myr"],  {"length": 1}  ),  ## one element of a list a time instead of a length
+]
+
+## Each form of unit of PAR04, with a default given with a unit of the same dimensions, or a plain number: a pure
+## number, named units (the magnetic field among them, whose code unit has the factor sqrt(4 pi)), and dimensions,
+## among them a temperature, half-integer exponents and an exponent of zero, which is left out.
+UNIT_FORMS: list[tuple[Any, Any]] = [
+    ("dimensionless",                             0.4             ),
+    ("density",                                   "1e-24 g cm^-3" ),
+    ("magnetic_field",                            "1e-6 G"        ),
+    ({"length": 1, "time": -1},                   "10 km s^-1"    ),
+    ({"temperature": 1},                          "1e4 K"         ),
+    ({"length": -0.5, "mass": 0.5, "time": -1},   1.0             ),
+    ({"length": 2, "mass": 0},                    "1 cm^2"        ),
+]
 # fmt: on
 
 
@@ -202,7 +235,7 @@ class TestDeclarations:
     ## ---- Types (PAR03) ----
 
     ## Run this test once for each type and default of ACCEPTED, named by both.
-    @pytest.mark.parametrize(("type_", "default", "unit"), ACCEPTED, ids=[f"{t}-{d!r}" for t, d, _ in ACCEPTED])
+    @pytest.mark.parametrize(("type_", "default", "unit"), ACCEPTED, ids=[f"{label(t)}-{d!r}" for t, d, _ in ACCEPTED])
     def test_supported_types_are_accepted(self, type_: Any, default: Any, unit: Any) -> None:
         """Check that bool, int, float, str and lists of each are accepted as types, with defaults of them (PAR03).
 
@@ -214,7 +247,7 @@ class TestDeclarations:
         assert parameter.default == default
 
     ## Run this test once for each type of UNSUPPORTED.
-    @pytest.mark.parametrize("type_", UNSUPPORTED, ids=str)
+    @pytest.mark.parametrize("type_", UNSUPPORTED, ids=label)
     def test_unsupported_type_is_refused(self, type_: Any) -> None:
         """Check that any other type, such as dict, tuple or complex, or a list of mixed types, is refused (PAR03).
 
@@ -225,7 +258,7 @@ class TestDeclarations:
 
     ## Run this test once for each type and default of WRONG_DEFAULTS, named by both.
     @pytest.mark.parametrize(
-        ("type_", "default", "unit"), WRONG_DEFAULTS, ids=[f"{t}-{d!r}" for t, d, _ in WRONG_DEFAULTS]
+        ("type_", "default", "unit"), WRONG_DEFAULTS, ids=[f"{label(t)}-{d!r}" for t, d, _ in WRONG_DEFAULTS]
     )
     def test_default_of_wrong_type_is_refused(self, type_: Any, default: Any, unit: Any) -> None:
         """Check that a default that is not of the declared type is refused, naming the parameter (PAR03).
@@ -261,50 +294,84 @@ class TestDeclarations:
             name="cloud.radius", type=float, default="-100 pc", doc="A radius.", unit={"length": 1}, check=positive
         )
 
-    @NOT_WRITTEN
-    def test_default_with_wrong_dimensions_is_refused(self) -> None:
+    ## Run this test once for each case of WRONG_DIMENSIONS, named by the default and the unit.
+    @pytest.mark.parametrize(
+        ("type_", "default", "unit"), WRONG_DIMENSIONS, ids=[f"{d!r}-{u!r}" for _, d, u in WRONG_DIMENSIONS]
+    )
+    def test_default_with_wrong_dimensions_is_refused(self, type_: Any, default: Any, unit: Any) -> None:
         """Check that a default with a unit of other dimensions than the parameter's is refused when declared (PAR03).
 
         For example "100 pc", a length, as the default of a time; no unit system is needed to find it (PAR21).
         """
-        pytest.fail("Not written yet.")
+        with pytest.raises(ValueError, match="'test.value'"):
+            Parameter(name="test.value", type=type_, default=default, doc="A parameter.", unit=unit)
 
     ## ---- Units (PAR04) ----
 
-    @NOT_WRITTEN
-    def test_three_forms_of_unit_are_accepted(self) -> None:
+    ## Run this test once for each unit of UNIT_FORMS, named by the unit.
+    @pytest.mark.parametrize(("unit", "default"), UNIT_FORMS, ids=[repr(unit) for unit, _ in UNIT_FORMS])
+    def test_three_forms_of_unit_are_accepted(self, unit: Any, default: Any) -> None:
         """Check that a numeric parameter accepts each form of unit (PAR04).
 
         Dimensionless; dimensions as exponents of length, mass, time and temperature; or a named unit of the unit
         system, such as "density" or "magnetic_field".
         """
-        pytest.fail("Not written yet.")
+        ## The unit is kept as declared, whatever its form; a default with a unit of the same dimensions is accepted.
+        parameter = Parameter(name="test.value", type=float, default=default, doc="A parameter.", unit=unit)
+        assert parameter.unit == unit
 
-    @NOT_WRITTEN
-    def test_numeric_parameter_without_unit_is_refused(self) -> None:
+    ## Run this test for each numeric type, alone and in a list.
+    @pytest.mark.parametrize(
+        ("type_", "default"), [(int, 1), (float, 1.0), (list[int], [1]), (list[float], [1.0])], ids=label
+    )
+    def test_numeric_parameter_without_unit_is_refused(self, type_: Any, default: Any) -> None:
         """Check that an int or float parameter, or a list of either, declared without a unit is refused (PAR04)."""
-        pytest.fail("Not written yet.")
+        ## A missing unit is a mistake in the declaration, found here, rather than a value that cannot be converted
+        ## in a user's run; dimensionless is stated, not implied.
+        with pytest.raises(ValueError, match="'test.value'"):
+            Parameter(name="test.value", type=type_, default=default, doc="A parameter.")
 
-    @NOT_WRITTEN
-    def test_integer_parameter_is_dimensionless(self) -> None:
+    ## Run this test for an integer with dimensions, one with a named unit, and a list of integers with dimensions.
+    @pytest.mark.parametrize(
+        ("type_", "default", "unit"),
+        [(int, 1, {"length": 1}), (int, 1, "density"), (list[int], [1], {"time": 1})],
+        ids=label,
+    )
+    def test_integer_parameter_is_dimensionless(self, type_: Any, default: Any, unit: Any) -> None:
         """Check that an int parameter, or a list of integers, declared with dimensions or a named unit is refused.
 
         Integers count things, such as cells or steps, and have no dimensions (PAR04).
         """
-        pytest.fail("Not written yet.")
+        with pytest.raises(ValueError, match="'test.value'"):
+            Parameter(name="test.value", type=type_, default=default, doc="A parameter.", unit=unit)
 
-    @NOT_WRITTEN
-    def test_unit_of_bool_or_str_is_refused(self) -> None:
+    ## Run this test for a bool, a str and lists of both, each declared with a unit of some form.
+    @pytest.mark.parametrize(
+        ("type_", "default", "unit"),
+        [
+            (bool, True, "dimensionless"),
+            (str, "hllc", {"length": 1}),
+            (list[bool], [True], "dimensionless"),
+            (list[str], ["rho"], "density"),
+        ],
+        ids=label,
+    )
+    def test_unit_of_bool_or_str_is_refused(self, type_: Any, default: Any, unit: Any) -> None:
         """Check that a bool or str parameter, or a list of either, declared with a unit is refused (PAR04)."""
-        pytest.fail("Not written yet.")
+        with pytest.raises(ValueError, match="'test.value'"):
+            Parameter(name="test.value", type=type_, default=default, doc="A parameter.", unit=unit)
 
-    @NOT_WRITTEN
-    def test_invalid_unit_is_refused(self) -> None:
+    ## Run this test for each unit of none of the three forms: a misspelt named unit, a misspelt dimension, an exponent
+    ## that is not a multiple of a quarter, and a number instead of a unit. The notation's own messages for each are
+    ## tested with the conversion (UNI20); here the refusal must name the parameter.
+    @pytest.mark.parametrize("unit", ["densty", {"lenght": 1}, {"length": 0.3}, 5], ids=label)
+    def test_invalid_unit_is_refused(self, unit: Any) -> None:
         """Check that a unit that is none of the three forms is refused (PAR04).
 
         For example an unknown named unit ("densty"), or dimensions with an unknown name ("lenght").
         """
-        pytest.fail("Not written yet.")
+        with pytest.raises(ValueError, match="'test.value'"):
+            Parameter(name="test.value", type=float, default=1.0, doc="A parameter.", unit=unit)
 
     ## ---- The set of a run's parameters (PAR05) ----
 

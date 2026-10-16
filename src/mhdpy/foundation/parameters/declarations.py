@@ -213,17 +213,50 @@ class Parameter:
             raise TypeError(
                 f"The type {_type_name(self.type)} of {self.name!r} is not bool, int, float, str or a list of one."
             )
+
+        ## The unit (PAR04): every number declares one, an integer is dimensionless, and a bool or str has none. The
+        ## notation finds the dimensions of the unit and refuses one of none of the three forms, such as a misspelt
+        ## named unit or dimension, without the unit system (PAR21).
+        dimensions: dict[str, float] = {}
+        if scalar not in (int, float):
+            if self.unit is not None:
+                raise ValueError(
+                    f"{self.name!r} is of type {_type_name(self.type)}, which has no unit, got {self.unit!r}."
+                )
+        else:
+            if self.unit is None:
+                raise ValueError(
+                    f"{self.name!r} is a number and needs a unit: 'dimensionless', a named unit such as 'density', "
+                    "or dimensions such as {'length': 1}."
+                )
+            try:
+                dimensions = notation.unit_dimensions(self.unit)
+            except ValueError as error:
+                raise ValueError(f"The unit of {self.name!r} is invalid. {error}") from error
+            if scalar is int and dimensions:
+                raise ValueError(
+                    f"{self.name!r} is an integer, which counts things and is dimensionless, but has the unit "
+                    f"{self.unit!r}."
+                )
+
         if not _fits(self.default, self.type, scalar):
             raise TypeError(
                 f"The default {self.default!r} of {self.name!r} is not of its type, {_type_name(self.type)}."
             )
 
-        ## The check applies to a plain default now. A default given with a unit, a string for a float, alone or in a
-        ## list, is checked when the parameters are resolved: the condition applies in code units, and a declaration
-        ## knows no unit system (PAR13).
-        with_unit = scalar is float and (
-            isinstance(self.default, str)
-            or (_is_list(self.default) and any(isinstance(value, str) for value in self.default))
-        )
-        if self.check is not None and not with_unit and not self.check.condition(self.default):
+        ## A default given with a unit, a string for a float, alone or in a list, must have the dimensions of the
+        ## parameter's unit, which the notation finds without the unit system (PAR03, PAR21).
+        values = self.default if _is_list(self.default) else [self.default]
+        texts = [value for value in values if isinstance(value, str)] if scalar is float else []
+        for text in texts:
+            found = notation.dimensions(notation.parse(text)[1])
+            if found != dimensions:
+                raise ValueError(
+                    f"The default {text!r} of {self.name!r} has the dimensions {found}, not those of its unit "
+                    f"{self.unit!r}, {dimensions}."
+                )
+
+        ## The check applies to a plain default now. A default given with a unit is checked when the parameters are
+        ## resolved: the condition applies in code units, and a declaration knows no unit system (PAR13).
+        if self.check is not None and not texts and not self.check.condition(self.default):
             raise ValueError(f"The default of {self.name!r} must be {self.check.description}, got {self.default!r}.")

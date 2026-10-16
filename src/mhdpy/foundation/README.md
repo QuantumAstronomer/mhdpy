@@ -174,9 +174,10 @@ notation, defined here: a unit expression is one or more factors separated by sp
 optional exponent written with ^, so that every label mhdpy writes is also a unit a user can write (UNI19).
 
 This module knows how units are written, not what they are worth. It holds the unit symbols with their dimensions, the
-labels of the named units, a reader for values with a unit, and the dimensions of a unit expression: everything needed
-to check that a value has the right dimensions, and nothing needed to convert it. The values of the symbols in cgs,
-which come from the physical constants, and the conversion to code units are the unit system's (``system.py``).
+labels of the named units, a reader for values with a unit, the dimensions of a unit expression, and the dimensions of a
+unit as a conversion or a parameter declares it (``"dimensionless"``, a named unit, or dimensions): everything needed to
+check that a value has the right dimensions, and nothing needed to convert it. The values of the symbols in cgs, which
+come from the physical constants, and the conversion to code units are the unit system's (``system.py``).
 
 The split is what lets the parameters check their declarations without the unit system (PAR21). A module declares the
 unit of each numeric parameter, and the parameters check that a named unit exists and that a default such as "100 pc"

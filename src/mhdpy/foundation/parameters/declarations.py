@@ -7,11 +7,12 @@ introduce parameters of their own; they only give values to declared ones, which
 misspelt name instead of silently ignoring it (PAR11).
 
 A declaration is checked as soon as it is made, so that a mistake in it is found in the module that made it, by that
-module's own tests, rather than in a user's run.
+module's own tests, rather than in a user's run. The declarations of all the modules in a run are then gathered into
+one set, which is checked as a whole: no name may be declared twice, or be the start of another (PAR05).
 
 For example, the Courant number of the hydrodynamics::
 
-    from mhdpy.foundation.parameters.declarations import Check, Parameter
+    from mhdpy.foundation.parameters.declarations import Check, Declarations, Parameter
 
     cfl = Parameter(
         name="hydro.cfl",
@@ -22,13 +23,14 @@ For example, the Courant number of the hydrodynamics::
         check=Check(lambda value: 0 < value <= 1, "in (0, 1]"),
         changeable=True,
     )
+    declarations = Declarations(parameters=[cfl, ...])
 
 The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR01-PAR05), and they
 are tested in ``tests/test_declarations.py``.
 """
 
 import re
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from types import GenericAlias
 from typing import Any, TypeIs, get_args, get_origin
@@ -36,7 +38,7 @@ from typing import Any, TypeIs, get_args, get_origin
 from mhdpy.foundation.units import notation
 
 ## The public interface of this module (D15.7): only names listed here are meant for use outside it.
-__all__ = ["Check", "Parameter"]
+__all__ = ["Check", "Declarations", "Parameter"]
 
 ## The form of a name (PAR02), as a regular expression: a part, then one or more parts each after a dot. A part is a
 ## lowercase letter or an underscore, followed by any number of lowercase letters, digits and underscores: a lowercase
@@ -260,3 +262,49 @@ class Parameter:
         ## resolved: the condition applies in code units, and a declaration knows no unit system (PAR13).
         if self.check is not None and not texts and not self.check.condition(self.default):
             raise ValueError(f"The default of {self.name!r} must be {self.check.description}, got {self.default!r}.")
+
+
+## frozen=True and kw_only=True, as for a declaration: the set cannot be changed once checked, and its items are given
+## by name, Declarations(parameters=[...]), which leaves room for the alternatives and conditions of PAR22 and PAR23.
+@dataclass(frozen=True, kw_only=True)
+class Declarations:
+    """The parameters of a run, declared together as one set (PAR05).
+
+    Parameters
+    ----------
+    parameters : sequence of Parameter
+        The declarations of every module in the run, in the order they were made. No name may be declared twice, and
+        no name may be the start of another, as ``"output.snapshot"`` is of ``"output.snapshot.dt"``.
+    """
+
+    parameters: Sequence[Parameter]
+
+    def __post_init__(self) -> None:
+        """Refuse a set that breaks the rules of PAR05, naming both parameters involved, and keep it as a tuple.
+
+        A tuple, so that the set cannot be changed through the list it was given as either.
+        """
+        object.__setattr__(self, "parameters", tuple(self.parameters))
+
+        ## A name declared twice, by two modules or by one: the two would compete for its value, and one would silently
+        ## get a value meant for the other. The documentation of both tells a user which declarations they are.
+        by_name: dict[str, Parameter] = {}
+        for parameter in self.parameters:
+            if parameter.name in by_name:
+                first = by_name[parameter.name]
+                raise ValueError(f"{parameter.name!r} is declared twice: as {first.doc!r} and as {parameter.doc!r}.")
+            by_name[parameter.name] = parameter
+
+        ## A name that is the start of another, part by part: "output.snapshot" of "output.snapshot.dt". TOML would
+        ## have to write "output.snapshot" both as a value and as a table, which it cannot. Every shorter name a name
+        ## starts with, of two parts or more, is looked up among the declared names; "output.snap" is not the start of
+        ## "output.snapshot.dt", since only whole parts count.
+        for name in by_name:
+            parts = name.split(".")
+            for length in range(2, len(parts)):
+                start = ".".join(parts[:length])
+                if start in by_name:
+                    raise ValueError(
+                        f"{start!r} and {name!r} cannot both be parameters: a parameter file would have to give "
+                        f"{start!r} both a value and a table of its own."
+                    )

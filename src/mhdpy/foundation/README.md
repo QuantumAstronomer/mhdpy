@@ -95,11 +95,12 @@ introduce parameters of their own; they only give values to declared ones, which
 misspelt name instead of silently ignoring it (PAR11).
 
 A declaration is checked as soon as it is made, so that a mistake in it is found in the module that made it, by that
-module's own tests, rather than in a user's run.
+module's own tests, rather than in a user's run. The declarations of all the modules in a run are then gathered into
+one set, which is checked as a whole: no name may be declared twice, or be the start of another (PAR05).
 
 For example, the Courant number of the hydrodynamics::
 
-    from mhdpy.foundation.parameters.declarations import Check, Parameter
+    from mhdpy.foundation.parameters.declarations import Check, Declarations, Parameter
 
     cfl = Parameter(
         name="hydro.cfl",
@@ -110,6 +111,7 @@ For example, the Courant number of the hydrodynamics::
         check=Check(lambda value: 0 < value <= 1, "in (0, 1]"),
         changeable=True,
     )
+    declarations = Declarations(parameters=[cfl, ...])
 
 The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR01-PAR05), and they
 are tested in ``tests/test_declarations.py``.

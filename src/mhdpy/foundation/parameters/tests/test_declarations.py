@@ -5,8 +5,12 @@ from typing import Any
 
 import pytest
 
-from mhdpy.foundation.parameters.declarations import Check, Parameter
-from mhdpy.foundation.parameters.tests import NOT_WRITTEN
+from mhdpy.foundation.parameters.declarations import Check, Declarations, Parameter
+
+
+def declared(name: str, doc: str = "A parameter.") -> Parameter:
+    """Return a valid declaration of a dimensionless float under a given name, for the tests of a set (PAR05)."""
+    return Parameter(name=name, type=float, default=1.0, doc=doc, unit="dimensionless")
 
 
 def label(value: object) -> str:
@@ -375,23 +379,53 @@ class TestDeclarations:
 
     ## ---- The set of a run's parameters (PAR05) ----
 
-    @NOT_WRITTEN
     def test_name_declared_twice_is_refused(self) -> None:
         """Check that a set declaring the same name twice is refused, naming both declarations (PAR05)."""
-        pytest.fail("Not written yet.")
+        ## Two modules that each declare "hydro.gamma", told apart by their documentation.
+        first = declared("hydro.gamma", doc="The adiabatic index of the gas.")
+        second = declared("hydro.gamma", doc="The ratio of specific heats.")
 
-    @NOT_WRITTEN
-    def test_name_that_starts_another_is_refused(self) -> None:
+        ## The message names the parameter and both declarations, so that a user can see which modules compete.
+        with pytest.raises(ValueError, match="'hydro.gamma'") as refusal:
+            Declarations(parameters=[first, second])
+        assert first.doc in str(refusal.value)
+        assert second.doc in str(refusal.value)
+
+        ## The same declaration given twice is a name declared twice as well.
+        with pytest.raises(ValueError, match="'hydro.gamma'"):
+            Declarations(parameters=[first, first])
+
+    ## Run this test for a name that is the start of another one part longer, one that is the start of a name two parts
+    ## longer, and the first pair declared the other way round, so that the order of declaration does not matter.
+    @pytest.mark.parametrize(
+        ("first", "second"),
+        [
+            ("output.snapshot", "output.snapshot.dt"),
+            ("output.snapshot", "output.snapshot.every.dt"),
+            ("output.snapshot.dt", "output.snapshot"),
+        ],
+    )
+    def test_name_that_starts_another_is_refused(self, first: str, second: str) -> None:
         """Check that a set with a name that is the start of another is refused, naming both (PAR05).
 
         For example "output.snapshot" and "output.snapshot.dt", which TOML cannot write in one file.
         """
-        pytest.fail("Not written yet.")
+        with pytest.raises(ValueError) as refusal:
+            Declarations(parameters=[declared(first), declared(second)])
+        assert repr(first) in str(refusal.value)
+        assert repr(second) in str(refusal.value)
 
-    @NOT_WRITTEN
-    def test_names_sharing_their_first_letters_are_accepted(self) -> None:
+    ## Run this test for names that share letters but not a whole part: a longer last part, a longer middle part, and a
+    ## longer first part.
+    @pytest.mark.parametrize(
+        ("first", "second"),
+        [("hydro.cfl", "hydro.cfl_max"), ("output.snap", "output.snapshot.dt"), ("hydro.cfl", "hydro2.cfl")],
+    )
+    def test_names_sharing_their_first_letters_are_accepted(self, first: str, second: str) -> None:
         """Check that names that only share their first letters, not a whole part, are accepted (PAR05).
 
         For example "hydro.cfl" and "hydro.cfl_max", or "output.snap" and "output.snapshot.dt".
         """
-        pytest.fail("Not written yet.")
+        ## The set keeps its parameters in the order they were declared.
+        parameters = [declared(first), declared(second)]
+        assert Declarations(parameters=parameters).parameters == tuple(parameters)

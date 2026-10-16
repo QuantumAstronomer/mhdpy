@@ -1,5 +1,6 @@
 """Tests of how parameters are given values: layers, files, overrides, units and origins (PAR06-PAR10)."""
 
+import re
 from pathlib import Path
 
 import pytest
@@ -8,16 +9,32 @@ from mhdpy.foundation.parameters.declarations import Declarations, Parameter
 from mhdpy.foundation.parameters.resolution import resolve
 from mhdpy.foundation.parameters.tests import NOT_WRITTEN
 
-## The parameters of a small run: three numbers in two sections, and a list. Their defaults are the bottom layer of
-## every test of PAR06.
+## The parameters of a small run: three numbers in two sections, a list, and a number a table deeper, in the table
+## snapshot of the section output. Their defaults are the bottom layer of every test of PAR06 and PAR07.
 DECLARATIONS = Declarations(
     parameters=[
         Parameter(name="hydro.cfl", type=float, default=0.4, doc="The Courant number.", unit="dimensionless"),
         Parameter(name="hydro.gamma", type=float, default=5 / 3, doc="The adiabatic index.", unit="dimensionless"),
         Parameter(name="mesh.nx1", type=int, default=64, doc="The number of cells along x1.", unit="dimensionless"),
         Parameter(name="output.variables", type=list[str], default=["rho"], doc="The variables written."),
+        Parameter(
+            name="output.snapshot.every",
+            type=int,
+            default=100,
+            doc="The number of steps between snapshots.",
+            unit="dimensionless",
+        ),
     ]
 )
+
+## The same two values in each form TOML allows: tables, dotted keys, dotted keys in a table, and inline tables. Each
+## gives hydro.cfl, a name of two parts, and output.snapshot.every, a name of three (PAR07).
+FILE_FORMS = {
+    "tables": "[hydro]\ncfl = 0.3\n\n[output.snapshot]\nevery = 10\n",
+    "dotted keys": "hydro.cfl = 0.3\noutput.snapshot.every = 10\n",
+    "dotted keys in a table": "[hydro]\ncfl = 0.3\n\n[output]\nsnapshot.every = 10\n",
+    "inline tables": "hydro = { cfl = 0.3 }\noutput = { snapshot = { every = 10 } }\n",
+}
 
 ## The default of each parameter, by its name: what every parameter resolves to without a file or overrides.
 DEFAULTS = {parameter.name: parameter.default for parameter in DECLARATIONS.parameters}
@@ -70,22 +87,32 @@ class TestSupplyingValues:
 
     ## ---- Parameter files (PAR07) ----
 
-    @NOT_WRITTEN
-    def test_tables_and_dotted_keys_give_the_same_names(self) -> None:
+    @pytest.mark.parametrize("text", list(FILE_FORMS.values()), ids=list(FILE_FORMS))
+    def test_tables_and_dotted_keys_give_the_same_names(self, tmp_path: Path, text: str) -> None:
         """Check that a key in a table and a dotted key give the same parameter (PAR07).
 
         The key "cfl" in the table [hydro] and the dotted key "hydro.cfl" both give "hydro.cfl", as do nested tables
         and dotted keys of more parts.
         """
-        pytest.fail("Not written yet.")
+        file = parameter_file(tmp_path, text)
+        parameters = resolve(DECLARATIONS, file=file)
 
-    @NOT_WRITTEN
-    def test_invalid_file_is_refused(self) -> None:
+        ## Every form gives the same names, so the same values; the parameters the file does not give keep their
+        ## defaults, output.variables among them, next to output.snapshot.every in the same section.
+        assert dict(parameters) == DEFAULTS | {"hydro.cfl": 0.3, "output.snapshot.every": 10}
+
+    def test_invalid_file_is_refused(self, tmp_path: Path) -> None:
         """Check that a file that is not valid TOML is refused, with the file's name and the position of the error.
 
         The position is the line and column the TOML reader reports (PAR07).
         """
-        pytest.fail("Not written yet.")
+        ## The key cfl, on line 2, has no "=" after it: the reader stops at the value, in column 5.
+        file = parameter_file(tmp_path, "[hydro]\ncfl 0.3\n")
+
+        ## re.escape, as the path has dots in it, which match any character in a regular expression.
+        with pytest.raises(ValueError, match=re.escape(str(file))) as refusal:
+            resolve(DECLARATIONS, file=file)
+        assert "line 2, column 5" in str(refusal.value)
 
     ## ---- Overrides (PAR08) ----
 

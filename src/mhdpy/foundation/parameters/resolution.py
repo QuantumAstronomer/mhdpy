@@ -82,10 +82,16 @@ def _flatten(table: Mapping[str, Any], prefix: str = "") -> dict[str, Any]:
 
 
 def _read_file(path: str | os.PathLike[str]) -> dict[str, Any]:
-    """Return the values of a parameter file by their names (PAR07)."""
+    """Return the values of a parameter file by their names, refusing a file that is not valid TOML (PAR07)."""
     ## tomllib reads from a file opened in binary mode, as TOML documents are UTF-8 by definition.
     with open(path, "rb") as file:
-        return _flatten(tomllib.load(file))
+        try:
+            document = tomllib.load(file)
+        except tomllib.TOMLDecodeError as error:
+            ## The reader's message gives the line and column of the error, as "(at line 2, column 5)", but not the
+            ## file, which is added. TOMLDecodeError is itself a ValueError, but one only a TOML reader would expect.
+            raise ValueError(f"The parameter file {os.fspath(path)} is not valid TOML: {error}.") from error
+    return _flatten(document)
 
 
 def _read_overrides(overrides: Mapping[str, Any] | Sequence[str]) -> dict[str, Any]:
@@ -112,7 +118,8 @@ def resolve(
     """Return the parameters of a run, resolved from the declared defaults, a parameter file and overrides (PAR06).
 
     Each layer replaces the values of the layer below it for the parameters it gives: the defaults, then the file, then
-    the overrides, of which a later one replaces an earlier one. A parameter given by no layer keeps its default.
+    the overrides, of which a later one replaces an earlier one. A parameter given by no layer keeps its default. A
+    parameter file that is not valid TOML is refused with a ValueError, naming the file and the position of the error.
 
     Parameters
     ----------

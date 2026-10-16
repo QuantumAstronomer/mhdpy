@@ -1,5 +1,6 @@
 """Tests of the declarations of parameters: their items, names, types and units, and the set they form (PAR01-PAR05)."""
 
+import re
 from typing import Any
 
 import pytest
@@ -39,6 +40,28 @@ DECLARATIONS: list[dict[str, Any]] = [
         "changeable": True,
     },
 ]
+
+
+## Names of the form of PAR02: two or more parts separated by dots, each a lowercase identifier, with digits and
+## underscores after the first character. A quantity named by a Greek letter is written by the letter's name, as
+## "hydro.rho"; the letter itself is refused (MALFORMED_NAMES).
+VALID_NAMES = ["hydro.cfl", "output.snapshot.dt", "cooling.t_floor", "mesh.nx1", "problem.r_0", "hydro.rho"]
+
+## Names of other forms, each refused for the reason in its comment.
+# fmt: off
+MALFORMED_NAMES = [
+    "cfl",                               ## a single part, not namespaced by a module
+    "Hydro.cfl",                         ## an uppercase letter
+    "hydro..cfl",                        ## an empty part
+    ".hydro.cfl",                        ## an empty first part
+    "hydro.cfl.",                        ## an empty last part
+    "hydro.1cfl",                        ## a part that starts with a digit
+    "hydro-x.cfl",                       ## a hyphen
+    "hydro. cfl",                        ## a space
+    "hydro.\N{GREEK SMALL LETTER RHO}",  ## a Greek letter, outside ASCII, which TOML does not allow in a bare key
+    "",                                  ## no name at all
+]
+# fmt: on
 
 
 class TestDeclarations:
@@ -106,22 +129,28 @@ class TestDeclarations:
 
     ## ---- Names (PAR02) ----
 
-    @NOT_WRITTEN
-    def test_valid_names_are_accepted(self) -> None:
+    ## Run this test once for each name of VALID_NAMES.
+    @pytest.mark.parametrize("name", VALID_NAMES)
+    def test_valid_names_are_accepted(self, name: str) -> None:
         """Check that names of two or more dotted parts, each a lowercase identifier, are accepted (PAR02).
 
         For example "hydro.cfl", "output.snapshot.dt" and "cooling.t_floor".
         """
-        pytest.fail("Not written yet.")
+        parameter = Parameter(name=name, type=float, default=0.4, doc="A parameter.", unit="dimensionless")
+        assert parameter.name == name
 
-    @NOT_WRITTEN
-    def test_malformed_names_are_refused(self) -> None:
+    ## Run this test once for each name of MALFORMED_NAMES. ids= names each case by its string in quotes, so that the
+    ## empty name and the one with a space can be told apart in a report.
+    @pytest.mark.parametrize("name", MALFORMED_NAMES, ids=[repr(name) for name in MALFORMED_NAMES])
+    def test_malformed_names_are_refused(self, name: str) -> None:
         """Check that a name of any other form is refused, naming it (PAR02).
 
         Among them: a single part ("cfl"), an uppercase letter ("Hydro.cfl"), an empty part ("hydro..cfl"), a part that
-        starts with a digit ("hydro.1cfl"), a hyphen ("hydro-x.cfl") and a trailing dot ("hydro.cfl.").
+        starts with a digit ("hydro.1cfl"), a hyphen ("hydro-x.cfl") and a Greek letter.
         """
-        pytest.fail("Not written yet.")
+        ## The message contains the name as Python writes it, in quotes; re.escape makes its dots match literally.
+        with pytest.raises(ValueError, match=re.escape(repr(name))):
+            Parameter(name=name, type=float, default=0.4, doc="A parameter.", unit="dimensionless")
 
     ## ---- Types (PAR03) ----
 

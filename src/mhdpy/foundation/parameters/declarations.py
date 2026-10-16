@@ -27,6 +27,7 @@ The requirements this module fulfils are in ``docs/requirements/L0-foundation/pa
 are tested in ``tests/test_declarations.py``.
 """
 
+import re
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from types import GenericAlias
@@ -34,6 +35,12 @@ from typing import Any
 
 ## The public interface of this module (D15.7): only names listed here are meant for use outside it.
 __all__ = ["Check", "Parameter"]
+
+## The form of a name (PAR02), as a regular expression: a part, then one or more parts each after a dot. A part is a
+## lowercase letter or an underscore, followed by any number of lowercase letters, digits and underscores: a lowercase
+## Python identifier, in ASCII only, which makes every part a bare key in TOML and a section on the command line without
+## quoting. Python's own str.isidentifier would also accept letters outside ASCII, which TOML does not.
+_NAME = re.compile(r"[a-z_][a-z0-9_]*(?:\.[a-z_][a-z0-9_]*)+")
 
 
 ## frozen=True: a check cannot be changed once made, like the declaration it belongs to. A dataclass rather than a
@@ -115,6 +122,13 @@ class Parameter:
         type that breaks the rules of PAR03 is refused with a TypeError, as Python refuses values of the wrong type;
         every other broken rule with a ValueError.
         """
+        ## The name comes first, since every other message names the parameter by it. fullmatch requires the whole
+        ## name to have the form, so that "hydro.cfl." is refused rather than read up to its last dot.
+        if not _NAME.fullmatch(self.name):
+            raise ValueError(
+                f"The name {self.name!r} is not lowercase identifiers joined by dots, such as 'hydro.cfl'."
+            )
+
         ## The documentation is what templates and the reference documentation show of a parameter (PAR20). An empty
         ## one, or one of spaces only, documents nothing.
         if not self.doc.strip():

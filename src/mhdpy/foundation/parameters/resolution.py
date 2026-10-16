@@ -38,6 +38,7 @@ from types import MappingProxyType
 from typing import Any, Literal, Protocol, TypeIs
 
 from mhdpy.foundation.parameters.declarations import Declarations, Parameter
+from mhdpy.foundation.parameters.values import is_list
 from mhdpy.foundation.units import notation
 
 ## The public interface of this module (D15.7): only names listed here are meant for use outside it.
@@ -119,13 +120,6 @@ def _is_table(value: object) -> TypeIs[Mapping[str, Any]]:
     ## TypeIs makes the type checker treat the value as Mapping[str, Any] where this returns True, rather than as a
     ## mapping of keys and values of unknown type, which strict type checking refuses to pass on.
     return isinstance(value, Mapping)
-
-
-def _is_list(value: object) -> TypeIs[list[object]]:
-    """Return whether a value is a list, telling the type checker that its elements may be of any type."""
-    ## As _is_table: the type checker treats the value as list[object] where this returns True, rather than as a list
-    ## of elements of unknown type, which strict type checking refuses to iterate over.
-    return isinstance(value, list)
 
 
 def _flatten(table: Mapping[str, Any], prefix: str = "") -> dict[str, Any]:
@@ -223,7 +217,7 @@ def _convert(parameter: Parameter, value: object, units: UnitConverter | None) -
 
 def _to_code_units(parameter: Parameter, value: object, units: UnitConverter | None) -> object:
     """Return the value of a parameter in code units, a list converted element by element (PAR09)."""
-    if _is_list(value):
+    if is_list(value):
         return [_convert(parameter, element, units) for element in value]
     return _convert(parameter, value, units)
 

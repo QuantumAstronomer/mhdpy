@@ -149,6 +149,24 @@ For example, a run with a parameter file, one override and a unit system::
 The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR06-PAR10), and they
 are tested in ``tests/test_supplying_values.py``.
 
+### `mhdpy.foundation.parameters.values`
+
+The types of the values of parameters: which types a parameter may have, and when a value is of its type.
+
+A parameter's values are of one of four types, bool, int, float and str, or a list of one of them (PAR03): exactly the
+types TOML writes without ambiguity and JSON records exactly, so that every value survives a parameter file and a record
+unchanged (PAR19, PAR20). Whether a value is of its parameter's type is decided by the same rules everywhere: for a
+default when a parameter is declared (PAR03), and for every value a run is given when its parameters are resolved
+(PAR12). An integer is accepted for a float, and a string for a number only if it is a value with a unit, such as
+``"100 pc"`` (PAR09); a boolean is never accepted for a number, nor a float for an integer.
+
+The rules live in this module of their own, rather than in either of the modules that apply them, so that the
+declarations (``declarations.py``) and the resolution (``resolution.py``) share one copy. Like the rest of the
+component, it depends on nothing beyond the standard library and the notation of units (PAR21).
+
+The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR03, PAR12), and they
+are tested through the modules that apply them, in ``tests/test_declarations.py`` and ``tests/test_checks.py``.
+
 ## `mhdpy.foundation.units`
 
 The unit system of mhdpy, with its notation and the physical constants (requirements UNI01-UNI20).

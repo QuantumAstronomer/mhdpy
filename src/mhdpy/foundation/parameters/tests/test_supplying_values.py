@@ -1,8 +1,33 @@
 """Tests of how parameters are given values: layers, files, overrides, units and origins (PAR06-PAR10)."""
 
+from pathlib import Path
+
 import pytest
 
+from mhdpy.foundation.parameters.declarations import Declarations, Parameter
+from mhdpy.foundation.parameters.resolution import resolve
 from mhdpy.foundation.parameters.tests import NOT_WRITTEN
+
+## The parameters of a small run: three numbers in two sections, and a list. Their defaults are the bottom layer of
+## every test of PAR06.
+DECLARATIONS = Declarations(
+    parameters=[
+        Parameter(name="hydro.cfl", type=float, default=0.4, doc="The Courant number.", unit="dimensionless"),
+        Parameter(name="hydro.gamma", type=float, default=5 / 3, doc="The adiabatic index.", unit="dimensionless"),
+        Parameter(name="mesh.nx1", type=int, default=64, doc="The number of cells along x1.", unit="dimensionless"),
+        Parameter(name="output.variables", type=list[str], default=["rho"], doc="The variables written."),
+    ]
+)
+
+## The default of each parameter, by its name: what every parameter resolves to without a file or overrides.
+DEFAULTS = {parameter.name: parameter.default for parameter in DECLARATIONS.parameters}
+
+
+def parameter_file(folder: Path, text: str) -> Path:
+    """Return the path of a parameter file with the given text, written in a folder of the test's own."""
+    path = folder / "run.toml"
+    path.write_text(text)
+    return path
 
 
 class TestSupplyingValues:
@@ -10,25 +35,38 @@ class TestSupplyingValues:
 
     ## ---- Layers (PAR06) ----
 
-    @NOT_WRITTEN
     def test_defaults_alone_resolve(self) -> None:
         """Check that without a parameter file or overrides every parameter resolves to its default (PAR06)."""
-        pytest.fail("Not written yet.")
+        parameters = resolve(DECLARATIONS)
 
-    @NOT_WRITTEN
-    def test_file_replaces_default(self) -> None:
+        ## Every declared parameter, and nothing else, with its default. dict() goes through the names and reads
+        ## each value, as a module would; len() counts the names.
+        assert dict(parameters) == DEFAULTS
+        assert len(parameters) == len(DEFAULTS)
+
+    ## tmp_path is a fixture of pytest: a new, empty folder for this test alone, removed again later.
+    def test_file_replaces_default(self, tmp_path: Path) -> None:
         """Check that a value in the parameter file replaces the default, only for the parameters it gives (PAR06)."""
-        pytest.fail("Not written yet.")
+        file = parameter_file(tmp_path, "[hydro]\ncfl = 0.3\n")
+        parameters = resolve(DECLARATIONS, file=file)
 
-    @NOT_WRITTEN
-    def test_override_replaces_file(self) -> None:
+        ## The file gives hydro.cfl; every other parameter keeps its default.
+        assert dict(parameters) == DEFAULTS | {"hydro.cfl": 0.3}
+
+    def test_override_replaces_file(self, tmp_path: Path) -> None:
         """Check that an override replaces the value in the parameter file and the default (PAR06)."""
-        pytest.fail("Not written yet.")
+        file = parameter_file(tmp_path, "[hydro]\ncfl = 0.3\n")
+        parameters = resolve(DECLARATIONS, file=file, overrides={"hydro.cfl": 0.2, "mesh.nx1": 128})
 
-    @NOT_WRITTEN
+        ## hydro.cfl is given by the file and an override, which wins; mesh.nx1 by an override alone, which replaces
+        ## its default. The others keep their defaults.
+        assert dict(parameters) == DEFAULTS | {"hydro.cfl": 0.2, "mesh.nx1": 128}
+
     def test_later_override_replaces_earlier(self) -> None:
         """Check that of two overrides of the same parameter, the later one is used (PAR06)."""
-        pytest.fail("Not written yet.")
+        ## Overrides as a command line gives them: strings of the form name=value, read in order.
+        parameters = resolve(DECLARATIONS, overrides=["hydro.cfl=0.3", "hydro.cfl=0.5"])
+        assert parameters["hydro.cfl"] == 0.5
 
     ## ---- Parameter files (PAR07) ----
 

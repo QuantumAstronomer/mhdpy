@@ -116,6 +116,30 @@ For example, the Courant number of the hydrodynamics::
 The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR01-PAR05), and they
 are tested in ``tests/test_declarations.py``.
 
+### `mhdpy.foundation.parameters.resolution`
+
+The resolution of parameters: the values a run uses, from its declarations, a parameter file and overrides.
+
+The values of a run come in layers, each replacing the values of the layer below it for the parameters it gives: the
+declared defaults, then a parameter file, then overrides (PAR06). The defaults suit most runs; a parameter file, in
+TOML, holds the choices of one run and is kept with it; overrides vary one or two values without editing the file, for a
+parameter scan or a quick test. Overrides come from the command line, as strings such as ``"hydro.cfl=0.3"``, or from
+Python, as a dictionary; values in strings are read as TOML, the same as in a parameter file (PAR08).
+
+Resolving gives the parameters of the run as one read-only mapping from each name to its value. The driver (L6)
+resolves the declarations of all the modules in a run once, before the run starts, and hands each module the values it
+declared.
+
+For example, a run with a parameter file and one override::
+
+    from mhdpy.foundation.parameters.resolution import resolve
+
+    parameters = resolve(declarations, file="run.toml", overrides=["hydro.cfl=0.3"])
+    parameters["hydro.cfl"]                         ## 0.3
+
+The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR06-PAR10), and they
+are tested in ``tests/test_supplying_values.py``.
+
 ## `mhdpy.foundation.units`
 
 The unit system of mhdpy, with its notation and the physical constants (requirements UNI01-UNI20).

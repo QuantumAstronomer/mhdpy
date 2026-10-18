@@ -10,6 +10,12 @@ A declaration is checked as soon as it is made, so that a mistake in it is found
 module's own tests, rather than in a user's run. The declarations of all the modules in a run are then gathered into
 one set, which is checked as a whole: no name may be declared twice, or be the start of another (PAR05).
 
+A quantity that can be given in more than one way is declared as alternatives: named groups of declared parameters,
+each of which gives the quantity, one of them the default, such as the density of the ambient medium as a mass density
+or from a number density, a temperature and a metallicity (PAR22). Which group a run uses is decided when its
+parameters are resolved, by the values it is given; the alternatives are checked with the set they belong to, since
+only the set knows which parameters are declared.
+
 For example, the Courant number of the hydrodynamics::
 
     from mhdpy.foundation.parameters.declarations import Check, Declarations, Parameter
@@ -25,21 +31,21 @@ For example, the Courant number of the hydrodynamics::
     )
     declarations = Declarations(parameters=[cfl, ...])
 
-The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR01-PAR05), and they
-are tested in ``tests/test_declarations.py``.
+The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR01-PAR05, PAR22),
+and they are tested in ``tests/test_declarations.py`` and ``tests/test_alternatives.py``.
 """
 
 import re
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
-from types import GenericAlias
+from types import GenericAlias, MappingProxyType
 from typing import Any
 
 from mhdpy.foundation.parameters.values import element_type, fits, is_list, type_name
 from mhdpy.foundation.units import notation
 
 ## The public interface of this module (D15.7): only names listed here are meant for use outside it.
-__all__ = ["Check", "Declarations", "Parameter"]
+__all__ = ["Alternatives", "Check", "Declarations", "Parameter"]
 
 ## The form of a name (PAR02), as a regular expression: a part, then one or more parts each after a dot. A part is a
 ## lowercase letter or an underscore, followed by any number of lowercase letters, digits and underscores: a lowercase
@@ -200,27 +206,94 @@ class Parameter:
             raise ValueError(f"The default of {self.name!r} must be {self.check.description}, got {self.default!r}.")
 
 
+## frozen=True and kw_only=True, as for a declaration: the alternatives cannot be changed once checked, and their items
+## are given by name.
+@dataclass(frozen=True, kw_only=True)
+class Alternatives:
+    """A quantity that can be given in more than one way: two or more named groups of parameters (PAR22).
+
+    Each group gives the quantity on its own, and one of them is the default. A run selects a group by giving a value
+    for any of its parameters, and the default group by giving none; giving values for two groups is refused. The
+    alternatives are checked when made for what they state themselves, and with the set they are gathered in
+    (``Declarations``) for the parameters they name.
+
+    Parameters
+    ----------
+    name : str
+        The name of the quantity, in the form of a parameter's name (PAR02), such as ``"ambient.density"``: the name
+        the resolved parameters state the selected group by.
+    doc : str
+        What the quantity is, and the ways it can be given, in words, as templates show it (PAR20).
+    groups : mapping of str to sequence of str
+        Each group by its name, with the names of its parameters: at least two groups, none of them empty, such as
+        ``{"mass_density": ["ambient.rho"], "number_density": ["ambient.n", "ambient.temperature"]}``.
+    default : str
+        The name of the group selected when no parameter of any group is given.
+    """
+
+    name: str
+    doc: str
+    groups: Mapping[str, Sequence[str]]
+    default: str
+
+    def __post_init__(self) -> None:
+        """Refuse alternatives that break the rules of PAR22 they state themselves, naming them, and keep them fixed.
+
+        The groups are kept as a read-only mapping of tuples, so that they cannot be changed through what they were
+        given as either.
+        """
+        ## The name, as a parameter's (PAR02), since it is written where names are: in the record and the templates.
+        if not _NAME.fullmatch(self.name):
+            raise ValueError(
+                f"The name {self.name!r} of alternatives is not lowercase identifiers joined by dots, such as "
+                "'ambient.density'."
+            )
+        if not self.doc.strip():
+            raise ValueError(f"The alternatives {self.name!r} have no documentation.")
+        object.__setattr__(
+            self, "groups", MappingProxyType({group: tuple(names) for group, names in self.groups.items()})
+        )
+
+        ## A single group offers no alternative, and an empty group could not be selected by giving a value, nor give
+        ## the quantity.
+        if len(self.groups) < 2:
+            raise ValueError(f"The alternatives {self.name!r} need at least two groups, got {list(self.groups)}.")
+        for group, names in self.groups.items():
+            if not names:
+                raise ValueError(f"The group {group!r} of the alternatives {self.name!r} has no parameters.")
+        if self.default not in self.groups:
+            raise ValueError(
+                f"The default {self.default!r} of the alternatives {self.name!r} is not one of its groups, "
+                f"{list(self.groups)}."
+            )
+
+
 ## frozen=True and kw_only=True, as for a declaration: the set cannot be changed once checked, and its items are given
-## by name, Declarations(parameters=[...]), which leaves room for the alternatives and conditions of PAR22 and PAR23.
+## by name, Declarations(parameters=[...], alternatives=[...]).
 @dataclass(frozen=True, kw_only=True)
 class Declarations:
-    """The parameters of a run, declared together as one set (PAR05).
+    """The parameters of a run, declared together as one set, with their alternatives (PAR05, PAR22).
 
     Parameters
     ----------
     parameters : sequence of Parameter
         The declarations of every module in the run, in the order they were made. No name may be declared twice, and
         no name may be the start of another, as ``"output.snapshot"`` is of ``"output.snapshot.dt"``.
+    alternatives : sequence of Alternatives, optional
+        The quantities that can be given in more than one way. Every parameter their groups name must be declared, and
+        may be in one group only; no name may be given to two sets of alternatives. None by default.
     """
 
     parameters: Sequence[Parameter]
+    alternatives: Sequence[Alternatives] = ()
 
     def __post_init__(self) -> None:
-        """Refuse a set that breaks the rules of PAR05, naming both parameters involved, and keep it as a tuple.
+        """Refuse a set that breaks the rules of PAR05 or PAR22, naming what is involved, and keep it as tuples.
 
-        A tuple, so that the set cannot be changed through the list it was given as either.
+        Tuples, so that the set cannot be changed through the lists it was given as either.
         """
         object.__setattr__(self, "parameters", tuple(self.parameters))
+        object.__setattr__(self, "alternatives", tuple(self.alternatives))
 
         ## A name declared twice, by two modules or by one: the two would compete for its value, and one would silently
         ## get a value meant for the other. The documentation of both tells a user which declarations they are.
@@ -244,3 +317,24 @@ class Declarations:
                         f"{start!r} and {name!r} cannot both be parameters: a parameter file would have to give "
                         f"{start!r} both a value and a table of its own."
                     )
+
+        ## The alternatives (PAR22). Their names must be distinct, since the resolved parameters state each selection
+        ## by it. Every parameter of a group must be declared, and in one group only, of all the sets: a value given for
+        ## a parameter in two groups would select both.
+        group_of: dict[str, str] = {}
+        names_of_sets: set[str] = set()
+        for alternatives in self.alternatives:
+            if alternatives.name in names_of_sets:
+                raise ValueError(f"The alternatives {alternatives.name!r} are declared twice.")
+            names_of_sets.add(alternatives.name)
+            for group, names in alternatives.groups.items():
+                for name in names:
+                    if name not in by_name:
+                        raise ValueError(
+                            f"The group {group!r} of the alternatives {alternatives.name!r} names {name!r}, which is "
+                            "not declared."
+                        )
+                    where = f"the group {group!r} of {alternatives.name!r}"
+                    if name in group_of:
+                        raise ValueError(f"{name!r} is in more than one group: {group_of[name]} and {where}.")
+                    group_of[name] = where

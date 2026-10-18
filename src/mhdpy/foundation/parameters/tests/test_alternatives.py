@@ -1,8 +1,56 @@
 """Tests of alternatives and of conditions across parameters (PAR22-PAR23)."""
 
+import re
+from typing import Any
+
 import pytest
 
+from mhdpy.foundation.parameters.declarations import Alternatives, Declarations, Parameter
 from mhdpy.foundation.parameters.tests import NOT_WRITTEN
+
+## The parameters of the ambient medium, whose density can be given in two ways: as a mass density, or from a number
+## density, a temperature and a metallicity (PAR22).
+PARAMETERS = [
+    Parameter(name="ambient.rho", type=float, default=1.0, doc="The mass density.", unit="density"),
+    Parameter(name="ambient.n", type=float, default=1.0, doc="The number density.", unit={"length": -3}),
+    Parameter(name="ambient.temperature", type=float, default=1e4, doc="The temperature.", unit={"temperature": 1}),
+    Parameter(name="ambient.metallicity", type=float, default=0.02, doc="The metallicity.", unit="dimensionless"),
+]
+
+## The two groups of the ambient density, by their names.
+GROUPS = {
+    "mass_density": ["ambient.rho"],
+    "number_density": ["ambient.n", "ambient.temperature", "ambient.metallicity"],
+}
+
+
+def alternatives(**changes: Any) -> Alternatives:
+    """Return the alternatives of the ambient density, with the given items changed."""
+    items: dict[str, Any] = {
+        "name": "ambient.density",
+        "doc": "The density of the ambient medium.",
+        "groups": GROUPS,
+        "default": "mass_density",
+    }
+    return Alternatives(**(items | changes))
+
+
+## Alternatives that break a rule of PAR22, each by the changes to the alternatives of the ambient density in every set
+## of alternatives declared, and what the refusal names. Some are refused as they are made, the others when they are
+## gathered with the parameters, which alone tell which parameters are declared.
+# fmt: off
+INVALID: dict[str, tuple[list[dict[str, Any]], str]] = {
+    "name of one part":         ([{"name": "density"}],                                         "'density'"),
+    "no documentation":         ([{"doc": "  "}],                                               "'ambient.density'"),
+    "one group":                ([{"groups": {"mass_density": ["ambient.rho"]}}],               "'ambient.density'"),
+    "empty group":              ([{"groups": GROUPS | {"pressure": []}}],                       "'pressure'"),
+    "default not a group":      ([{"default": "pressure"}],                                     "'pressure'"),
+    "undeclared parameter":     ([{"groups": GROUPS | {"pressure": ["ambient.pressure"]}}],     "'ambient.pressure'"),
+    "parameter in two groups":  ([{"groups": GROUPS | {"pressure": ["ambient.rho"]}}],          "'ambient.rho'"),
+    "parameter in two sets":    ([{}, {"name": "ambient.mass"}],                                "'ambient.rho'"),
+    "set declared twice":       ([{}, {}],                                                      "'ambient.density'"),
+}
+# fmt: on
 
 
 class TestAlternatives:
@@ -10,22 +58,33 @@ class TestAlternatives:
 
     ## ---- Alternatives (PAR22) ----
 
-    @NOT_WRITTEN
     def test_alternatives_are_declared(self) -> None:
         """Check that alternatives are declared as two or more groups of parameters, one of them the default (PAR22).
 
         For example "ambient.rho", or "ambient.n", "ambient.temperature" and "ambient.metallicity".
         """
-        pytest.fail("Not written yet.")
+        density = alternatives()
+        declarations = Declarations(parameters=PARAMETERS, alternatives=[density])
 
-    @NOT_WRITTEN
-    def test_invalid_alternatives_are_refused(self) -> None:
+        ## The alternatives keep what they were declared with, the groups as tuples, and the set keeps them.
+        assert density.name == "ambient.density"
+        assert density.doc == "The density of the ambient medium."
+        assert density.groups == {group: tuple(names) for group, names in GROUPS.items()}
+        assert density.default == "mass_density"
+        assert declarations.alternatives == (density,)
+
+        ## A set declared without alternatives has none.
+        assert Declarations(parameters=PARAMETERS).alternatives == ()
+
+    @pytest.mark.parametrize(("changes", "named"), list(INVALID.values()), ids=list(INVALID))
+    def test_invalid_alternatives_are_refused(self, changes: list[dict[str, Any]], named: str) -> None:
         """Check that a declaration of alternatives that breaks the rules is refused (PAR22).
 
         Fewer than two groups, a parameter that is not declared or appears in more than one group, or a default that is
         not one of the groups.
         """
-        pytest.fail("Not written yet.")
+        with pytest.raises(ValueError, match=re.escape(named)):
+            Declarations(parameters=PARAMETERS, alternatives=[alternatives(**change) for change in changes])
 
     @NOT_WRITTEN
     def test_default_group_is_selected_when_nothing_is_given(self) -> None:

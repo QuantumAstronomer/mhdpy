@@ -98,6 +98,12 @@ A declaration is checked as soon as it is made, so that a mistake in it is found
 module's own tests, rather than in a user's run. The declarations of all the modules in a run are then gathered into
 one set, which is checked as a whole: no name may be declared twice, or be the start of another (PAR05).
 
+A quantity that can be given in more than one way is declared as alternatives: named groups of declared parameters,
+each of which gives the quantity, one of them the default, such as the density of the ambient medium as a mass density
+or from a number density, a temperature and a metallicity (PAR22). Which group a run uses is decided when its
+parameters are resolved, by the values it is given; the alternatives are checked with the set they belong to, since
+only the set knows which parameters are declared.
+
 For example, the Courant number of the hydrodynamics::
 
     from mhdpy.foundation.parameters.declarations import Check, Declarations, Parameter
@@ -113,8 +119,8 @@ For example, the Courant number of the hydrodynamics::
     )
     declarations = Declarations(parameters=[cfl, ...])
 
-The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR01-PAR05), and they
-are tested in ``tests/test_declarations.py``.
+The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR01-PAR05, PAR22),
+and they are tested in ``tests/test_declarations.py`` and ``tests/test_alternatives.py``.
 
 ### `mhdpy.foundation.parameters.resolution`
 

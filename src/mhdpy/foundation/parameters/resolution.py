@@ -33,6 +33,11 @@ none is. The parameters state the selected groups by the names of their sets, in
 declared the alternatives derives the quantity from the group selected. Values given for the parameters of two groups
 are refused, among the other mistakes, since one of them would otherwise be silently ignored (PAR22).
 
+Last, the joint checks are evaluated: the conditions on several parameters together, such as an inner radius smaller
+than the outer one, on the values in code units. A joint check is evaluated only once every value it involves has
+passed its own checks, so that a mistake is never reported twice, and is refused among the other mistakes with its
+description and the values involved (PAR23).
+
 For example, a run with a parameter file, one override and a unit system::
 
     from mhdpy.foundation.parameters.resolution import resolve
@@ -41,8 +46,9 @@ For example, a run with a parameter file, one override and a unit system::
     parameters["hydro.cfl"]                         ## 0.3
     parameters.origins["hydro.cfl"].source          ## "override"
 
-The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR06-PAR14), and they
-are tested in ``tests/test_supplying_values.py`` and ``tests/test_checks.py``.
+The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR06-PAR14,
+PAR22-PAR23), and they are tested in ``tests/test_supplying_values.py``, ``tests/test_checks.py`` and
+``tests/test_alternatives.py``.
 """
 
 import difflib
@@ -53,7 +59,7 @@ from dataclasses import dataclass
 from types import MappingProxyType
 from typing import Any, Literal, Protocol, TypeIs
 
-from mhdpy.foundation.parameters.declarations import Alternatives, Declarations, Parameter
+from mhdpy.foundation.parameters.declarations import Alternatives, Declarations, JointCheck, Parameter
 from mhdpy.foundation.parameters.values import element_type, fits, is_list, type_name
 from mhdpy.foundation.units import notation
 
@@ -149,17 +155,17 @@ class Parameters(Mapping[str, Any]):
 ## name.
 @dataclass(frozen=True, kw_only=True)
 class Mistake:
-    """A mistake in the values of a run's parameters, found when they are resolved (PAR11-PAR14, PAR22).
+    """A mistake in the values of a run's parameters, found when they are resolved (PAR11-PAR14, PAR22-PAR23).
 
     Most mistakes are in the value of one parameter, and have its name and the origin of its value. A mistake that
-    involves several values, such as values given for two groups of alternatives, has no single origin, and states
-    the values involved, with their origins, in its message.
+    involves several values, such as values given for two groups of alternatives or values that fail a joint check
+    (PAR23), has no single origin, and states the values involved, with their origins, in its message.
 
     Parameters
     ----------
     name : str or None
         The name the value was given for, declared or not; for values given for two groups of alternatives, the name
-        of the alternatives.
+        of the alternatives; None for values that fail a joint check.
     origin : Origin or None
         Where the value came from, with the value as it was given there (PAR10); None for a mistake that involves
         several values.
@@ -391,6 +397,23 @@ def _selected_group(alternatives: Alternatives, origins: Mapping[str, Origin]) -
     )
 
 
+def _joint_mistake(check: JointCheck, values: Mapping[str, Any], origins: Mapping[str, Origin]) -> Mistake | None:
+    """Return the mistake of values that do not satisfy a joint check, or None if they do (PAR23).
+
+    The message states the check's description, then each value involved in code units, with its origin, and the
+    value as given where it differs, as "'domain.r_inner' = 500.0 (given as '0.5 kpc', override)".
+    """
+    involved = {name: values[name] for name in check.names}
+    if check.condition(involved):
+        return None
+    described: list[str] = []
+    for name, value in involved.items():
+        origin = origins[name]
+        where = str(origin) if origin.value == value else f"given as {origin.value!r}, {origin}"
+        described.append(f"{name!r} = {value!r} ({where})")
+    return Mistake(name=None, origin=None, message=f"{check.description}, got {_in_words(described)}.")
+
+
 def resolve(
     declarations: Declarations,
     *,
@@ -417,7 +440,8 @@ def resolve(
 
     Where a quantity can be given in more than one way, the group of each set of alternatives is selected by the values
     given in the file and the overrides, and the default group when none is (PAR22). Values given for two groups are
-    refused, among the other mistakes.
+    refused, among the other mistakes. Last, values that do not satisfy a joint check, a condition on several
+    parameters, are refused among the other mistakes, provided each of them has passed its own checks (PAR23).
 
     Parameters
     ----------
@@ -477,6 +501,16 @@ def resolve(
             selected[alternatives.name] = _selected_group(alternatives, origins)
         except _Refusal as refusal:
             mistakes.append(Mistake(name=alternatives.name, origin=None, message=str(refusal)))
+
+    ## The joint checks last, on values in code units, and only on values that have passed their own checks: a value
+    ## that was refused is reported once, by itself, and not again through a condition it makes fail (PAR23).
+    refused = {mistake.name for mistake in mistakes}
+    for check in declarations.joint_checks:
+        if refused.isdisjoint(check.names):
+            mistake = _joint_mistake(check, values, origins)
+            if mistake is not None:
+                mistakes.append(mistake)
+
     if mistakes:
         raise ParameterError(mistakes)
     return Parameters(values, origins, selected)

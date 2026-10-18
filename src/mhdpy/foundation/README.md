@@ -104,6 +104,11 @@ or from a number density, a temperature and a metallicity (PAR22). Which group a
 parameters are resolved, by the values it is given; the alternatives are checked with the set they belong to, since
 only the set knows which parameters are declared.
 
+Some combinations of values are wrong although each value is valid on its own, such as an inner radius larger than the
+outer one. A module declares such a relation as a joint check: the parameters it involves, a condition on their values
+and a description of it in words, as for the check of a single parameter (PAR23). The parameters must be declared in
+the same set, and the condition is evaluated when the parameters of a run are resolved.
+
 For example, the Courant number of the hydrodynamics::
 
     from mhdpy.foundation.parameters.declarations import Check, Declarations, Parameter
@@ -119,8 +124,8 @@ For example, the Courant number of the hydrodynamics::
     )
     declarations = Declarations(parameters=[cfl, ...])
 
-The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR01-PAR05, PAR22),
-and they are tested in ``tests/test_declarations.py`` and ``tests/test_alternatives.py``.
+The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR01-PAR05,
+PAR22-PAR23), and they are tested in ``tests/test_declarations.py`` and ``tests/test_alternatives.py``.
 
 ### `mhdpy.foundation.parameters.resolution`
 
@@ -159,6 +164,11 @@ none is. The parameters state the selected groups by the names of their sets, in
 declared the alternatives derives the quantity from the group selected. Values given for the parameters of two groups
 are refused, among the other mistakes, since one of them would otherwise be silently ignored (PAR22).
 
+Last, the joint checks are evaluated: the conditions on several parameters together, such as an inner radius smaller
+than the outer one, on the values in code units. A joint check is evaluated only once every value it involves has
+passed its own checks, so that a mistake is never reported twice, and is refused among the other mistakes with its
+description and the values involved (PAR23).
+
 For example, a run with a parameter file, one override and a unit system::
 
     from mhdpy.foundation.parameters.resolution import resolve
@@ -167,8 +177,9 @@ For example, a run with a parameter file, one override and a unit system::
     parameters["hydro.cfl"]                         ## 0.3
     parameters.origins["hydro.cfl"].source          ## "override"
 
-The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR06-PAR14), and they
-are tested in ``tests/test_supplying_values.py`` and ``tests/test_checks.py``.
+The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR06-PAR14,
+PAR22-PAR23), and they are tested in ``tests/test_supplying_values.py``, ``tests/test_checks.py`` and
+``tests/test_alternatives.py``.
 
 ### `mhdpy.foundation.parameters.values`
 

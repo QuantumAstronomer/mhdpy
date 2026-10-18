@@ -16,6 +16,11 @@ or from a number density, a temperature and a metallicity (PAR22). Which group a
 parameters are resolved, by the values it is given; the alternatives are checked with the set they belong to, since
 only the set knows which parameters are declared.
 
+Some combinations of values are wrong although each value is valid on its own, such as an inner radius larger than the
+outer one. A module declares such a relation as a joint check: the parameters it involves, a condition on their values
+and a description of it in words, as for the check of a single parameter (PAR23). The parameters must be declared in
+the same set, and the condition is evaluated when the parameters of a run are resolved.
+
 For example, the Courant number of the hydrodynamics::
 
     from mhdpy.foundation.parameters.declarations import Check, Declarations, Parameter
@@ -31,8 +36,8 @@ For example, the Courant number of the hydrodynamics::
     )
     declarations = Declarations(parameters=[cfl, ...])
 
-The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR01-PAR05, PAR22),
-and they are tested in ``tests/test_declarations.py`` and ``tests/test_alternatives.py``.
+The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR01-PAR05,
+PAR22-PAR23), and they are tested in ``tests/test_declarations.py`` and ``tests/test_alternatives.py``.
 """
 
 import re
@@ -45,7 +50,7 @@ from mhdpy.foundation.parameters.values import element_type, fits, is_list, type
 from mhdpy.foundation.units import notation
 
 ## The public interface of this module (D15.7): only names listed here are meant for use outside it.
-__all__ = ["Alternatives", "Check", "Declarations", "Parameter"]
+__all__ = ["Alternatives", "Check", "Declarations", "JointCheck", "Parameter"]
 
 ## The form of a name (PAR02), as a regular expression: a part, then one or more parts each after a dot. A part is a
 ## lowercase letter or an underscore, followed by any number of lowercase letters, digits and underscores: a lowercase
@@ -268,11 +273,55 @@ class Alternatives:
             )
 
 
+## frozen=True and kw_only=True, as for a declaration: a joint check cannot be changed once made, and its items are
+## given by name, JointCheck(names=[...], condition=..., description=...).
+@dataclass(frozen=True, kw_only=True)
+class JointCheck:
+    """A condition on the values of several parameters together, with its description in words (PAR23).
+
+    The check of a single parameter (Check) cannot see the others, so a relation between values, such as an inner
+    radius smaller than the outer one, is declared as a joint check. It applies to the resolved values in code units,
+    once each of them has passed its own type and check, and its parameters must be declared in the set it is gathered
+    in (``Declarations``).
+
+    Parameters
+    ----------
+    names : sequence of str
+        The names of the parameters involved: at least two different ones.
+    condition : callable
+        A function of the values involved, as a mapping from each name to its value in code units, that returns
+        whether they are acceptable together, such as
+        ``lambda values: values["domain.r_inner"] < values["domain.r_outer"]``.
+    description : str
+        What must hold, in words, as a sentence of its own, such as ``"'domain.r_inner' must be smaller than
+        'domain.r_outer'"``; the message of a refusal states it, with the values involved.
+    """
+
+    names: Sequence[str]
+    condition: Callable[[Mapping[str, Any]], bool]
+    description: str
+
+    def __post_init__(self) -> None:
+        """Refuse a joint check of fewer than two parameters, or without a description, and keep its names as a tuple.
+
+        A condition on a single parameter is the check of that parameter (PAR01), and one without a description could
+        not say what it expects.
+        """
+        object.__setattr__(self, "names", tuple(self.names))
+        if len(set(self.names)) < 2:
+            raise ValueError(f"A joint check needs at least two different parameters, got {list(self.names)}.")
+        if not self.description.strip():
+            raise ValueError(f"The joint check of {list(self.names)} has no description in words.")
+
+
 ## frozen=True and kw_only=True, as for a declaration: the set cannot be changed once checked, and its items are given
-## by name, Declarations(parameters=[...], alternatives=[...]).
+## by name, Declarations(parameters=[...], alternatives=[...], joint_checks=[...]).
 @dataclass(frozen=True, kw_only=True)
 class Declarations:
-    """The parameters of a run, declared together as one set, with their alternatives (PAR05, PAR22).
+    """The parameters of a run, declared together as one set, with their alternatives and joint checks.
+
+    The rules of the set are those of PAR05, for its parameters, PAR22, for its alternatives, and PAR23, for its joint
+    checks.
 
     Parameters
     ----------
@@ -282,18 +331,22 @@ class Declarations:
     alternatives : sequence of Alternatives, optional
         The quantities that can be given in more than one way. Every parameter their groups name must be declared, and
         may be in one group only; no name may be given to two sets of alternatives. None by default.
+    joint_checks : sequence of JointCheck, optional
+        The conditions on several parameters together. Every parameter they name must be declared. None by default.
     """
 
     parameters: Sequence[Parameter]
     alternatives: Sequence[Alternatives] = ()
+    joint_checks: Sequence[JointCheck] = ()
 
     def __post_init__(self) -> None:
-        """Refuse a set that breaks the rules of PAR05 or PAR22, naming what is involved, and keep it as tuples.
+        """Refuse a set that breaks the rules of PAR05, PAR22 or PAR23, naming what is involved, and keep it as tuples.
 
         Tuples, so that the set cannot be changed through the lists it was given as either.
         """
         object.__setattr__(self, "parameters", tuple(self.parameters))
         object.__setattr__(self, "alternatives", tuple(self.alternatives))
+        object.__setattr__(self, "joint_checks", tuple(self.joint_checks))
 
         ## A name declared twice, by two modules or by one: the two would compete for its value, and one would silently
         ## get a value meant for the other. The documentation of both tells a user which declarations they are.
@@ -338,3 +391,9 @@ class Declarations:
                     if name in group_of:
                         raise ValueError(f"{name!r} is in more than one group: {group_of[name]} and {where}.")
                     group_of[name] = where
+
+        ## The joint checks (PAR23): a condition on a parameter that is not declared could never be evaluated.
+        for check in self.joint_checks:
+            for name in check.names:
+                if name not in by_name:
+                    raise ValueError(f"The joint check {check.description!r} names {name!r}, which is not declared.")

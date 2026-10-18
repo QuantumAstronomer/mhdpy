@@ -27,6 +27,12 @@ value must then satisfy its parameter's check, if one is declared, in code units
 the words of the declaration, such as "'hydro.cfl' must be in (0, 1], got 1.5" (PAR13). The mistakes are reported
 together, as one ParameterError that lists each with its origin (PAR14).
 
+Where a quantity can be given in more than one way, the values a run is given select the group of each set of
+alternatives: the group of the parameters given in the parameter file or the overrides, and the default group when
+none is. The parameters state the selected groups by the names of their sets, in ``selected``, and the module that
+declared the alternatives derives the quantity from the group selected. Values given for the parameters of two groups
+are refused, among the other mistakes, since one of them would otherwise be silently ignored (PAR22).
+
 For example, a run with a parameter file, one override and a unit system::
 
     from mhdpy.foundation.parameters.resolution import resolve
@@ -47,7 +53,7 @@ from dataclasses import dataclass
 from types import MappingProxyType
 from typing import Any, Literal, Protocol, TypeIs
 
-from mhdpy.foundation.parameters.declarations import Declarations, Parameter
+from mhdpy.foundation.parameters.declarations import Alternatives, Declarations, Parameter
 from mhdpy.foundation.parameters.values import element_type, fits, is_list, type_name
 from mhdpy.foundation.units import notation
 
@@ -104,15 +110,17 @@ class Parameters(Mapping[str, Any]):
 
     A mapping, so that a value is read as ``parameters["hydro.cfl"]``, and the names and values can be gone through
     as those of a dictionary. It has no way of changing a value: Mapping, unlike dict, defines no assignment. The
-    origin of each value is recorded next to it, in ``origins`` (PAR10).
+    origin of each value is recorded next to it, in ``origins`` (PAR10), and the group selected of each set of
+    alternatives in ``selected`` (PAR22).
     """
 
-    def __init__(self, values: Mapping[str, Any], origins: Mapping[str, Origin]) -> None:
+    def __init__(self, values: Mapping[str, Any], origins: Mapping[str, Origin], selected: Mapping[str, str]) -> None:
         ## Copies, so that the parameters cannot be changed through the dictionaries they were made from either. The
-        ## origins are kept behind a MappingProxyType, a read-only view of a dictionary, since they are handed out
-        ## as they are.
+        ## origins and the selected groups are kept behind a MappingProxyType, a read-only view of a dictionary, since
+        ## they are handed out as they are.
         self._values = dict(values)
         self._origins = MappingProxyType(dict(origins))
+        self._selected = MappingProxyType(dict(selected))
 
     def __getitem__(self, name: str) -> Any:
         """Return the value of a parameter by its name."""
@@ -131,31 +139,42 @@ class Parameters(Mapping[str, Any]):
         """The origin of the value of each parameter, by its name: where it came from and how it was given (PAR10)."""
         return self._origins
 
+    @property
+    def selected(self) -> Mapping[str, str]:
+        """The group selected of each set of alternatives, by the name of the set (PAR22)."""
+        return self._selected
+
 
 ## frozen=True and kw_only=True, as for an origin: a mistake cannot be changed once found, and its items are given by
 ## name.
 @dataclass(frozen=True, kw_only=True)
 class Mistake:
-    """A mistake in the value of a parameter, found when the parameters of a run are resolved (PAR11-PAR14).
+    """A mistake in the values of a run's parameters, found when they are resolved (PAR11-PAR14, PAR22).
+
+    Most mistakes are in the value of one parameter, and have its name and the origin of its value. A mistake that
+    involves several values, such as values given for two groups of alternatives, has no single origin, and states
+    the values involved, with their origins, in its message.
 
     Parameters
     ----------
-    name : str
-        The name the value was given for, declared or not.
-    origin : Origin
-        Where the value came from, with the value as it was given there (PAR10).
+    name : str or None
+        The name the value was given for, declared or not; for values given for two groups of alternatives, the name
+        of the alternatives.
+    origin : Origin or None
+        Where the value came from, with the value as it was given there (PAR10); None for a mistake that involves
+        several values.
     message : str
         What is wrong and what was expected, in words, starting with the name, such as
         ``"'hydro.cfll' is not a declared parameter; did you mean 'hydro.cfl'?"``.
     """
 
-    name: str
-    origin: Origin
+    name: str | None
+    origin: Origin | None
     message: str
 
     def __str__(self) -> str:
-        """Return the mistake as a line of a report: its origin, then its message (PAR14)."""
-        return f"{self.origin}: {self.message}"
+        """Return the mistake as a line of a report: its origin, if it has one, then its message (PAR14)."""
+        return f"{self.origin}: {self.message}" if self.origin is not None else self.message
 
 
 class ParameterError(ValueError):
@@ -268,10 +287,10 @@ def _unknown_name(name: str, origin: Origin, declared: Sequence[str]) -> Mistake
 
 
 class _Refusal(Exception):
-    """A value refused by the checks of its parameter, with the message of the mistake (PAR09, PAR12, PAR13).
+    """A value refused by the checks of its parameter, or values by those of their alternatives, with the message.
 
-    Raised where a check fails, and caught by ``resolve``, which records it as a Mistake with its parameter's name and
-    origin, so that every mistake is reported together (PAR14). It never leaves this module.
+    Raised where a check fails (PAR09, PAR12, PAR13, PAR22), and caught by ``resolve``, which records it as a Mistake,
+    so that every mistake is reported together (PAR14). It never leaves this module.
     """
 
 
@@ -336,6 +355,42 @@ def _resolved_value(parameter: Parameter, given: object, units: UnitConverter | 
     return value
 
 
+def _in_words(items: Sequence[str]) -> str:
+    """Return items as they are written in a sentence: "a", "a and b", or "a, b and c"."""
+    return items[0] if len(items) == 1 else f"{', '.join(items[:-1])} and {items[-1]}"
+
+
+def _selected_group(alternatives: Alternatives, origins: Mapping[str, Origin]) -> str:
+    """Return the group of a set of alternatives that the values given select, refusing values for two (PAR22).
+
+    A group is selected by a value given for any of its parameters, in the parameter file or the overrides; when none
+    is, the default group is. Values given for two groups or more raise a _Refusal that names, for each group, the
+    parameters given and where.
+    """
+    ## The parameters given of each group, by the group's name: only the groups of which any parameter is given. A
+    ## default is not given; the file and the overrides are, and so would be nothing else, which keeps a restored value
+    ## from selecting a group when the restarts add their own source (PAR15).
+    given = {
+        group: [name for name in names if origins[name].source in ("file", "override")]
+        for group, names in alternatives.groups.items()
+    }
+    given = {group: names for group, names in given.items() if names}
+    if not given:
+        return alternatives.default
+    if len(given) == 1:
+        return next(iter(given))
+
+    ## Two groups or more: each with the parameters given for it and where, as "'ambient.rho' (override)".
+    groups = [
+        f"{_in_words([f'{name!r} ({origins[name]})' for name in names])} of the group {group!r}"
+        for group, names in given.items()
+    ]
+    raise _Refusal(
+        f"{alternatives.name!r} is given in more than one way: by {'; by '.join(groups)}. Give the parameters of one "
+        "group only."
+    )
+
+
 def resolve(
     declarations: Declarations,
     *,
@@ -360,6 +415,10 @@ def resolve(
     a unit if there is no unit system, if the parameter is dimensionless, or if its unit has other dimensions than the
     parameter's; and a value that does not satisfy its check, stating the condition in the words of the declaration.
 
+    Where a quantity can be given in more than one way, the group of each set of alternatives is selected by the values
+    given in the file and the overrides, and the default group when none is (PAR22). Values given for two groups are
+    refused, among the other mistakes.
+
     Parameters
     ----------
     declarations : Declarations
@@ -377,7 +436,8 @@ def resolve(
     Returns
     -------
     parameters : Parameters
-        The value of every declared parameter, by its name, and its origin, in ``parameters.origins``.
+        The value of every declared parameter, by its name, its origin, in ``parameters.origins``, and the group
+        selected of each set of alternatives, in ``parameters.selected``.
     """
     ## The layers, from the bottom up, each recording the origin of the values it gives, with the value as given: each
     ## replaces the origins of the names it gives, and leaves the others (PAR10).
@@ -408,6 +468,15 @@ def resolve(
             values[parameter.name] = _resolved_value(parameter, origin.value, units)
         except _Refusal as refusal:
             mistakes.append(Mistake(name=parameter.name, origin=origin, message=str(refusal)))
+
+    ## The group selected of each set of alternatives, from the values given; values for two groups are a mistake of
+    ## several values, with no single origin, reported after those of single values (PAR22).
+    selected: dict[str, str] = {}
+    for alternatives in declarations.alternatives:
+        try:
+            selected[alternatives.name] = _selected_group(alternatives, origins)
+        except _Refusal as refusal:
+            mistakes.append(Mistake(name=alternatives.name, origin=None, message=str(refusal)))
     if mistakes:
         raise ParameterError(mistakes)
-    return Parameters(values, origins)
+    return Parameters(values, origins, selected)

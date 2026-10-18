@@ -153,6 +153,12 @@ value must then satisfy its parameter's check, if one is declared, in code units
 the words of the declaration, such as "'hydro.cfl' must be in (0, 1], got 1.5" (PAR13). The mistakes are reported
 together, as one ParameterError that lists each with its origin (PAR14).
 
+Where a quantity can be given in more than one way, the values a run is given select the group of each set of
+alternatives: the group of the parameters given in the parameter file or the overrides, and the default group when
+none is. The parameters state the selected groups by the names of their sets, in ``selected``, and the module that
+declared the alternatives derives the quantity from the group selected. Values given for the parameters of two groups
+are refused, among the other mistakes, since one of them would otherwise be silently ignored (PAR22).
+
 For example, a run with a parameter file, one override and a unit system::
 
     from mhdpy.foundation.parameters.resolution import resolve

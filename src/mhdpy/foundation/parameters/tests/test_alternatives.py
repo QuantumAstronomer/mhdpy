@@ -1,12 +1,14 @@
 """Tests of alternatives and of conditions across parameters (PAR22-PAR23)."""
 
 import re
+from pathlib import Path
 from typing import Any
 
 import pytest
 
 from mhdpy.foundation.parameters.declarations import Alternatives, Declarations, Parameter
-from mhdpy.foundation.parameters.tests import NOT_WRITTEN
+from mhdpy.foundation.parameters.resolution import ParameterError, resolve
+from mhdpy.foundation.parameters.tests import NOT_WRITTEN, parameter_file
 
 ## The parameters of the ambient medium, whose density can be given in two ways: as a mass density, or from a number
 ## density, a temperature and a metallicity (PAR22).
@@ -33,6 +35,24 @@ def alternatives(**changes: Any) -> Alternatives:
         "default": "mass_density",
     }
     return Alternatives(**(items | changes))
+
+
+## The parameters of the ambient medium with the alternatives of its density, as a run declares them.
+AMBIENT = Declarations(parameters=PARAMETERS, alternatives=[alternatives()])
+
+## The number density and the temperature of the ambient medium, given in a parameter file or as overrides; the
+## metallicity is not given (PAR22).
+NUMBER_DENSITY: dict[str, tuple[str | None, list[str]]] = {
+    "parameter file": ("[ambient]\nn = 100.0\ntemperature = 8000.0\n", []),
+    "overrides": (None, ["ambient.n=100.0", "ambient.temperature=8000.0"]),
+}
+
+## Values for both groups of the ambient density, from one layer or from two, each with a misspelt name as well: a
+## mistake of another kind, reported in the same error (PAR14).
+BOTH_GROUPS: dict[str, tuple[str | None, list[str]]] = {
+    "one layer": (None, ["ambient.rho=2.0", "ambient.n=100.0", "ambient.pressure=1.0"]),
+    "file and override": ("[ambient]\nrho = 2.0\n", ["ambient.n=100.0", "ambient.pressure=1.0"]),
+}
 
 
 ## Alternatives that break a rule of PAR22, each by the changes to the alternatives of the ambient density in every set
@@ -86,28 +106,45 @@ class TestAlternatives:
         with pytest.raises(ValueError, match=re.escape(named)):
             Declarations(parameters=PARAMETERS, alternatives=[alternatives(**change) for change in changes])
 
-    @NOT_WRITTEN
     def test_default_group_is_selected_when_nothing_is_given(self) -> None:
         """Check that with no parameter of any group given, the default group is selected (PAR22)."""
-        pytest.fail("Not written yet.")
+        parameters = resolve(AMBIENT)
+        assert parameters.selected == {"ambient.density": "mass_density"}
 
-    @NOT_WRITTEN
-    def test_giving_a_parameter_selects_its_group(self) -> None:
+    ## text is that of the parameter file, or None for a run without one.
+    @pytest.mark.parametrize(("text", "overrides"), list(NUMBER_DENSITY.values()), ids=list(NUMBER_DENSITY))
+    def test_giving_a_parameter_selects_its_group(self, tmp_path: Path, text: str | None, overrides: list[str]) -> None:
         """Check that a value for any parameter of a group, in the file or an override, selects that group (PAR22).
 
         The parameters of the group that are not given keep their default: "ambient.n" and "ambient.temperature"
         given, "ambient.metallicity" left at its default.
         """
-        pytest.fail("Not written yet.")
+        file = parameter_file(tmp_path, text) if text is not None else None
+        parameters = resolve(AMBIENT, file=file, overrides=overrides)
 
-    @NOT_WRITTEN
-    def test_values_for_two_groups_are_refused(self) -> None:
+        assert parameters.selected == {"ambient.density": "number_density"}
+        assert parameters["ambient.n"] == 100.0
+        assert parameters["ambient.metallicity"] == 0.02
+
+    @pytest.mark.parametrize(("text", "overrides"), list(BOTH_GROUPS.values()), ids=list(BOTH_GROUPS))
+    def test_values_for_two_groups_are_refused(self, tmp_path: Path, text: str | None, overrides: list[str]) -> None:
         """Check that values given for parameters of two groups are refused, naming those given in each (PAR22).
 
         "ambient.rho" and "ambient.n" together, whether from one layer or from the file and an override; the refusal is
         reported among the other mistakes (PAR14).
         """
-        pytest.fail("Not written yet.")
+        file = parameter_file(tmp_path, text) if text is not None else None
+        with pytest.raises(ParameterError) as refusal:
+            resolve(AMBIENT, file=file, overrides=overrides)
+
+        ## The misspelt name, then the alternatives: a mistake of several values, with no single origin, that names
+        ## the parameters given for each group.
+        misspelt, density = refusal.value.mistakes
+        assert misspelt.name == "ambient.pressure"
+        assert density.name == "ambient.density"
+        assert density.origin is None
+        assert "'ambient.rho'" in density.message
+        assert "'ambient.n'" in density.message
 
     @NOT_WRITTEN
     def test_recorded_group_stays_selected_on_restart(self) -> None:

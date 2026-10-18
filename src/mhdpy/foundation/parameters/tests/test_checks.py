@@ -199,7 +199,7 @@ class TestChecks:
         with pytest.raises(ParameterError) as refusal:
             resolve(CLOUD, units=UNITS)
         (mistake,) = refusal.value.mistakes
-        assert mistake.origin.source == "default"
+        assert mistake.origin == Origin(source="default", value="0.5 kpc")
         assert mistake.message.startswith("'problem.radius' must be at most 10, got 5")
         assert mistake.message.endswith("(given as '0.5 kpc').")
 

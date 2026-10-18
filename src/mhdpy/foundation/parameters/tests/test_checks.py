@@ -8,7 +8,7 @@ import pytest
 
 from mhdpy.foundation.parameters.declarations import Check, Declarations, Parameter
 from mhdpy.foundation.parameters.resolution import Mistake, Origin, ParameterError, resolve
-from mhdpy.foundation.parameters.tests import NOT_WRITTEN, parameter_file
+from mhdpy.foundation.parameters.tests import parameter_file
 from mhdpy.foundation.units.constants import MEGAYEAR, PARSEC, SOLAR_MASS
 from mhdpy.foundation.units.system import UnitSystem
 
@@ -209,15 +209,43 @@ class TestChecks:
 
     ## ---- All mistakes at once (PAR14) ----
 
-    @NOT_WRITTEN
-    def test_all_mistakes_are_reported_at_once(self) -> None:
+    def test_all_mistakes_are_reported_at_once(self, tmp_path: Path) -> None:
         """Check that several mistakes, in a file and in overrides, are reported together, as one error (PAR14)."""
-        pytest.fail("Not written yet.")
+        ## Four mistakes of three kinds: a misspelt name and a float for an integer in the file, a value outside its
+        ## check and a bare word for a boolean in the overrides.
+        file = parameter_file(tmp_path, "[hydro]\ncfll = 0.3\n\n[mesh]\nnx1 = 4000.0\n")
+        with pytest.raises(ParameterError) as refusal:
+            resolve(DECLARATIONS, file=file, overrides=["hydro.cfl=1.5", "cooling.enabled=no"])
 
-    @NOT_WRITTEN
-    def test_each_mistake_is_described_in_full(self) -> None:
+        ## All four in one error: the unknown name first, then the declared parameters in the order they were declared.
+        mistakes = refusal.value.mistakes
+        assert [mistake.name for mistake in mistakes] == ["hydro.cfll", "hydro.cfl", "mesh.nx1", "cooling.enabled"]
+
+        ## The message: a heading with their number, and a line for each.
+        lines = str(refusal.value).splitlines()
+        assert lines[0] == "The parameters of the run have 4 mistakes:"
+        assert len(lines) == 1 + len(mistakes)
+
+    def test_each_mistake_is_described_in_full(self, tmp_path: Path) -> None:
         """Check that each mistake is reported with the name, the origin of its value, the value and what was expected.
 
         The origin is that of PAR10: the default, the file by name, or an override (PAR14).
         """
-        pytest.fail("Not written yet.")
+        ## A mistake from each origin: the cloud's default with a unit, in a run without a unit system; a float for an
+        ## integer in the file; and a value outside its check as an override.
+        declarations = Declarations(parameters=[*DECLARATIONS.parameters, *CLOUD.parameters])
+        file = parameter_file(tmp_path, "[mesh]\nnx1 = 4000.0\n")
+        with pytest.raises(ParameterError) as refusal:
+            resolve(declarations, file=file, overrides=["hydro.cfl=1.5"])
+
+        ## The report in full, a line for each mistake: where its value came from, the name, the value, and what was
+        ## expected.
+        assert str(refusal.value) == "\n".join(
+            [
+                "The parameters of the run have 3 mistakes:",
+                "- override: 'hydro.cfl' must be in (0, 1], got 1.5.",
+                f"- parameter file {file}: 'mesh.nx1' must be of type int, got float 4000.0.",
+                "- default: 'problem.radius' is given '0.5 kpc', a value with a unit, but the run has no unit system "
+                "to convert it.",
+            ]
+        )

@@ -140,8 +140,10 @@ defaults when a run starts, and every mistake is reported with its origin (PAR14
 
 Every value is checked against its declaration before the parameters are returned. A name that no module declared is
 refused, with the closest declared name as a suggestion where one is close enough to be a likely misspelling, so that
-a misspelt parameter never silently leaves its default in place (PAR11). The mistakes are reported together, as one
-ParameterError that lists each with its origin (PAR14).
+a misspelt parameter never silently leaves its default in place (PAR11). A value must have its parameter's type, with
+one conversion only: an integer given for a float becomes a float; a float is never taken for an integer, a boolean
+never for a number, and a string never for anything but a string, or a value with a unit for a number (PAR12). The
+mistakes are reported together, as one ParameterError that lists each with its origin (PAR14).
 
 For example, a run with a parameter file, one override and a unit system::
 

@@ -63,11 +63,12 @@ def _has_unit(text: str) -> bool:
     return True
 
 
-def _of_type(value: object, scalar: type) -> bool:
+def _of_type(value: object, scalar: type | None) -> bool:
     """Return whether a single value is of one of the four types of PAR03, by the rules of PAR12.
 
     An integer is accepted for a float, and a string only if it is a value with a unit (PAR09); a boolean is accepted
-    for nothing but a bool, and a float is not accepted for an int even when its value is whole.
+    for nothing but a bool, and a float is not accepted for an int even when its value is whole. A scalar of None, for
+    a type that is not one of PAR03, accepts no value at all.
     """
     ## bool is a subclass of int in Python, so True would pass for an integer: it is told apart first.
     if isinstance(value, bool):
@@ -79,11 +80,13 @@ def _of_type(value: object, scalar: type) -> bool:
     return type(value) is scalar
 
 
-def fits(value: object, type_: type | GenericAlias, scalar: type) -> bool:
+def fits(value: object, type_: type | GenericAlias) -> bool:
     """Return whether a value is of its parameter's type: a single value, or a list whose every element is (PAR03).
 
-    The scalar is the type of the parameter's single values, as ``element_type`` gives it.
+    The rules are those of PAR12, the same for a default when a parameter is declared and for every value a run is
+    given.
     """
+    scalar = element_type(type_)
     if get_origin(type_) is not list:
         return _of_type(value, scalar)
 

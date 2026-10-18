@@ -177,7 +177,7 @@ class Parameter:
                     f"{self.unit!r}."
                 )
 
-        if not fits(self.default, self.type, scalar):
+        if not fits(self.default, self.type):
             raise TypeError(
                 f"The default {self.default!r} of {self.name!r} is not of its type, {type_name(self.type)}."
             )

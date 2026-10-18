@@ -1,14 +1,17 @@
 """Tests of the checks of values against their declarations: names, types, conditions, all at once (PAR11-PAR14)."""
 
+from collections.abc import Mapping
 from pathlib import Path
+from typing import Any
 
 import pytest
 
 from mhdpy.foundation.parameters.declarations import Declarations, Parameter
-from mhdpy.foundation.parameters.resolution import Origin, ParameterError, resolve
+from mhdpy.foundation.parameters.resolution import Mistake, Origin, ParameterError, resolve
 from mhdpy.foundation.parameters.tests import NOT_WRITTEN, parameter_file
 
-## The parameters of a small run, one of every type of PAR03, against which the values of the tests are checked.
+## The parameters of a small run, one of every type of PAR03 and lists of strings and of floats, against which the
+## values of the tests are checked.
 DECLARATIONS = Declarations(
     parameters=[
         Parameter(name="hydro.cfl", type=float, default=0.4, doc="The Courant number.", unit="dimensionless"),
@@ -16,9 +19,23 @@ DECLARATIONS = Declarations(
         Parameter(name="hydro.solver", type=str, default="hllc", doc="The Riemann solver."),
         Parameter(name="mesh.nx1", type=int, default=64, doc="The number of cells along x1.", unit="dimensionless"),
         Parameter(name="output.variables", type=list[str], default=["rho"], doc="The variables written."),
+        Parameter(name="output.times", type=list[float], default=[], doc="The times of the snapshots.", unit="time"),
         Parameter(name="cooling.enabled", type=bool, default=False, doc="Whether the gas cools radiatively."),
     ]
 )
+
+
+def only_mistake(overrides: Mapping[str, Any]) -> Mistake:
+    """Return the one mistake found in resolving the declarations with the given overrides.
+
+    The test fails if no ParameterError is raised, or if it holds more than one mistake.
+    """
+    with pytest.raises(ParameterError) as refusal:
+        resolve(DECLARATIONS, overrides=overrides)
+
+    ## The one mistake, unpacked from the tuple of mistakes, which fails if there are more.
+    (mistake,) = refusal.value.mistakes
+    return mistake
 
 
 class TestChecks:
@@ -67,41 +84,72 @@ class TestChecks:
 
     ## ---- Types (PAR12) ----
 
-    @NOT_WRITTEN
-    def test_values_of_the_declared_type_are_accepted(self) -> None:
+    @pytest.mark.parametrize(
+        ("name", "value"),
+        [
+            ("hydro.cfl", 0.3),
+            ("hydro.solver", "hlld"),
+            ("mesh.nx1", 128),
+            ("cooling.enabled", True),
+            ("output.variables", ["rho", "pressure"]),
+            ("output.times", [1.0, 2.5]),
+        ],
+    )
+    def test_values_of_the_declared_type_are_accepted(self, name: str, value: Any) -> None:
         """Check that a value of the declared type is accepted as it is, for each type of PAR03 (PAR12)."""
-        pytest.fail("Not written yet.")
+        parameters = resolve(DECLARATIONS, overrides={name: value})
 
-    @NOT_WRITTEN
+        ## The type is compared as well, as == alone cannot tell them apart in Python: 1 == 1.0 == True.
+        assert parameters[name] == value
+        assert type(parameters[name]) is type(value)
+
     def test_integer_for_float_is_converted(self) -> None:
         """Check that an integer given for a float parameter is accepted and converted to a float (PAR12)."""
-        pytest.fail("Not written yet.")
+        ## A single float, and a list of floats with one element an integer.
+        parameters = resolve(DECLARATIONS, overrides={"hydro.cfl": 1, "output.times": [1, 2.5]})
 
-    @NOT_WRITTEN
-    def test_boolean_for_number_is_refused(self) -> None:
+        assert parameters["hydro.cfl"] == 1.0
+        assert type(parameters["hydro.cfl"]) is float
+        assert parameters["output.times"] == [1.0, 2.5]
+        assert all(type(time) is float for time in parameters["output.times"])
+
+    @pytest.mark.parametrize(("name", "value"), [("hydro.cfl", True), ("mesh.nx1", False)])
+    def test_boolean_for_number_is_refused(self, name: str, value: bool) -> None:
         """Check that a boolean given for an int or float parameter is refused, though Python treats it as one.
 
         The rule is explicit because bool is a subclass of int in Python (PAR12).
         """
-        pytest.fail("Not written yet.")
+        mistake = only_mistake({name: value})
+        assert mistake.name == name
+        assert "must be of type" in mistake.message
 
-    @NOT_WRITTEN
     def test_float_for_int_is_refused(self) -> None:
         """Check that a float given for an int parameter is refused, even when its value is whole, as 4000.0 (PAR12)."""
-        pytest.fail("Not written yet.")
+        mistake = only_mistake({"mesh.nx1": 4000.0})
 
-    @NOT_WRITTEN
-    def test_string_is_not_converted(self) -> None:
+        ## The message in full: the name, the type expected, and the type and value given.
+        assert mistake.message == "'mesh.nx1' must be of type int, got float 4000.0."
+
+    @pytest.mark.parametrize(("name", "value"), [("hydro.cfl", "0.4"), ("cooling.enabled", "true"), ("mesh.nx1", "64")])
+    def test_string_is_not_converted(self, name: str, value: str) -> None:
         """Check that a string given for a parameter of another type is refused, not converted (PAR12).
 
         "0.4" for a float and "true" for a bool alike; only a value with a unit is a string accepted for a number.
         """
-        pytest.fail("Not written yet.")
+        mistake = only_mistake({name: value})
+        assert mistake.name == name
+        assert "must be of type" in mistake.message
 
-    @NOT_WRITTEN
-    def test_list_elements_are_checked(self) -> None:
+    ## A list with an element of another type, of each list type, and a single value where a list is declared.
+    @pytest.mark.parametrize(
+        ("name", "value"),
+        [("output.variables", ["rho", 3]), ("output.times", [1.0, True]), ("output.variables", "rho")],
+    )
+    def test_list_elements_are_checked(self, name: str, value: Any) -> None:
         """Check that every element of a list is checked by the same rules, and that a non-list is refused (PAR12)."""
-        pytest.fail("Not written yet.")
+        mistake = only_mistake({name: value})
+        assert mistake.name == name
+        assert "must be of type list" in mistake.message
 
     ## ---- Conditions (PAR13) ----
 

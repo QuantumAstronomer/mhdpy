@@ -20,8 +20,10 @@ defaults when a run starts, and every mistake is reported with its origin (PAR14
 
 Every value is checked against its declaration before the parameters are returned. A name that no module declared is
 refused, with the closest declared name as a suggestion where one is close enough to be a likely misspelling, so that
-a misspelt parameter never silently leaves its default in place (PAR11). The mistakes are reported together, as one
-ParameterError that lists each with its origin (PAR14).
+a misspelt parameter never silently leaves its default in place (PAR11). A value must have its parameter's type, with
+one conversion only: an integer given for a float becomes a float; a float is never taken for an integer, a boolean
+never for a number, and a string never for anything but a string, or a value with a unit for a number (PAR12). The
+mistakes are reported together, as one ParameterError that lists each with its origin (PAR14).
 
 For example, a run with a parameter file, one override and a unit system::
 
@@ -44,7 +46,7 @@ from types import MappingProxyType
 from typing import Any, Literal, Protocol, TypeIs
 
 from mhdpy.foundation.parameters.declarations import Declarations, Parameter
-from mhdpy.foundation.parameters.values import is_list
+from mhdpy.foundation.parameters.values import element_type, fits, is_list, type_name
 from mhdpy.foundation.units import notation
 
 ## The public interface of this module (D15.7): only names listed here are meant for use outside it.
@@ -263,35 +265,63 @@ def _unknown_name(name: str, origin: Origin, declared: Sequence[str]) -> Mistake
     return Mistake(name=name, origin=origin, message=f"{name!r} is not a declared parameter{suggestion}")
 
 
+class _Refusal(Exception):
+    """A value refused by the checks of its parameter, with the message of the mistake (PAR09, PAR12).
+
+    Raised where a check fails, and caught by ``resolve``, which records it as a Mistake with its parameter's name and
+    origin, so that every mistake is reported together (PAR14). It never leaves this module.
+    """
+
+
 def _convert(parameter: Parameter, value: object, units: UnitConverter | None) -> object:
-    """Return a single value of a parameter in code units: a value with a unit converted, any other as it is (PAR09)."""
+    """Return a single value of a parameter, of its type, in code units: converted where needed (PAR09, PAR12).
+
+    The value is of the parameter's type already, as checked by ``_resolved_value``.
+    """
+    ## An integer for a float is the one conversion of types (PAR12): a float, of the same value. type() rather than
+    ## isinstance(), as a boolean is an integer to isinstance(), and is refused for a float by the check of the type.
+    if type(value) is int and element_type(parameter.type) is float:
+        return float(value)
+
     ## A string given for a number is a value with a unit. A plain number is in code units already, or in kelvin, and a
-    ## string for a parameter without a unit, a bool or a str, is the value itself.
+    ## string for a parameter without a unit, a str, is the value itself.
     if parameter.unit is None or not isinstance(value, str):
         return value
 
     ## The dimensions of the declared unit, which the declaration has checked (PAR04): none, for a dimensionless
     ## parameter, which takes plain numbers only.
     if not notation.unit_dimensions(parameter.unit):
-        raise ValueError(f"{parameter.name!r} is dimensionless and takes plain numbers only, got {value!r}.")
+        raise _Refusal(f"{parameter.name!r} is dimensionless and takes plain numbers only, got {value!r}.")
     if units is None:
-        raise ValueError(
+        raise _Refusal(
             f"{parameter.name!r} is given {value!r}, a value with a unit, but the run has no unit system to convert it."
         )
 
-    ## The unit system refuses a value whose unit has other dimensions, or that is not a value with a unit at all;
-    ## its message is passed on with the name of the parameter.
+    ## The unit system refuses a value whose unit has other dimensions; its message is passed on, after the name of
+    ## the parameter.
     try:
         return units.to_code_units(value, parameter.unit)
     except ValueError as error:
-        raise ValueError(f"The value of {parameter.name!r} is invalid. {error}") from error
+        raise _Refusal(f"{parameter.name!r} cannot be given {value!r}: {error}") from error
 
 
-def _to_code_units(parameter: Parameter, value: object, units: UnitConverter | None) -> object:
-    """Return the value of a parameter in code units, a list converted element by element (PAR09)."""
-    if is_list(value):
-        return [_convert(parameter, element, units) for element in value]
-    return _convert(parameter, value, units)
+def _resolved_value(parameter: Parameter, given: object, units: UnitConverter | None) -> object:
+    """Return the value of a parameter as modules read it, from the value as given: checked and converted.
+
+    The value must be of the parameter's type (PAR12), and is then converted, a list element by element: an integer
+    for a float to a float (PAR12), and a value with a unit to code units (PAR09). A value that is refused raises a
+    _Refusal with the message of its mistake.
+    """
+    ## The type first, so that no conversion is tried on a value of the wrong type. The message names the type the
+    ## value has, as "got float 4000.0", since the value alone does not always show it: "64" and 64 print alike in
+    ## words.
+    if not fits(given, parameter.type):
+        raise _Refusal(
+            f"{parameter.name!r} must be of type {type_name(parameter.type)}, got {type_name(type(given))} {given!r}."
+        )
+    if is_list(given):
+        return [_convert(parameter, element, units) for element in given]
+    return _convert(parameter, given, units)
 
 
 def resolve(
@@ -309,12 +339,13 @@ def resolve(
     as is an override string without "=", naming the string. A single override string in place of a list of them is
     refused with a TypeError.
 
-    A name that no parameter is declared by is refused with a ParameterError, which lists every such name with its
-    origin, and with the closest declared name where one is close enough to be a likely misspelling (PAR11, PAR14).
-
-    A value with a unit, such as ``"100 pc"``, is converted to code units by the unit system, in whichever layer it is
-    given, the default included. It is refused with a ValueError, naming the parameter, if there is no unit system, if
-    the parameter is dimensionless, or if its unit has other dimensions than the parameter's.
+    Every value is then checked against its declaration. A value must be of its parameter's type, and an integer given
+    for a float is converted to a float (PAR12). A value with a unit, such as ``"100 pc"``, is converted to code units
+    by the unit system, in whichever layer it is given, the default included (PAR09). The mistakes are refused together,
+    with a ParameterError that lists each with its origin (PAR14): a name that no parameter is declared by, with the
+    closest declared name where one is close enough to be a likely misspelling (PAR11); a value of another type; and a
+    value with a unit if there is no unit system, if the parameter is dimensionless, or if its unit has other dimensions
+    than the parameter's.
 
     Parameters
     ----------
@@ -352,12 +383,18 @@ def resolve(
     ## names of the defaults come first in the origins, and a new name joins them where it is first given (PAR11).
     declared = [parameter.name for parameter in declarations.parameters]
     mistakes = [_unknown_name(name, origin, declared) for name, origin in origins.items() if name not in declared]
+
+    ## The value of every declared parameter, checked and converted from the value as given once the layers are
+    ## combined, so that a default with a unit needs a unit system only if no other layer replaces it (PAR06, PAR09).
+    ## A refused value is recorded as a mistake, and the other parameters are still checked, so that every mistake is
+    ## reported at once, in the order the parameters were declared (PAR14).
+    values: dict[str, Any] = {}
+    for parameter in declarations.parameters:
+        origin = origins[parameter.name]
+        try:
+            values[parameter.name] = _resolved_value(parameter, origin.value, units)
+        except _Refusal as refusal:
+            mistakes.append(Mistake(name=parameter.name, origin=origin, message=str(refusal)))
     if mistakes:
         raise ParameterError(mistakes)
-
-    ## The values, from the values as given, those with a unit converted once the layers are combined, so that a
-    ## default with a unit needs a unit system only if no other layer replaces it (PAR06, PAR09).
-    values = {name: origin.value for name, origin in origins.items()}
-    for parameter in declarations.parameters:
-        values[parameter.name] = _to_code_units(parameter, values[parameter.name], units)
     return Parameters(values, origins)

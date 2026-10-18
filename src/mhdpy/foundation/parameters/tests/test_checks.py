@@ -6,21 +6,50 @@ from typing import Any
 
 import pytest
 
-from mhdpy.foundation.parameters.declarations import Declarations, Parameter
+from mhdpy.foundation.parameters.declarations import Check, Declarations, Parameter
 from mhdpy.foundation.parameters.resolution import Mistake, Origin, ParameterError, resolve
 from mhdpy.foundation.parameters.tests import NOT_WRITTEN, parameter_file
+from mhdpy.foundation.units.constants import MEGAYEAR, PARSEC, SOLAR_MASS
+from mhdpy.foundation.units.system import UnitSystem
 
 ## The parameters of a small run, one of every type of PAR03 and lists of strings and of floats, against which the
-## values of the tests are checked.
+## values of the tests are checked. The Courant number has a check, as its module would declare it (PAR13).
 DECLARATIONS = Declarations(
     parameters=[
-        Parameter(name="hydro.cfl", type=float, default=0.4, doc="The Courant number.", unit="dimensionless"),
+        Parameter(
+            name="hydro.cfl",
+            type=float,
+            default=0.4,
+            doc="The Courant number.",
+            unit="dimensionless",
+            check=Check(lambda value: 0 < value <= 1, "in (0, 1]"),
+        ),
         Parameter(name="hydro.gamma", type=float, default=5 / 3, doc="The adiabatic index.", unit="dimensionless"),
         Parameter(name="hydro.solver", type=str, default="hllc", doc="The Riemann solver."),
         Parameter(name="mesh.nx1", type=int, default=64, doc="The number of cells along x1.", unit="dimensionless"),
         Parameter(name="output.variables", type=list[str], default=["rho"], doc="The variables written."),
         Parameter(name="output.times", type=list[float], default=[], doc="The times of the snapshots.", unit="time"),
         Parameter(name="cooling.enabled", type=bool, default=False, doc="Whether the gas cools radiatively."),
+    ]
+)
+
+
+## The unit system of the checks in code units: code units of 1 pc, 1 solar mass and 1 Myr (PAR13).
+UNITS = UnitSystem(length=PARSEC, mass=SOLAR_MASS, time=MEGAYEAR)
+
+## A radius that must be at most 10 in code units, 10 pc, with a default given with a unit that is not: 0.5 kpc is
+## 500 pc. Written as it stands, the number 0.5 would satisfy the check, so the default is refused only if the check is
+## applied in code units (PAR03, PAR13).
+CLOUD = Declarations(
+    parameters=[
+        Parameter(
+            name="problem.radius",
+            type=float,
+            default="0.5 kpc",
+            doc="The radius of the cloud.",
+            unit="length",
+            check=Check(lambda radius: radius <= 10, "at most 10"),
+        ),
     ]
 )
 
@@ -153,21 +182,30 @@ class TestChecks:
 
     ## ---- Conditions (PAR13) ----
 
-    @NOT_WRITTEN
     def test_value_failing_its_check_is_refused(self) -> None:
         """Check that a value that does not satisfy its check is refused, stating the condition in its words (PAR13).
 
         For example "'hydro.cfl' must be in (0, 1], got 1.5".
         """
-        pytest.fail("Not written yet.")
+        mistake = only_mistake({"hydro.cfl": 1.5})
+        assert mistake.message == "'hydro.cfl' must be in (0, 1], got 1.5."
 
-    @NOT_WRITTEN
     def test_check_applies_in_code_units(self) -> None:
         """Check that the check applies to the value in code units, after a value with a unit is converted (PAR13).
 
         A default given with a unit included, which can only be checked once converted (PAR03).
         """
-        pytest.fail("Not written yet.")
+        ## The default, 0.5 kpc, is 500 in code units: refused, from the default, with the value as given shown as well.
+        with pytest.raises(ParameterError) as refusal:
+            resolve(CLOUD, units=UNITS)
+        (mistake,) = refusal.value.mistakes
+        assert mistake.origin.source == "default"
+        assert mistake.message.startswith("'problem.radius' must be at most 10, got 5")
+        assert mistake.message.endswith("(given as '0.5 kpc').")
+
+        ## 1e19 cm is about 3.2 in code units: accepted, although the number as written is far above 10.
+        parameters = resolve(CLOUD, overrides=["problem.radius=1e19 cm"], units=UNITS)
+        assert parameters["problem.radius"] == UNITS.to_code_units("1e19 cm", "length")
 
     ## ---- All mistakes at once (PAR14) ----
 

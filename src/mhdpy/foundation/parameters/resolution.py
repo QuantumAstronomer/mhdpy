@@ -22,8 +22,10 @@ Every value is checked against its declaration before the parameters are returne
 refused, with the closest declared name as a suggestion where one is close enough to be a likely misspelling, so that
 a misspelt parameter never silently leaves its default in place (PAR11). A value must have its parameter's type, with
 one conversion only: an integer given for a float becomes a float; a float is never taken for an integer, a boolean
-never for a number, and a string never for anything but a string, or a value with a unit for a number (PAR12). The
-mistakes are reported together, as one ParameterError that lists each with its origin (PAR14).
+never for a number, and a string never for anything but a string, or a value with a unit for a number (PAR12). A
+value must then satisfy its parameter's check, if one is declared, in code units, and is refused with the condition in
+the words of the declaration, such as "'hydro.cfl' must be in (0, 1], got 1.5" (PAR13). The mistakes are reported
+together, as one ParameterError that lists each with its origin (PAR14).
 
 For example, a run with a parameter file, one override and a unit system::
 
@@ -266,7 +268,7 @@ def _unknown_name(name: str, origin: Origin, declared: Sequence[str]) -> Mistake
 
 
 class _Refusal(Exception):
-    """A value refused by the checks of its parameter, with the message of the mistake (PAR09, PAR12).
+    """A value refused by the checks of its parameter, with the message of the mistake (PAR09, PAR12, PAR13).
 
     Raised where a check fails, and caught by ``resolve``, which records it as a Mistake with its parameter's name and
     origin, so that every mistake is reported together (PAR14). It never leaves this module.
@@ -309,8 +311,9 @@ def _resolved_value(parameter: Parameter, given: object, units: UnitConverter | 
     """Return the value of a parameter as modules read it, from the value as given: checked and converted.
 
     The value must be of the parameter's type (PAR12), and is then converted, a list element by element: an integer
-    for a float to a float (PAR12), and a value with a unit to code units (PAR09). A value that is refused raises a
-    _Refusal with the message of its mistake.
+    for a float to a float (PAR12), and a value with a unit to code units (PAR09). The converted value must satisfy
+    the parameter's check, if one is declared (PAR13). A value that is refused raises a _Refusal with the message of
+    its mistake.
     """
     ## The type first, so that no conversion is tried on a value of the wrong type. The message names the type the
     ## value has, as "got float 4000.0", since the value alone does not always show it: "64" and 64 print alike in
@@ -320,8 +323,17 @@ def _resolved_value(parameter: Parameter, given: object, units: UnitConverter | 
             f"{parameter.name!r} must be of type {type_name(parameter.type)}, got {type_name(type(given))} {given!r}."
         )
     if is_list(given):
-        return [_convert(parameter, element, units) for element in given]
-    return _convert(parameter, given, units)
+        value = [_convert(parameter, element, units) for element in given]
+    else:
+        value = _convert(parameter, given, units)
+
+    ## The check last, on the value in code units, as modules read it (PAR13): a list as a whole, as the condition was
+    ## written for. Where the value as given differs, a value with a unit, it is shown as well, so that the user
+    ## recognises what was written; an integer given for a float equals its float, and is not shown twice.
+    if parameter.check is not None and not parameter.check.condition(value):
+        given_as = f" (given as {given!r})" if given != value else ""
+        raise _Refusal(f"{parameter.name!r} must be {parameter.check.description}, got {value!r}{given_as}.")
+    return value
 
 
 def resolve(
@@ -341,11 +353,12 @@ def resolve(
 
     Every value is then checked against its declaration. A value must be of its parameter's type, and an integer given
     for a float is converted to a float (PAR12). A value with a unit, such as ``"100 pc"``, is converted to code units
-    by the unit system, in whichever layer it is given, the default included (PAR09). The mistakes are refused together,
-    with a ParameterError that lists each with its origin (PAR14): a name that no parameter is declared by, with the
-    closest declared name where one is close enough to be a likely misspelling (PAR11); a value of another type; and a
-    value with a unit if there is no unit system, if the parameter is dimensionless, or if its unit has other dimensions
-    than the parameter's.
+    by the unit system, in whichever layer it is given, the default included (PAR09). The value in code units must
+    satisfy the parameter's check, if one is declared (PAR13). The mistakes are refused together, with a
+    ParameterError that lists each with its origin (PAR14): a name that no parameter is declared by, with the closest
+    declared name where one is close enough to be a likely misspelling (PAR11); a value of another type; a value with
+    a unit if there is no unit system, if the parameter is dimensionless, or if its unit has other dimensions than the
+    parameter's; and a value that does not satisfy its check, stating the condition in the words of the declaration.
 
     Parameters
     ----------

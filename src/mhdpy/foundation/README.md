@@ -142,8 +142,10 @@ Every value is checked against its declaration before the parameters are returne
 refused, with the closest declared name as a suggestion where one is close enough to be a likely misspelling, so that
 a misspelt parameter never silently leaves its default in place (PAR11). A value must have its parameter's type, with
 one conversion only: an integer given for a float becomes a float; a float is never taken for an integer, a boolean
-never for a number, and a string never for anything but a string, or a value with a unit for a number (PAR12). The
-mistakes are reported together, as one ParameterError that lists each with its origin (PAR14).
+never for a number, and a string never for anything but a string, or a value with a unit for a number (PAR12). A
+value must then satisfy its parameter's check, if one is declared, in code units, and is refused with the condition in
+the words of the declaration, such as "'hydro.cfl' must be in (0, 1], got 1.5" (PAR13). The mistakes are reported
+together, as one ParameterError that lists each with its origin (PAR14).
 
 For example, a run with a parameter file, one override and a unit system::
 

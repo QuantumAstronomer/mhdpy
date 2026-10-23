@@ -10,7 +10,6 @@ from hypothesis import strategies as st
 
 from mhdpy.foundation.parameters.declarations import Alternatives, Declarations, Parameter
 from mhdpy.foundation.parameters.resolution import resolve
-from mhdpy.foundation.parameters.tests import NOT_WRITTEN
 from mhdpy.foundation.parameters.values import is_list
 from mhdpy.foundation.units.constants import MEGAYEAR, PARSEC, SOLAR_MASS
 from mhdpy.foundation.units.system import UnitSystem
@@ -243,11 +242,25 @@ class TestRecords:
         for name, value in record["values"].items():
             assert identical(stored["values"][name], value), name
 
-    @NOT_WRITTEN
     def test_resolving_from_the_record_gives_the_same_values(self) -> None:
         """Check that resolving with the record as the restart layer gives the same values, bit for bit (PAR19, PAR15).
 
         Values given with a unit included, which the record holds in code units and are not converted again; the
         selected groups of alternatives are the same as well.
         """
-        pytest.fail("Not written yet.")
+        ## Values given in each way that is converted, and the number density, which selects the group of the
+        ## alternatives that is not the default.
+        overrides = {"hydro.cfl": 1, "problem.radius": "1e19 cm", "output.times": [1, "1 Gyr"], "ambient.n": 2.0}
+        original = resolve(DECLARATIONS, overrides=overrides, units=UNITS)
+
+        ## The record as a restart file stores it, written as JSON and read back, and resolved again without a unit
+        ## system: the record needs none, as it holds every value in code units already.
+        stored = json.loads(json.dumps(original.to_record(), allow_nan=False))
+        restarted = resolve(DECLARATIONS, record=stored)
+
+        ## The same names in the same order, every value identical, of the same type and bit for bit, and the same
+        ## group selected.
+        assert list(restarted) == list(original)
+        for name in original:
+            assert identical(restarted[name], original[name]), name
+        assert restarted.selected == original.selected == {"ambient.density": "number_density"}

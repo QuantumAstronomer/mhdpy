@@ -7,6 +7,13 @@ parameter scan or a quick test. Overrides come from the command line, as strings
 Python, as a dictionary; values in strings are read as TOML, the same as in a parameter file, and a value that is not
 valid TOML, such as a bare word, as a string (PAR08).
 
+A restarted run continues the original run. The record of the original run's parameters (PAR19), which the restart
+file holds, then replaces the defaults as the lowest layer, so that every value not given anew is the one the original
+run used, and the group each set of alternatives selected stays selected. A parameter declared since the restart file
+was written keeps its default, and a recorded name that is no longer declared is ignored, so that a run can be
+continued after its modules were updated; a recorded value that its declaration now refuses is refused with the other
+mistakes (PAR15).
+
 A number on its own is a value in code units. A value with a unit, a string such as ``"100 pc"`` given for a number in
 any layer, is converted to code units by the unit system of the run (PAR09). It is refused if the run has no unit
 system, if the parameter is dimensionless, or if its unit has other dimensions than the parameter's. The unit system is
@@ -50,9 +57,9 @@ For example, a run with a parameter file, one override and a unit system::
     parameters["hydro.cfl"]                         ## 0.3
     parameters.origins["hydro.cfl"].source          ## "override"
 
-The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR06-PAR14,
+The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR06-PAR15,
 PAR18-PAR19, PAR22-PAR24), and they are tested in ``tests/test_supplying_values.py``, ``tests/test_checks.py``,
-``tests/test_records.py`` and ``tests/test_alternatives.py``.
+``tests/test_restarts.py``, ``tests/test_records.py`` and ``tests/test_alternatives.py``.
 """
 
 import difflib
@@ -93,8 +100,9 @@ class Origin:
 
     Parameters
     ----------
-    source : {"default", "file", "override"}
-        The layer that gave the value: the declared default, the parameter file or an override.
+    source : {"default", "restart", "file", "override"}
+        The layer that gave the value: the declared default, the record of the original run on restart (PAR15), the
+        parameter file or an override.
     value : bool, int, float, str or list
         The value as it was given, before any conversion: for a value with a unit the string, such as ``"100 pc"``,
         and for a list the whole list. The value in code units is the one the parameters give by name.
@@ -103,17 +111,19 @@ class Origin:
     """
 
     ## A Literal, so that the type checker refuses a comparison with a misspelt layer, such as source == "defaults".
-    ## The restart record joins the layers with the restarts (PAR15).
-    source: Literal["default", "file", "override"]
+    source: Literal["default", "restart", "file", "override"]
     value: Any
     file: str | None = None
 
     def __str__(self) -> str:
         """Return where the value came from, in words, as a report of mistakes shows it (PAR14).
 
-        "default", "override", or "parameter file" with the file's name, such as "parameter file run.toml".
+        "default", "override", "restart record", or "parameter file" with the file's name, such as "parameter file
+        run.toml".
         """
-        return f"parameter file {self.file}" if self.source == "file" else self.source
+        if self.source == "file":
+            return f"parameter file {self.file}"
+        return "restart record" if self.source == "restart" else self.source
 
 
 class Record(TypedDict):
@@ -457,22 +467,26 @@ def _in_words(items: Sequence[str]) -> str:
     return items[0] if len(items) == 1 else f"{', '.join(items[:-1])} and {items[-1]}"
 
 
-def _selected_group(alternatives: Alternatives, origins: Mapping[str, Origin]) -> str:
+def _selected_group(alternatives: Alternatives, origins: Mapping[str, Origin], recorded: str | None) -> str:
     """Return the group of a set of alternatives that the values given select, refusing values for two (PAR22).
 
-    A group is selected by a value given for any of its parameters, in the parameter file or the overrides; when none
-    is, the default group is. Values given for two groups or more raise a _Refusal that names, for each group, the
+    A group is selected by a value given for any of its parameters, in the parameter file or the overrides. When none
+    is, the group recorded by the original run is selected on restart, if it is still one of the groups (PAR15), and
+    the default group otherwise. Values given for two groups or more raise a _Refusal that names, for each group, the
     parameters given and where.
     """
     ## The parameters given of each group, by the group's name: only the groups of which any parameter is given. A
-    ## default is not given; the file and the overrides are, and so would be nothing else, which keeps a restored value
-    ## from selecting a group when the restarts add their own source (PAR15).
+    ## default is not given, nor a value restored from the record; the file and the overrides are.
     given = {
         group: [name for name in names if origins[name].source in ("file", "override")]
         for group, names in alternatives.groups.items()
     }
     given = {group: names for group, names in given.items() if names}
     if not given:
+        ## The recorded group, if there is one and it is still a group of the set: a set declared since the restart
+        ## file was written has none, and a group may have been renamed since (PAR15).
+        if recorded is not None and recorded in alternatives.groups:
+            return recorded
         return alternatives.default
     if len(given) == 1:
         return next(iter(given))
@@ -508,6 +522,7 @@ def _joint_mistake(check: JointCheck, values: Mapping[str, Any], origins: Mappin
 def resolve(
     declarations: Declarations,
     *,
+    record: Record | None = None,
     file: str | os.PathLike[str] | None = None,
     overrides: Mapping[str, Any] | Sequence[str] = (),
     units: UnitConverter | None = None,
@@ -519,6 +534,11 @@ def resolve(
     parameter file that is not valid TOML is refused with a ValueError, naming the file and the position of the error,
     as is an override string without "=", naming the string. A single override string in place of a list of them is
     refused with a TypeError.
+
+    On restart, the record of the original run replaces the defaults as the lowest layer, for every parameter it holds
+    that is still declared, and the group each set of alternatives selected stays selected unless the file or the
+    overrides give a parameter of another group (PAR15, PAR22). A declared parameter missing from the record keeps
+    its default, and a recorded name that is no longer declared is ignored; a recorded value is checked as any other.
 
     Every value is then checked against its declaration. A value must be of its parameter's type, and an integer given
     for a float is converted to a float (PAR12). A value with a unit, such as ``"100 pc"``, is converted to code units
@@ -539,6 +559,10 @@ def resolve(
     ----------
     declarations : Declarations
         The parameters of the run, as declared by its modules.
+    record : Record, optional
+        On restart, the record of the original run's parameters (PAR19), as its restart file holds it: every value in
+        code units, and the selected groups. Without it, the run is not a restart, and the defaults are the lowest
+        layer.
     file : str or path, optional
         The parameter file, a TOML document. Without it, no value comes from a file.
     overrides : mapping or sequence of str, optional
@@ -560,6 +584,14 @@ def resolve(
     origins = {
         parameter.name: Origin(source="default", value=parameter.default) for parameter in declarations.parameters
     }
+    if record is not None:
+        ## On restart, the record replaces the defaults for every parameter it holds that is still declared, which are
+        ## the only names in the origins so far. A parameter missing from the record keeps its default, and a recorded
+        ## name that is no longer declared is ignored, rather than refused as an unknown name, so that a run can be
+        ## continued after its modules were updated (PAR15).
+        for name, value in record["values"].items():
+            if name in origins:
+                origins[name] = Origin(source="restart", value=value)
     if file is not None:
         ## The name as passed, a path turned into its string, as the user wrote it.
         file_name = os.fspath(file)
@@ -585,12 +617,14 @@ def resolve(
         except _Refusal as refusal:
             mistakes.append(Mistake(name=parameter.name, origin=origin, message=str(refusal)))
 
-    ## The group selected of each set of alternatives, from the values given; values for two groups are a mistake of
-    ## several values, with no single origin, reported after those of single values (PAR22).
+    ## The group selected of each set of alternatives, from the values given, and on restart from the groups the
+    ## original run selected; values for two groups are a mistake of several values, with no single origin, reported
+    ## after those of single values (PAR15, PAR22).
+    recorded: Mapping[str, str] = record["selected"] if record is not None else {}
     selected: dict[str, str] = {}
     for alternatives in declarations.alternatives:
         try:
-            selected[alternatives.name] = _selected_group(alternatives, origins)
+            selected[alternatives.name] = _selected_group(alternatives, origins, recorded.get(alternatives.name))
         except _Refusal as refusal:
             mistakes.append(Mistake(name=alternatives.name, origin=None, message=str(refusal)))
 

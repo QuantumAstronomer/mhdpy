@@ -193,13 +193,21 @@ class TestAlternatives:
         assert "'ambient.rho'" in density.message
         assert "'ambient.n'" in density.message
 
-    @NOT_WRITTEN
     def test_recorded_group_stays_selected_on_restart(self) -> None:
         """Check that on restart the group selected by the original run stays selected when nothing is given (PAR22).
 
         Also when it was not the default group, which the defaults alone would not select.
         """
-        pytest.fail("Not written yet.")
+        ## The original run selects the number density, which is not the default group.
+        record = resolve(AMBIENT, overrides=["ambient.n=100.0"]).to_record()
+
+        ## On restart nothing is given: the recorded group stays selected, with the recorded values (PAR15).
+        parameters = resolve(AMBIENT, record=record)
+        assert parameters.selected == {"ambient.density": "number_density"}
+        assert parameters["ambient.n"] == 100.0
+
+        ## Without the record, nothing given selects the default group.
+        assert resolve(AMBIENT).selected == {"ambient.density": "mass_density"}
 
     @NOT_WRITTEN
     def test_selecting_another_group_on_restart(self) -> None:

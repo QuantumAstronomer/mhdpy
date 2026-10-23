@@ -139,6 +139,13 @@ parameter scan or a quick test. Overrides come from the command line, as strings
 Python, as a dictionary; values in strings are read as TOML, the same as in a parameter file, and a value that is not
 valid TOML, such as a bare word, as a string (PAR08).
 
+A restarted run continues the original run. The record of the original run's parameters (PAR19), which the restart
+file holds, then replaces the defaults as the lowest layer, so that every value not given anew is the one the original
+run used, and the group each set of alternatives selected stays selected. A parameter declared since the restart file
+was written keeps its default, and a recorded name that is no longer declared is ignored, so that a run can be
+continued after its modules were updated; a recorded value that its declaration now refuses is refused with the other
+mistakes (PAR15).
+
 A number on its own is a value in code units. A value with a unit, a string such as ``"100 pc"`` given for a number in
 any layer, is converted to code units by the unit system of the run (PAR09). It is refused if the run has no unit
 system, if the parameter is dimensionless, or if its unit has other dimensions than the parameter's. The unit system is
@@ -182,9 +189,9 @@ For example, a run with a parameter file, one override and a unit system::
     parameters["hydro.cfl"]                         ## 0.3
     parameters.origins["hydro.cfl"].source          ## "override"
 
-The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR06-PAR14,
+The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR06-PAR15,
 PAR18-PAR19, PAR22-PAR24), and they are tested in ``tests/test_supplying_values.py``, ``tests/test_checks.py``,
-``tests/test_records.py`` and ``tests/test_alternatives.py``.
+``tests/test_restarts.py``, ``tests/test_records.py`` and ``tests/test_alternatives.py``.
 
 ### `mhdpy.foundation.parameters.values`
 

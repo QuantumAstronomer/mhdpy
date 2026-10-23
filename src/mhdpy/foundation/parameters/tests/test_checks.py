@@ -9,6 +9,7 @@ import pytest
 from mhdpy.foundation.parameters.declarations import Check, Declarations, Parameter
 from mhdpy.foundation.parameters.resolution import Mistake, Origin, ParameterError, resolve
 from mhdpy.foundation.parameters.tests import parameter_file
+from mhdpy.foundation.parameters.values import is_list
 from mhdpy.foundation.units.constants import MEGAYEAR, PARSEC, SOLAR_MASS
 from mhdpy.foundation.units.system import UnitSystem
 
@@ -128,9 +129,11 @@ class TestChecks:
         """Check that a value of the declared type is accepted as it is, for each type of PAR03 (PAR12)."""
         parameters = resolve(DECLARATIONS, overrides={name: value})
 
-        ## The type is compared as well, as == alone cannot tell them apart in Python: 1 == 1.0 == True.
-        assert parameters[name] == value
-        assert type(parameters[name]) is type(value)
+        ## A list is read as a tuple, as the parameters hold it (PAR18). The type is compared as well, as == alone
+        ## cannot tell them apart in Python: 1 == 1.0 == True.
+        expected = tuple(value) if is_list(value) else value
+        assert parameters[name] == expected
+        assert type(parameters[name]) is type(expected)
 
     def test_integer_for_float_is_converted(self) -> None:
         """Check that an integer given for a float parameter is accepted and converted to a float (PAR12)."""
@@ -139,7 +142,7 @@ class TestChecks:
 
         assert parameters["hydro.cfl"] == 1.0
         assert type(parameters["hydro.cfl"]) is float
-        assert parameters["output.times"] == [1.0, 2.5]
+        assert parameters["output.times"] == (1.0, 2.5)
         assert all(type(time) is float for time in parameters["output.times"])
 
     @pytest.mark.parametrize(("name", "value"), [("hydro.cfl", True), ("mesh.nx1", False)])

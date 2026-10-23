@@ -12,11 +12,12 @@ any layer, is converted to code units by the unit system of the run (PAR09). It 
 system, if the parameter is dimensionless, or if its unit has other dimensions than the parameter's. The unit system is
 passed in by the run; this module only asks it for its conversion, and never imports it, nor NumPy behind it (PAR21).
 
-Resolving gives the parameters of the run as one read-only mapping from each name to its value. The driver (L6)
-resolves the declarations of all the modules in a run once, before the run starts, and hands each module the values it
-declared. Next to the values, the parameters record the origin of each: the layer it came from, the parameter file by
-name, and the value as it was given there, such as ``"100 pc"`` (PAR10). The driver logs the values that are not
-defaults when a run starts, and every mistake is reported with its origin (PAR14).
+Resolving gives the parameters of the run as one read-only mapping from each name to its value, of its declared type and
+in code units, with the value of a list parameter as a tuple, so that no value can be changed once resolved, not even in
+place (PAR18). The driver (L6) resolves the declarations of all the modules in a run once, before the run starts, and
+hands each module the values it declared. Next to the values, the parameters record the origin of each: the layer it
+came from, the parameter file by name, and the value as it was given there, such as ``"100 pc"`` (PAR10). The driver
+logs the values that are not defaults when a run starts, and every mistake is reported with its origin (PAR14).
 
 Every value is checked against its declaration before the parameters are returned. A name that no module declared is
 refused, with the closest declared name as a suggestion where one is close enough to be a likely misspelling, so that
@@ -46,16 +47,16 @@ For example, a run with a parameter file, one override and a unit system::
     parameters["hydro.cfl"]                         ## 0.3
     parameters.origins["hydro.cfl"].source          ## "override"
 
-The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR06-PAR14,
-PAR22-PAR23), and they are tested in ``tests/test_supplying_values.py``, ``tests/test_checks.py`` and
-``tests/test_alternatives.py``.
+The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR06-PAR14, PAR18,
+PAR22-PAR23), and they are tested in ``tests/test_supplying_values.py``, ``tests/test_checks.py``,
+``tests/test_records.py`` and ``tests/test_alternatives.py``.
 """
 
 import difflib
 import os
 import tomllib
 from collections.abc import Iterator, Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from types import MappingProxyType
 from typing import Any, Literal, Protocol, TypeIs
 
@@ -111,21 +112,44 @@ class Origin:
         return f"parameter file {self.file}" if self.source == "file" else self.source
 
 
+def _frozen(value: object) -> object:
+    """Return a value as the parameters hold it: a list as a tuple of its elements, anything else as it is (PAR18).
+
+    A tuple cannot be changed in place, and, as a new object, not through the list it was made from either. The
+    elements need no copy: they are bools, numbers or strings (PAR03), none of which can be changed.
+    """
+    return tuple(value) if is_list(value) else value
+
+
 class Parameters(Mapping[str, Any]):
     """The resolved parameters of a run: each name with its value, read by name and never changed (PAR06, PAR18).
 
     A mapping, so that a value is read as ``parameters["hydro.cfl"]``, and the names and values can be gone through
-    as those of a dictionary. It has no way of changing a value: Mapping, unlike dict, defines no assignment. The
-    origin of each value is recorded next to it, in ``origins`` (PAR10), and the group selected of each set of
+    as those of a dictionary. It has no way of changing a value: Mapping, unlike dict, defines no assignment. The value
+    of a list parameter is a tuple, which cannot be changed in place either; it is read as a list is, by index and in a
+    loop. The origin of each value is recorded next to it, in ``origins`` (PAR10), and the group selected of each set of
     alternatives in ``selected`` (PAR22).
+
+    Parameters
+    ----------
+    values : mapping of str to bool, int, float, str or list
+        The value of every declared parameter, by its name, in code units and of its declared type.
+    origins : mapping of str to Origin
+        The origin of each value, by its name.
+    selected : mapping of str to str
+        The group selected of each set of alternatives, by the name of the set.
     """
 
     def __init__(self, values: Mapping[str, Any], origins: Mapping[str, Origin], selected: Mapping[str, str]) -> None:
-        ## Copies, so that the parameters cannot be changed through the dictionaries they were made from either. The
-        ## origins and the selected groups are kept behind a MappingProxyType, a read-only view of a dictionary, since
-        ## they are handed out as they are.
-        self._values = dict(values)
-        self._origins = MappingProxyType(dict(origins))
+        ## Copies, so that the parameters cannot be changed through the dictionaries they were made from either, with
+        ## every list, of a value or of a value as given, as a tuple of its own (PAR18). The origins and the selected
+        ## groups are kept behind a MappingProxyType, a read-only view of a dictionary, since they are handed out as
+        ## they are. replace() makes a copy of an origin with the value as given frozen, as an origin itself cannot be
+        ## changed.
+        self._values = {name: _frozen(value) for name, value in values.items()}
+        self._origins = MappingProxyType(
+            {name: replace(origin, value=_frozen(origin.value)) for name, origin in origins.items()}
+        )
         self._selected = MappingProxyType(dict(selected))
 
     def __getitem__(self, name: str) -> Any:
@@ -460,8 +484,8 @@ def resolve(
     Returns
     -------
     parameters : Parameters
-        The value of every declared parameter, by its name, its origin, in ``parameters.origins``, and the group
-        selected of each set of alternatives, in ``parameters.selected``.
+        The value of every declared parameter, by its name, with a list as a tuple, its origin, in
+        ``parameters.origins``, and the group selected of each set of alternatives, in ``parameters.selected``.
     """
     ## The layers, from the bottom up, each recording the origin of the values it gives, with the value as given: each
     ## replaces the origins of the names it gives, and leaves the others (PAR10).

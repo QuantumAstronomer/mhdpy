@@ -143,11 +143,12 @@ any layer, is converted to code units by the unit system of the run (PAR09). It 
 system, if the parameter is dimensionless, or if its unit has other dimensions than the parameter's. The unit system is
 passed in by the run; this module only asks it for its conversion, and never imports it, nor NumPy behind it (PAR21).
 
-Resolving gives the parameters of the run as one read-only mapping from each name to its value. The driver (L6)
-resolves the declarations of all the modules in a run once, before the run starts, and hands each module the values it
-declared. Next to the values, the parameters record the origin of each: the layer it came from, the parameter file by
-name, and the value as it was given there, such as ``"100 pc"`` (PAR10). The driver logs the values that are not
-defaults when a run starts, and every mistake is reported with its origin (PAR14).
+Resolving gives the parameters of the run as one read-only mapping from each name to its value, of its declared type and
+in code units, with the value of a list parameter as a tuple, so that no value can be changed once resolved, not even in
+place (PAR18). The driver (L6) resolves the declarations of all the modules in a run once, before the run starts, and
+hands each module the values it declared. Next to the values, the parameters record the origin of each: the layer it
+came from, the parameter file by name, and the value as it was given there, such as ``"100 pc"`` (PAR10). The driver
+logs the values that are not defaults when a run starts, and every mistake is reported with its origin (PAR14).
 
 Every value is checked against its declaration before the parameters are returned. A name that no module declared is
 refused, with the closest declared name as a suggestion where one is close enough to be a likely misspelling, so that
@@ -177,9 +178,9 @@ For example, a run with a parameter file, one override and a unit system::
     parameters["hydro.cfl"]                         ## 0.3
     parameters.origins["hydro.cfl"].source          ## "override"
 
-The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR06-PAR14,
-PAR22-PAR23), and they are tested in ``tests/test_supplying_values.py``, ``tests/test_checks.py`` and
-``tests/test_alternatives.py``.
+The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR06-PAR14, PAR18,
+PAR22-PAR23), and they are tested in ``tests/test_supplying_values.py``, ``tests/test_checks.py``,
+``tests/test_records.py`` and ``tests/test_alternatives.py``.
 
 ### `mhdpy.foundation.parameters.values`
 

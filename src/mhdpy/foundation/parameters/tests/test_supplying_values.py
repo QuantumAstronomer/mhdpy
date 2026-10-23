@@ -9,6 +9,7 @@ import pytest
 from mhdpy.foundation.parameters.declarations import Declarations, Parameter
 from mhdpy.foundation.parameters.resolution import Origin, resolve
 from mhdpy.foundation.parameters.tests import parameter_file
+from mhdpy.foundation.parameters.values import is_list
 from mhdpy.foundation.units.constants import MEGAYEAR, PARSEC, SOLAR_MASS
 from mhdpy.foundation.units.system import UnitSystem
 
@@ -49,14 +50,15 @@ DICTIONARY_FORMS: dict[str, dict[str, Any]] = {
     "mixed": {"hydro": {"cfl": 0.3}, "output.snapshot": {"every": 10}},
 }
 
-## Override strings with a value of each type, written as in TOML, with the name and the value each gives (PAR08). The
-## last has spaces around the "=", as a string in quotes on a command line may.
+## Override strings with a value of each type, written as in TOML, with the name and the value each gives (PAR08), a
+## list as the tuple the parameters hold it as (PAR18). The last has spaces around the "=", as a string in quotes on a
+## command line may.
 STRING_OVERRIDES = [
     ("hydro.cfl=0.3", "hydro.cfl", 0.3),
     ("mesh.nx1=128", "mesh.nx1", 128),
     ("cooling.enabled=true", "cooling.enabled", True),
     ('hydro.solver="hlld"', "hydro.solver", "hlld"),
-    ('output.variables=["rho", "pressure"]', "output.variables", ["rho", "pressure"]),
+    ('output.variables=["rho", "pressure"]', "output.variables", ("rho", "pressure")),
     ("mesh.nx1 = 128", "mesh.nx1", 128),
 ]
 
@@ -67,8 +69,12 @@ BARE_WORDS = [
     ("hydro.solver=roe fix", "roe fix"),
 ]
 
-## The default of each parameter, by its name: what every parameter resolves to without a file or overrides.
-DEFAULTS = {parameter.name: parameter.default for parameter in DECLARATIONS.parameters}
+## The default of each parameter, by its name: what every parameter resolves to without a file or overrides, with a
+## list as a tuple, as the parameters hold it (PAR18).
+DEFAULTS: dict[str, Any] = {
+    parameter.name: tuple(parameter.default) if is_list(parameter.default) else parameter.default
+    for parameter in DECLARATIONS.parameters
+}
 
 ## The parameters of a problem posed in physical units: a length, a time whose default is given with a unit, a velocity,
 ## a list of densities, a temperature in kelvin and a dimensionless number (PAR09).
@@ -186,7 +192,7 @@ class TestSupplyingValues:
         """Check that an override "name=value" is read with its value as TOML (PAR08).
 
         "hydro.cfl=0.3" gives a float, "mesh.nx1=128" an integer, "cooling.enabled=true" a boolean,
-        'hydro.solver="hlld"' a string and 'output.variables=["rho", "pressure"]' a list.
+        'hydro.solver="hlld"' a string and 'output.variables=["rho", "pressure"]' a list, read as a tuple (PAR18).
         """
         parameters = resolve(DECLARATIONS, overrides=[override])
 
@@ -240,7 +246,7 @@ class TestSupplyingValues:
         ## One element with a unit and one plain number, in code units already, which stays as it is.
         overrides = {"problem.densities": ["1e-24 g cm^-3", 2.0]}
         parameters = resolve(PHYSICAL, overrides=overrides, units=UNITS)
-        assert parameters["problem.densities"] == [UNITS.to_code_units("1e-24 g cm^-3", "density"), 2.0]
+        assert parameters["problem.densities"] == (UNITS.to_code_units("1e-24 g cm^-3", "density"), 2.0)
 
     @pytest.mark.parametrize("units", [None, UNITS], ids=["without unit system", "with unit system"])
     def test_plain_number_is_in_code_units(self, units: UnitSystem | None) -> None:
@@ -258,7 +264,9 @@ class TestSupplyingValues:
             "problem.temperature": 1e6,
         }
         parameters = resolve(PHYSICAL, overrides=overrides, units=units)
-        assert {name: parameters[name] for name in overrides} == overrides
+
+        ## Each value as given, with the list as a tuple (PAR18).
+        assert {name: parameters[name] for name in overrides} == overrides | {"problem.densities": (1.0, 0.5)}
 
     ## The default of problem.time is "10 Myr": resolved without overrides, the default is the value with a unit.
     @pytest.mark.parametrize(
@@ -322,9 +330,9 @@ class TestSupplyingValues:
         parameters = resolve(PHYSICAL, file=file, overrides=overrides, units=UNITS)
         origins = parameters.origins
 
-        ## The value in code units is read by name; its origin keeps the string as given. A list is kept whole, and a
-        ## default with a unit, problem.time, as declared.
+        ## The value in code units is read by name; its origin keeps the string as given. A list is kept whole, as a
+        ## tuple (PAR18), and a default with a unit, problem.time, as declared.
         assert parameters["problem.radius"] == UNITS.to_code_units("100 pc", "length")
         assert origins["problem.radius"].value == "100 pc"
-        assert origins["problem.densities"].value == ["1e-24 g cm^-3", 2.0]
+        assert origins["problem.densities"].value == ("1e-24 g cm^-3", 2.0)
         assert origins["problem.time"].value == "10 Myr"

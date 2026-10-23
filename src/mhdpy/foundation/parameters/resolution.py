@@ -14,10 +14,12 @@ passed in by the run; this module only asks it for its conversion, and never imp
 
 Resolving gives the parameters of the run as one read-only mapping from each name to its value, of its declared type and
 in code units, with the value of a list parameter as a tuple, so that no value can be changed once resolved, not even in
-place (PAR18). The driver (L6) resolves the declarations of all the modules in a run once, before the run starts, and
-hands each module the values it declared. Next to the values, the parameters record the origin of each: the layer it
-came from, the parameter file by name, and the value as it was given there, such as ``"100 pc"`` (PAR10). The driver
-logs the values that are not defaults when a run starts, and every mistake is reported with its origin (PAR14).
+place (PAR18). The parameters convert to a record of plain values, every value in code units and the selected groups,
+which outputs store as JSON and a restart starts from, exactly (PAR19). The driver (L6) resolves the declarations of all
+the modules in a run once, before the run starts, and hands each module the values it declared. Next to the values, the
+parameters record the origin of each: the layer it came from, the parameter file by name, and the value as it was given
+there, such as ``"100 pc"`` (PAR10). The driver logs the values that are not defaults when a run starts, and every
+mistake is reported with its origin (PAR14).
 
 Every value is checked against its declaration before the parameters are returned. A name that no module declared is
 refused, with the closest declared name as a suggestion where one is close enough to be a likely misspelling, so that
@@ -48,8 +50,8 @@ For example, a run with a parameter file, one override and a unit system::
     parameters["hydro.cfl"]                         ## 0.3
     parameters.origins["hydro.cfl"].source          ## "override"
 
-The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR06-PAR14, PAR18,
-PAR22-PAR24), and they are tested in ``tests/test_supplying_values.py``, ``tests/test_checks.py``,
+The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR06-PAR14,
+PAR18-PAR19, PAR22-PAR24), and they are tested in ``tests/test_supplying_values.py``, ``tests/test_checks.py``,
 ``tests/test_records.py`` and ``tests/test_alternatives.py``.
 """
 
@@ -60,14 +62,14 @@ import tomllib
 from collections.abc import Iterator, Mapping, Sequence
 from dataclasses import dataclass, replace
 from types import MappingProxyType
-from typing import Any, Literal, Protocol, TypeIs
+from typing import Any, Literal, Protocol, TypedDict, TypeIs, cast
 
 from mhdpy.foundation.parameters.declarations import Alternatives, Declarations, JointCheck, Parameter
 from mhdpy.foundation.parameters.values import element_type, fits, is_finite, is_list, type_name
 from mhdpy.foundation.units import notation
 
 ## The public interface of this module (D15.7): only names listed here are meant for use outside it.
-__all__ = ["Mistake", "Origin", "ParameterError", "Parameters", "UnitConverter", "resolve"]
+__all__ = ["Mistake", "Origin", "ParameterError", "Parameters", "Record", "UnitConverter", "resolve"]
 
 
 class UnitConverter(Protocol):
@@ -114,6 +116,28 @@ class Origin:
         return f"parameter file {self.file}" if self.source == "file" else self.source
 
 
+class Record(TypedDict):
+    """The record of a run's parameters: every value in code units, and the selected groups (PAR19).
+
+    What outputs and restart files store of the parameters (D14.2), and what a restart starts from (PAR15). It holds
+    plain values only, so that json.dumps writes it as standard JSON, the format D15 records parameters in, and
+    json.loads reads it back identically: JSON writes each float with the shortest digits that read back as the same
+    double, and every float is finite (PAR24). A TypedDict states the keys of the record and the types of their values
+    for the type checker; the record itself is an ordinary dictionary.
+
+    Parameters
+    ----------
+    values : dict of str to bool, int, float, str or list
+        The value of every declared parameter, by its name, in the order declared: in code units (in kelvin, for a
+        temperature), after any conversion, and a list as a list, as JSON has no tuples.
+    selected : dict of str to str
+        The group selected of each set of alternatives, by the name of the set (PAR22).
+    """
+
+    values: dict[str, Any]
+    selected: dict[str, str]
+
+
 def _frozen(value: object) -> object:
     """Return a value as the parameters hold it: a list as a tuple of its elements, anything else as it is (PAR18).
 
@@ -123,6 +147,16 @@ def _frozen(value: object) -> object:
     return tuple(value) if is_list(value) else value
 
 
+def _thawed(value: object) -> object:
+    """Return a value as the record holds it: a tuple as a list of its elements, anything else as it is (PAR19).
+
+    The reverse of ``_frozen``: JSON has no tuples, and a new list can be changed by a writer of the record without
+    changing the parameters.
+    """
+    ## cast tells the type checker that the elements may be of any type, which isinstance() leaves unknown.
+    return list(cast(tuple[object, ...], value)) if isinstance(value, tuple) else value
+
+
 class Parameters(Mapping[str, Any]):
     """The resolved parameters of a run: each name with its value, read by name and never changed (PAR06, PAR18).
 
@@ -130,7 +164,8 @@ class Parameters(Mapping[str, Any]):
     as those of a dictionary. It has no way of changing a value: Mapping, unlike dict, defines no assignment. The value
     of a list parameter is a tuple, which cannot be changed in place either; it is read as a list is, by index and in a
     loop. The origin of each value is recorded next to it, in ``origins`` (PAR10), and the group selected of each set of
-    alternatives in ``selected`` (PAR22).
+    alternatives in ``selected`` (PAR22). ``to_record`` gives the record that outputs store and a restart starts from
+    (PAR19).
 
     Parameters
     ----------
@@ -175,6 +210,21 @@ class Parameters(Mapping[str, Any]):
     def selected(self) -> Mapping[str, str]:
         """The group selected of each set of alternatives, by the name of the set (PAR22)."""
         return self._selected
+
+    def to_record(self) -> Record:
+        """Return the record of the parameters: every value in code units, and the selected groups (PAR19).
+
+        The record is written as JSON, by the writers of outputs and restart files, and read back exactly, every float
+        bit for bit. Its values are those the parameters give, after conversion, so that a restart never converts them
+        again, and cannot be changed by a change of the constants between the original run and its continuation
+        (UNI10). The origins are not recorded: they describe how this run was given its values, while on restart every
+        value comes from the record (PAR15). Each call returns a record of its own, which a writer may change without
+        changing the parameters.
+        """
+        ## A list value, a tuple in the parameters (PAR18), as a new list. The other values are bools, numbers and
+        ## strings, which cannot be changed, and are shared rather than copied.
+        values = {name: _thawed(value) for name, value in self._values.items()}
+        return {"values": values, "selected": dict(self._selected)}
 
 
 ## frozen=True and kw_only=True, as for an origin: a mistake cannot be changed once found, and its items are given by

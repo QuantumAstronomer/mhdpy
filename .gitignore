@@ -35,3 +35,6 @@ docs/_build/
 
 ## Hypothesis example database
 .hypothesis/
+
+## Local notes for Claude Code, kept out of the repository
+CLAUDE.md

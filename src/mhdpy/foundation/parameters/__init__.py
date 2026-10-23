@@ -1,4 +1,4 @@
-"""The parameters of mhdpy: declared, given values, checked and recorded (requirements PAR01-PAR23).
+"""The parameters of mhdpy: declared, given values, checked and recorded (requirements PAR01-PAR24).
 
 Every choice a run makes is a parameter: the size of the mesh, the Courant number, the Riemann solver, the end time,
 the outputs and their schedules, the parameters of a problem's initial conditions. Modules, problems, the driver and the

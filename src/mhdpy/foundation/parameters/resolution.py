@@ -25,8 +25,9 @@ a misspelt parameter never silently leaves its default in place (PAR11). A value
 one conversion only: an integer given for a float becomes a float; a float is never taken for an integer, a boolean
 never for a number, and a string never for anything but a string, or a value with a unit for a number (PAR12). A
 value must then satisfy its parameter's check, if one is declared, in code units, and is refused with the condition in
-the words of the declaration, such as "'hydro.cfl' must be in (0, 1], got 1.5" (PAR13). The mistakes are reported
-together, as one ParameterError that lists each with its origin (PAR14).
+the words of the declaration, such as "'hydro.cfl' must be in (0, 1], got 1.5" (PAR13). Before that check, every
+float in code units must be finite, neither infinite nor NaN, as standard JSON, the format of the record, has neither
+(PAR24). The mistakes are reported together, as one ParameterError that lists each with its origin (PAR14).
 
 Where a quantity can be given in more than one way, the values a run is given select the group of each set of
 alternatives: the group of the parameters given in the parameter file or the overrides, and the default group when
@@ -48,11 +49,12 @@ For example, a run with a parameter file, one override and a unit system::
     parameters.origins["hydro.cfl"].source          ## "override"
 
 The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR06-PAR14, PAR18,
-PAR22-PAR23), and they are tested in ``tests/test_supplying_values.py``, ``tests/test_checks.py``,
+PAR22-PAR24), and they are tested in ``tests/test_supplying_values.py``, ``tests/test_checks.py``,
 ``tests/test_records.py`` and ``tests/test_alternatives.py``.
 """
 
 import difflib
+import math
 import os
 import tomllib
 from collections.abc import Iterator, Mapping, Sequence
@@ -61,7 +63,7 @@ from types import MappingProxyType
 from typing import Any, Literal, Protocol, TypeIs
 
 from mhdpy.foundation.parameters.declarations import Alternatives, Declarations, JointCheck, Parameter
-from mhdpy.foundation.parameters.values import element_type, fits, is_list, type_name
+from mhdpy.foundation.parameters.values import element_type, fits, is_finite, is_list, type_name
 from mhdpy.foundation.units import notation
 
 ## The public interface of this module (D15.7): only names listed here are meant for use outside it.
@@ -331,7 +333,11 @@ def _convert(parameter: Parameter, value: object, units: UnitConverter | None) -
     """
     ## An integer for a float is the one conversion of types (PAR12): a float, of the same value. type() rather than
     ## isinstance(), as a boolean is an integer to isinstance(), and is refused for a float by the check of the type.
+    ## An integer too large for a float, which float() refuses with an OverflowError, becomes an infinity of its sign,
+    ## the nearest a float comes to it, and is refused as such (PAR24).
     if type(value) is int and element_type(parameter.type) is float:
+        if not is_finite(value):
+            return math.inf if value > 0 else -math.inf
         return float(value)
 
     ## A string given for a number is a value with a unit. A plain number is in code units already, or in kelvin, and a
@@ -360,9 +366,9 @@ def _resolved_value(parameter: Parameter, given: object, units: UnitConverter | 
     """Return the value of a parameter as modules read it, from the value as given: checked and converted.
 
     The value must be of the parameter's type (PAR12), and is then converted, a list element by element: an integer
-    for a float to a float (PAR12), and a value with a unit to code units (PAR09). The converted value must satisfy
-    the parameter's check, if one is declared (PAR13). A value that is refused raises a _Refusal with the message of
-    its mistake.
+    for a float to a float (PAR12), and a value with a unit to code units (PAR09). A converted float, alone or in a
+    list, must be finite (PAR24), and the converted value must then satisfy the parameter's check, if one is declared
+    (PAR13). A value that is refused raises a _Refusal with the message of its mistake.
     """
     ## The type first, so that no conversion is tried on a value of the wrong type. The message names the type the
     ## value has, as "got float 4000.0", since the value alone does not always show it: "64" and 64 print alike in
@@ -376,11 +382,22 @@ def _resolved_value(parameter: Parameter, given: object, units: UnitConverter | 
     else:
         value = _convert(parameter, given, units)
 
+    ## Where the value as given differs from the value in code units, a value with a unit, it is shown in a message as
+    ## well, so that the user recognises what was written; an integer given for a float equals its float, and is not
+    ## shown twice. A NaN is not equal even to itself, so a value that was not converted at all is told apart first,
+    ## as the same object.
+    given_as = "" if given is value or given == value else f" (given as {given!r})"
+
+    ## Every float must be finite once converted (PAR24): an infinity or NaN given as such, as TOML writes them, inf and
+    ## nan, or one that a conversion gave. Before the check, which a NaN could pass or fail by accident of how its
+    ## condition is written.
+    elements = value if is_list(value) else [value]
+    if any(isinstance(element, float) and not math.isfinite(element) for element in elements):
+        raise _Refusal(f"{parameter.name!r} must be finite, got {value!r}{given_as}.")
+
     ## The check last, on the value in code units, as modules read it (PAR13): a list as a whole, as the condition was
-    ## written for. Where the value as given differs, a value with a unit, it is shown as well, so that the user
-    ## recognises what was written; an integer given for a float equals its float, and is not shown twice.
+    ## written for.
     if parameter.check is not None and not parameter.check.condition(value):
-        given_as = f" (given as {given!r})" if given != value else ""
         raise _Refusal(f"{parameter.name!r} must be {parameter.check.description}, got {value!r}{given_as}.")
     return value
 
@@ -455,12 +472,13 @@ def resolve(
 
     Every value is then checked against its declaration. A value must be of its parameter's type, and an integer given
     for a float is converted to a float (PAR12). A value with a unit, such as ``"100 pc"``, is converted to code units
-    by the unit system, in whichever layer it is given, the default included (PAR09). The value in code units must
-    satisfy the parameter's check, if one is declared (PAR13). The mistakes are refused together, with a
-    ParameterError that lists each with its origin (PAR14): a name that no parameter is declared by, with the closest
-    declared name where one is close enough to be a likely misspelling (PAR11); a value of another type; a value with
-    a unit if there is no unit system, if the parameter is dimensionless, or if its unit has other dimensions than the
-    parameter's; and a value that does not satisfy its check, stating the condition in the words of the declaration.
+    by the unit system, in whichever layer it is given, the default included (PAR09). A float in code units must be
+    finite (PAR24), and the value in code units must satisfy the parameter's check, if one is declared (PAR13). The
+    mistakes are refused together, with a ParameterError that lists each with its origin (PAR14): a name that no
+    parameter is declared by, with the closest declared name where one is close enough to be a likely misspelling
+    (PAR11); a value of another type; a value with a unit if there is no unit system, if the parameter is
+    dimensionless, or if its unit has other dimensions than the parameter's; a float that is not finite; and a value
+    that does not satisfy its check, stating the condition in the words of the declaration.
 
     Where a quantity can be given in more than one way, the group of each set of alternatives is selected by the values
     given in the file and the overrides, and the default group when none is (PAR22). Values given for two groups are

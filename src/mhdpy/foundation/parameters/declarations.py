@@ -37,7 +37,8 @@ For example, the Courant number of the hydrodynamics::
     declarations = Declarations(parameters=[cfl, ...])
 
 The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR01-PAR05,
-PAR22-PAR23), and they are tested in ``tests/test_declarations.py`` and ``tests/test_alternatives.py``.
+PAR22-PAR24), and they are tested in ``tests/test_declarations.py``, ``tests/test_alternatives.py`` and
+``tests/test_checks.py``.
 """
 
 import re
@@ -46,7 +47,7 @@ from dataclasses import dataclass
 from types import GenericAlias, MappingProxyType
 from typing import Any
 
-from mhdpy.foundation.parameters.values import element_type, fits, is_list, type_name
+from mhdpy.foundation.parameters.values import element_type, fits, is_finite, is_list, type_name
 from mhdpy.foundation.units import notation
 
 ## The public interface of this module (D15.7): only names listed here are meant for use outside it.
@@ -132,7 +133,7 @@ class Parameter:
     changeable: bool = False
 
     def __post_init__(self) -> None:
-        """Refuse a declaration that breaks the rules of PAR01-PAR05, naming the parameter.
+        """Refuse a declaration that breaks the rules of PAR01-PAR05 or PAR24, naming the parameter.
 
         A dataclass calls this method at the end of its constructor, so no declaration that breaks them can exist. A
         type that breaks the rules of PAR03 is refused with a TypeError, as Python refuses values of the wrong type;
@@ -204,6 +205,14 @@ class Parameter:
                     f"The default {text!r} of {self.name!r} has the dimensions {found}, not those of its unit "
                     f"{self.unit!r}, {dimensions}."
                 )
+
+        ## A plain number for a float, alone or in a list, must be finite (PAR24): standard JSON, in which the record is
+        ## written, has no infinity and no NaN. A default given with a unit is a number only once it is converted, when
+        ## the parameters are resolved, and is checked then. isinstance() also tells the type checker that the
+        ## elements left are numbers.
+        numbers = [value for value in values if isinstance(value, int | float)]
+        if scalar is float and not all(is_finite(number) for number in numbers):
+            raise ValueError(f"The default of {self.name!r} must be finite, got {self.default!r}.")
 
         ## The check applies to a plain default now. A default given with a unit is checked when the parameters are
         ## resolved: the condition applies in code units, and a declaration knows no unit system (PAR13).

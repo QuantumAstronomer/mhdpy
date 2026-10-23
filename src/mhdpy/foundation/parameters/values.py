@@ -5,23 +5,25 @@ types TOML writes without ambiguity and JSON records exactly, so that every valu
 unchanged (PAR19, PAR20). Whether a value is of its parameter's type is decided by the same rules everywhere: for a
 default when a parameter is declared (PAR03), and for every value a run is given when its parameters are resolved
 (PAR12). An integer is accepted for a float, and a string for a number only if it is a value with a unit, such as
-``"100 pc"`` (PAR09); a boolean is never accepted for a number, nor a float for an integer.
+``"100 pc"`` (PAR09); a boolean is never accepted for a number, nor a float for an integer. A float must also be
+finite, neither infinite nor NaN, which standard JSON, the format of the record, cannot write (PAR24).
 
 The rules live in this module of their own, rather than in either of the modules that apply them, so that the
 declarations (``declarations.py``) and the resolution (``resolution.py``) share one copy. Like the rest of the
 component, it depends on nothing beyond the standard library and the notation of units (PAR21).
 
-The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR03, PAR12), and they
-are tested through the modules that apply them, in ``tests/test_declarations.py`` and ``tests/test_checks.py``.
+The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR03, PAR12, PAR24),
+and they are tested through the modules that apply them, in ``tests/test_declarations.py`` and ``tests/test_checks.py``.
 """
 
+import math
 from types import GenericAlias
 from typing import TypeIs, get_args, get_origin
 
 from mhdpy.foundation.units import notation
 
 ## The public interface of this module (D15.7): only names listed here are meant for use outside it.
-__all__ = ["element_type", "fits", "is_list", "type_name"]
+__all__ = ["element_type", "fits", "is_finite", "is_list", "type_name"]
 
 ## The four types of PAR03 a value, or every element of a list, may have: exactly those TOML writes without ambiguity
 ## and JSON records exactly.
@@ -52,6 +54,18 @@ def is_list(value: object) -> TypeIs[list[object]]:
     ## TypeIs makes the type checker treat the value as list[object] where this returns True, rather than as a list of
     ## elements of unknown type, which strict type checking refuses to iterate over.
     return isinstance(value, list)
+
+
+def is_finite(number: int | float) -> bool:
+    """Return whether a number is finite as a float: neither infinite nor NaN, nor an integer too large for one (PAR24).
+
+    An integer beyond the largest double, about 1.8e308, has no finite float to be converted to (PAR12).
+    """
+    ## math.isfinite converts an integer to a float first, and raises an OverflowError for one too large to convert.
+    try:
+        return math.isfinite(number)
+    except OverflowError:
+        return False
 
 
 def _has_unit(text: str) -> bool:

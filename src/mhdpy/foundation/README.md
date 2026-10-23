@@ -64,7 +64,7 @@ unknown value of ``MHDPY_KERNELS`` is refused there and then. The tests are in `
 
 ## `mhdpy.foundation.parameters`
 
-The parameters of mhdpy: declared, given values, checked and recorded (requirements PAR01-PAR23).
+The parameters of mhdpy: declared, given values, checked and recorded (requirements PAR01-PAR24).
 
 Every choice a run makes is a parameter: the size of the mesh, the Courant number, the Riemann solver, the end time,
 the outputs and their schedules, the parameters of a problem's initial conditions. Modules, problems, the driver and the
@@ -125,7 +125,8 @@ For example, the Courant number of the hydrodynamics::
     declarations = Declarations(parameters=[cfl, ...])
 
 The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR01-PAR05,
-PAR22-PAR23), and they are tested in ``tests/test_declarations.py`` and ``tests/test_alternatives.py``.
+PAR22-PAR24), and they are tested in ``tests/test_declarations.py``, ``tests/test_alternatives.py`` and
+``tests/test_checks.py``.
 
 ### `mhdpy.foundation.parameters.resolution`
 
@@ -156,8 +157,9 @@ a misspelt parameter never silently leaves its default in place (PAR11). A value
 one conversion only: an integer given for a float becomes a float; a float is never taken for an integer, a boolean
 never for a number, and a string never for anything but a string, or a value with a unit for a number (PAR12). A
 value must then satisfy its parameter's check, if one is declared, in code units, and is refused with the condition in
-the words of the declaration, such as "'hydro.cfl' must be in (0, 1], got 1.5" (PAR13). The mistakes are reported
-together, as one ParameterError that lists each with its origin (PAR14).
+the words of the declaration, such as "'hydro.cfl' must be in (0, 1], got 1.5" (PAR13). Before that check, every
+float in code units must be finite, neither infinite nor NaN, as standard JSON, the format of the record, has neither
+(PAR24). The mistakes are reported together, as one ParameterError that lists each with its origin (PAR14).
 
 Where a quantity can be given in more than one way, the values a run is given select the group of each set of
 alternatives: the group of the parameters given in the parameter file or the overrides, and the default group when
@@ -179,7 +181,7 @@ For example, a run with a parameter file, one override and a unit system::
     parameters.origins["hydro.cfl"].source          ## "override"
 
 The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR06-PAR14, PAR18,
-PAR22-PAR23), and they are tested in ``tests/test_supplying_values.py``, ``tests/test_checks.py``,
+PAR22-PAR24), and they are tested in ``tests/test_supplying_values.py``, ``tests/test_checks.py``,
 ``tests/test_records.py`` and ``tests/test_alternatives.py``.
 
 ### `mhdpy.foundation.parameters.values`
@@ -191,14 +193,15 @@ types TOML writes without ambiguity and JSON records exactly, so that every valu
 unchanged (PAR19, PAR20). Whether a value is of its parameter's type is decided by the same rules everywhere: for a
 default when a parameter is declared (PAR03), and for every value a run is given when its parameters are resolved
 (PAR12). An integer is accepted for a float, and a string for a number only if it is a value with a unit, such as
-``"100 pc"`` (PAR09); a boolean is never accepted for a number, nor a float for an integer.
+``"100 pc"`` (PAR09); a boolean is never accepted for a number, nor a float for an integer. A float must also be
+finite, neither infinite nor NaN, which standard JSON, the format of the record, cannot write (PAR24).
 
 The rules live in this module of their own, rather than in either of the modules that apply them, so that the
 declarations (``declarations.py``) and the resolution (``resolution.py``) share one copy. Like the rest of the
 component, it depends on nothing beyond the standard library and the notation of units (PAR21).
 
-The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR03, PAR12), and they
-are tested through the modules that apply them, in ``tests/test_declarations.py`` and ``tests/test_checks.py``.
+The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR03, PAR12, PAR24),
+and they are tested through the modules that apply them, in ``tests/test_declarations.py`` and ``tests/test_checks.py``.
 
 ## `mhdpy.foundation.units`
 

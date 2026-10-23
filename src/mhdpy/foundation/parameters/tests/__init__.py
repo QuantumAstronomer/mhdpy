@@ -1,4 +1,4 @@
-"""Tests of the parameters: requirements PAR01-PAR23 (docs/requirements/L0-foundation/parameters.md).
+"""Tests of the parameters: requirements PAR01-PAR24 (docs/requirements/L0-foundation/parameters.md).
 
 One test module per group of requirements in that document, each with a class of the same scope; each test names the
 requirements it checks in its docstring. What several test modules need is defined here once.

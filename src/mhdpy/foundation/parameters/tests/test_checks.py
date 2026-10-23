@@ -1,5 +1,6 @@
-"""Tests of the checks of values against their declarations: names, types, conditions, all at once (PAR11-PAR14)."""
+"""Tests of the checks of values: names, types, finite floats, conditions, all at once (PAR11-PAR14, PAR24)."""
 
+import math
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
@@ -69,7 +70,7 @@ def only_mistake(overrides: Mapping[str, Any]) -> Mistake:
 
 
 class TestChecks:
-    """PAR11-PAR14: every value is checked against its declaration, and all mistakes reported, before a run starts."""
+    """PAR11-PAR14, PAR24: every value is checked against its declaration, and all mistakes reported, before a run."""
 
     ## ---- Unknown names (PAR11) ----
 
@@ -252,3 +253,61 @@ class TestChecks:
                 "to convert it.",
             ]
         )
+
+    ## ---- Finite floats (PAR24) ----
+
+    ## Floats that are not finite, given as such or by a conversion, each with the value its message shows: both
+    ## infinities and NaN, an integer too large for a float, which becomes infinite (shown with the integer as given),
+    ## and an element of a list.
+    @pytest.mark.parametrize(
+        ("name", "value", "shown"),
+        [
+            ("hydro.gamma", math.inf, "inf"),
+            ("hydro.gamma", -math.inf, "-inf"),
+            ("hydro.gamma", math.nan, "nan"),
+            ("hydro.gamma", 10**400, f"inf (given as {10**400!r})"),
+            ("hydro.gamma", -(10**400), f"-inf (given as {-(10**400)!r})"),
+            ("output.times", [1.0, math.nan], "[1.0, nan]"),
+        ],
+        ids=["infinity", "minus infinity", "nan", "large integer", "large negative integer", "element of a list"],
+    )
+    def test_value_that_is_not_finite_is_refused(self, name: str, value: Any, shown: str) -> None:
+        """Check that a float that is infinite or NaN is refused, alone or in a list, however it was given (PAR24)."""
+        mistake = only_mistake({name: value})
+        assert mistake.message == f"{name!r} must be finite, got {shown}."
+
+    def test_infinity_and_nan_in_a_file_are_refused(self, tmp_path: Path) -> None:
+        """Check that inf and nan, as TOML writes them, are refused from a parameter file, both at once (PAR24, PAR14).
+
+        A NaN is refused for not being finite, before the check of hydro.cfl, which it would fail only by accident of
+        how the condition is written.
+        """
+        file = parameter_file(tmp_path, "[hydro]\ncfl = nan\n\n[output]\ntimes = [1.0, inf]\n")
+        with pytest.raises(ParameterError) as refusal:
+            resolve(DECLARATIONS, file=file)
+
+        messages = [mistake.message for mistake in refusal.value.mistakes]
+        assert messages == ["'hydro.cfl' must be finite, got nan.", "'output.times' must be finite, got [1.0, inf]."]
+
+    def test_value_with_unit_that_converts_to_infinity_is_refused(self) -> None:
+        """Check that a value with a unit whose number is too large for a float is refused, once converted (PAR24).
+
+        "1e400 pc" reads as an infinite number of parsecs: the rule applies in code units, after the conversion, and
+        the message shows the value as given as well.
+        """
+        with pytest.raises(ParameterError) as refusal:
+            resolve(CLOUD, overrides=["problem.radius=1e400 pc"], units=UNITS)
+
+        (mistake,) = refusal.value.mistakes
+        assert mistake.message == "'problem.radius' must be finite, got inf (given as '1e400 pc')."
+
+    ## Defaults that are not finite: both infinities, NaN, an integer too large for a float, and an element of a list.
+    @pytest.mark.parametrize(
+        ("type_", "default"),
+        [(float, math.inf), (float, -math.inf), (float, math.nan), (float, 10**400), (list[float], [0.5, math.inf])],
+        ids=["infinity", "minus infinity", "nan", "large integer", "element of a list"],
+    )
+    def test_default_that_is_not_finite_is_refused(self, type_: Any, default: Any) -> None:
+        """Check that a declaration whose default is a float that is not finite is refused, naming it (PAR24)."""
+        with pytest.raises(ValueError, match=r"^The default of 'hydro\.gamma' must be finite, got "):
+            Parameter(name="hydro.gamma", type=type_, default=default, doc="The adiabatic index.", unit="dimensionless")

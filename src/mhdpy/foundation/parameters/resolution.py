@@ -12,7 +12,11 @@ file holds, then replaces the defaults as the lowest layer, so that every value 
 run used, and the group each set of alternatives selected stays selected. A parameter declared since the restart file
 was written keeps its default, and a recorded name that is no longer declared is ignored, so that a run can be
 continued after its modules were updated; a recorded value that its declaration now refuses is refused with the other
-mistakes (PAR15).
+mistakes (PAR15). The parameter file and the overrides may then change only the parameters declared changeable: a new
+value for a fixed parameter is refused, since the restart file would no longer describe the run, but a value equal to
+the recorded one, compared in code units, is no change, so that the original parameter file can be used unchanged
+(PAR16). Likewise, another group of a set of alternatives may be selected only if every parameter of both groups is
+changeable (PAR22).
 
 A number on its own is a value in code units. A value with a unit, a string such as ``"100 pc"`` given for a number in
 any layer, is converted to code units by the unit system of the run (PAR09). It is refused if the run has no unit
@@ -57,7 +61,7 @@ For example, a run with a parameter file, one override and a unit system::
     parameters["hydro.cfl"]                         ## 0.3
     parameters.origins["hydro.cfl"].source          ## "override"
 
-The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR06-PAR15,
+The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR06-PAR16,
 PAR18-PAR19, PAR22-PAR24), and they are tested in ``tests/test_supplying_values.py``, ``tests/test_checks.py``,
 ``tests/test_restarts.py``, ``tests/test_records.py`` and ``tests/test_alternatives.py``.
 """
@@ -66,7 +70,7 @@ import difflib
 import math
 import os
 import tomllib
-from collections.abc import Iterator, Mapping, Sequence
+from collections.abc import Iterator, Mapping, Sequence, Set
 from dataclasses import dataclass, replace
 from types import MappingProxyType
 from typing import Any, Literal, Protocol, TypedDict, TypeIs, cast
@@ -422,6 +426,17 @@ def _convert(parameter: Parameter, value: object, units: UnitConverter | None) -
         raise _Refusal(f"{parameter.name!r} cannot be given {value!r}: {error}") from error
 
 
+def _given_as(given: object, value: object) -> str:
+    """Return the value as given, for a message, where it differs from the value in code units, or an empty string.
+
+    A value with a unit is shown as it was given as well, as " (given as '100 pc')", so that the user recognises what
+    was written; an integer given for a float equals its float, and is not shown twice.
+    """
+    ## A NaN is not equal even to itself, so a value that was not converted at all is told apart first, as the same
+    ## object.
+    return "" if given is value or given == value else f" (given as {given!r})"
+
+
 def _resolved_value(parameter: Parameter, given: object, units: UnitConverter | None) -> object:
     """Return the value of a parameter as modules read it, from the value as given: checked and converted.
 
@@ -442,11 +457,8 @@ def _resolved_value(parameter: Parameter, given: object, units: UnitConverter | 
     else:
         value = _convert(parameter, given, units)
 
-    ## Where the value as given differs from the value in code units, a value with a unit, it is shown in a message as
-    ## well, so that the user recognises what was written; an integer given for a float equals its float, and is not
-    ## shown twice. A NaN is not equal even to itself, so a value that was not converted at all is told apart first,
-    ## as the same object.
-    given_as = "" if given is value or given == value else f" (given as {given!r})"
+    ## The value as given, shown in a message where it differs from the value in code units.
+    given_as = _given_as(given, value)
 
     ## Every float must be finite once converted (PAR24): an infinity or NaN given as such, as TOML writes them, inf and
     ## nan, or one that a conversion gave. Before the check, which a NaN could pass or fail by accident of how its
@@ -462,18 +474,39 @@ def _resolved_value(parameter: Parameter, given: object, units: UnitConverter | 
     return value
 
 
+def _changed_fixed(parameter: Parameter, value: object, origin: Origin, recorded: Mapping[str, Any]) -> Mistake | None:
+    """Return the mistake of a fixed parameter given a new value on restart, or None if there is none (PAR16).
+
+    Only the parameter file and the overrides can change a value; the value is compared with the recorded one in code
+    units, after any conversion, so that a value equal to it is no change, however it is given. A parameter missing
+    from the record has no recorded value to keep (PAR15).
+    """
+    if parameter.changeable or origin.source not in ("file", "override") or parameter.name not in recorded:
+        return None
+    kept = recorded[parameter.name]
+    if value == kept:
+        return None
+    message = (
+        f"{parameter.name!r} is fixed by the restart file at {kept!r}, got {value!r}{_given_as(origin.value, value)}."
+    )
+    return Mistake(name=parameter.name, origin=origin, message=message)
+
+
 def _in_words(items: Sequence[str]) -> str:
     """Return items as they are written in a sentence: "a", "a and b", or "a, b and c"."""
     return items[0] if len(items) == 1 else f"{', '.join(items[:-1])} and {items[-1]}"
 
 
-def _selected_group(alternatives: Alternatives, origins: Mapping[str, Origin], recorded: str | None) -> str:
+def _selected_group(
+    alternatives: Alternatives, origins: Mapping[str, Origin], recorded: str | None, fixed: Set[str]
+) -> str:
     """Return the group of a set of alternatives that the values given select, refusing values for two (PAR22).
 
     A group is selected by a value given for any of its parameters, in the parameter file or the overrides. When none
     is, the group recorded by the original run is selected on restart, if it is still one of the groups (PAR15), and
     the default group otherwise. Values given for two groups or more raise a _Refusal that names, for each group, the
-    parameters given and where.
+    parameters given and where. So does, on restart, a group other than the recorded one, unless no parameter of
+    either group is among the fixed ones (PAR16).
     """
     ## The parameters given of each group, by the group's name: only the groups of which any parameter is given. A
     ## default is not given, nor a value restored from the record; the file and the overrides are.
@@ -482,14 +515,27 @@ def _selected_group(alternatives: Alternatives, origins: Mapping[str, Origin], r
         for group, names in alternatives.groups.items()
     }
     given = {group: names for group, names in given.items() if names}
+
+    ## The recorded group, if there is one and it is still a group of the set: a set declared since the restart file
+    ## was written has none, and a group may have been renamed since (PAR15).
+    if recorded not in alternatives.groups:
+        recorded = None
     if not given:
-        ## The recorded group, if there is one and it is still a group of the set: a set declared since the restart
-        ## file was written has none, and a group may have been renamed since (PAR15).
-        if recorded is not None and recorded in alternatives.groups:
-            return recorded
-        return alternatives.default
+        return alternatives.default if recorded is None else recorded
     if len(given) == 1:
-        return next(iter(given))
+        (group,) = given
+
+        ## Another group than the recorded one changes the meaning of the parameters of both, so that every one of
+        ## them must be changeable, as for a change of their values (PAR16).
+        both = [*alternatives.groups[group], *alternatives.groups[recorded]] if recorded is not None else []
+        if group != recorded and not fixed.isdisjoint(both):
+            parameters = _in_words([f"{name!r} ({origins[name]})" for name in given[group]])
+            raise _Refusal(
+                f"{alternatives.name!r} is fixed by the restart file at the group {recorded!r}, got the group "
+                f"{group!r} by {parameters}. Another group may be selected on restart only if every parameter of both "
+                "groups is changeable."
+            )
+        return group
 
     ## Two groups or more: each with the parameters given for it and where, as "'ambient.rho' (override)".
     groups = [
@@ -539,6 +585,9 @@ def resolve(
     that is still declared, and the group each set of alternatives selected stays selected unless the file or the
     overrides give a parameter of another group (PAR15, PAR22). A declared parameter missing from the record keeps
     its default, and a recorded name that is no longer declared is ignored; a recorded value is checked as any other.
+    The file and the overrides may change only the parameters declared changeable, and select another group only if
+    every parameter of both groups is: any other change is refused among the mistakes, stating that the restart file
+    fixes the value, but a value equal to the recorded one in code units is no change (PAR16).
 
     Every value is then checked against its declaration. A value must be of its parameter's type, and an integer given
     for a float is converted to a float (PAR12). A value with a unit, such as ``"100 pc"``, is converted to code units
@@ -617,14 +666,26 @@ def resolve(
         except _Refusal as refusal:
             mistakes.append(Mistake(name=parameter.name, origin=origin, message=str(refusal)))
 
+    ## On restart, a value given anew for a fixed parameter must equal its recorded value (PAR16). Only values that
+    ## passed their own checks are compared, so that a value that was refused is reported once, by itself.
+    if record is not None:
+        for parameter in declarations.parameters:
+            if parameter.name in values:
+                origin = origins[parameter.name]
+                mistake = _changed_fixed(parameter, values[parameter.name], origin, record["values"])
+                if mistake is not None:
+                    mistakes.append(mistake)
+
     ## The group selected of each set of alternatives, from the values given, and on restart from the groups the
-    ## original run selected; values for two groups are a mistake of several values, with no single origin, reported
-    ## after those of single values (PAR15, PAR22).
+    ## original run selected, of which another may be selected only if every parameter of both groups is changeable;
+    ## values for two groups are a mistake of several values, with no single origin, reported after those of single
+    ## values (PAR15, PAR16, PAR22). Without a restart no group is recorded, so that the fixed parameters do not matter.
     recorded: Mapping[str, str] = record["selected"] if record is not None else {}
+    fixed = {parameter.name for parameter in declarations.parameters if not parameter.changeable}
     selected: dict[str, str] = {}
     for alternatives in declarations.alternatives:
         try:
-            selected[alternatives.name] = _selected_group(alternatives, origins, recorded.get(alternatives.name))
+            selected[alternatives.name] = _selected_group(alternatives, origins, recorded.get(alternatives.name), fixed)
         except _Refusal as refusal:
             mistakes.append(Mistake(name=alternatives.name, origin=None, message=str(refusal)))
 

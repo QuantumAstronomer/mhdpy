@@ -10,7 +10,7 @@ import pytest
 
 from mhdpy.foundation.parameters.declarations import Alternatives, Check, Declarations, JointCheck, Parameter
 from mhdpy.foundation.parameters.resolution import Mistake, ParameterError, resolve
-from mhdpy.foundation.parameters.tests import NOT_WRITTEN, parameter_file
+from mhdpy.foundation.parameters.tests import parameter_file
 from mhdpy.foundation.units.constants import MEGAYEAR, PARSEC, SOLAR_MASS
 from mhdpy.foundation.units.system import UnitSystem
 
@@ -209,13 +209,44 @@ class TestAlternatives:
         ## Without the record, nothing given selects the default group.
         assert resolve(AMBIENT).selected == {"ambient.density": "mass_density"}
 
-    @NOT_WRITTEN
-    def test_selecting_another_group_on_restart(self) -> None:
+    ## The parameters of the ambient medium changeable on restart: every one of them, which lets a restart select
+    ## another group; or the mass density alone, which does not, as the parameters of the number density are fixed.
+    @pytest.mark.parametrize(
+        ("changeable", "accepted"),
+        [(set(GROUPS["mass_density"] + GROUPS["number_density"]), True), (set(GROUPS["mass_density"]), False)],
+        ids=["every parameter changeable", "one group fixed"],
+    )
+    def test_selecting_another_group_on_restart(self, changeable: set[str], accepted: bool) -> None:
         """Check that selecting another group on restart is accepted only if every parameter of both is changeable.
 
         Otherwise it is refused, as a change to a fixed parameter is (PAR22, PAR16).
         """
-        pytest.fail("Not written yet.")
+        ## The ambient medium with the given parameters changeable. dataclasses.replace makes a new declaration with
+        ## the given items changed, checked as any other.
+        parameters = [
+            dataclasses.replace(parameter, changeable=parameter.name in changeable) for parameter in PARAMETERS
+        ]
+        declarations = Declarations(parameters=parameters, alternatives=[alternatives()])
+
+        ## The original run selects the number density; the restart gives the mass density, at its recorded value, so
+        ## that only the selection changes.
+        record = resolve(declarations, overrides=["ambient.n=100.0"]).to_record()
+        if accepted:
+            restarted = resolve(declarations, record=record, overrides=["ambient.rho=1.0"])
+            assert restarted.selected == {"ambient.density": "mass_density"}
+            return
+        with pytest.raises(ParameterError) as refusal:
+            resolve(declarations, record=record, overrides=["ambient.rho=1.0"])
+
+        ## One mistake, of the selection alone, with no single origin.
+        (mistake,) = refusal.value.mistakes
+        assert mistake.name == "ambient.density"
+        assert mistake.origin is None
+        assert mistake.message == (
+            "'ambient.density' is fixed by the restart file at the group 'number_density', got the group "
+            "'mass_density' by 'ambient.rho' (override). Another group may be selected on restart only if every "
+            "parameter of both groups is changeable."
+        )
 
     ## ---- Conditions across parameters (PAR23) ----
 

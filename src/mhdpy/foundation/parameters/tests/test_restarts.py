@@ -1,10 +1,12 @@
 """Tests of the parameters of a restarted run: the record as the lowest layer, and what may change (PAR15-PAR17)."""
 
+from pathlib import Path
+
 import pytest
 
 from mhdpy.foundation.parameters.declarations import Alternatives, Check, Declarations, Parameter
 from mhdpy.foundation.parameters.resolution import Origin, ParameterError, Record, resolve
-from mhdpy.foundation.parameters.tests import NOT_WRITTEN
+from mhdpy.foundation.parameters.tests import NOT_WRITTEN, parameter_file
 from mhdpy.foundation.parameters.values import is_list
 from mhdpy.foundation.units.constants import MEGAYEAR, PARSEC, SOLAR_MASS
 from mhdpy.foundation.units.system import UnitSystem
@@ -187,31 +189,65 @@ class TestRestarts:
 
     ## ---- What may change (PAR16) ----
 
-    @NOT_WRITTEN
-    def test_changeable_parameter_may_change(self) -> None:
+    def test_changeable_parameter_may_change(self, tmp_path: Path) -> None:
         """Check that a changeable parameter takes a new value from the parameter file or an override (PAR16)."""
-        pytest.fail("Not written yet.")
+        ## The Courant number from the file, and the end time as an override, with a unit.
+        file = parameter_file(tmp_path, "[hydro]\ncfl = 0.5\n")
+        parameters = resolve(
+            DECLARATIONS, record=original_record(), file=file, overrides=["time.end=20 Myr"], units=UNITS
+        )
 
-    @NOT_WRITTEN
+        assert parameters["hydro.cfl"] == 0.5
+        assert parameters["time.end"] == UNITS.to_code_units("20 Myr", "time")
+
     def test_changeable_parameter_not_given_keeps_its_record(self) -> None:
         """Check that a changeable parameter given by neither the file nor an override keeps its recorded value.
 
         It does not fall back to its default (PAR16).
         """
-        pytest.fail("Not written yet.")
+        ## The end time is changed; the Courant number, changeable as well, is not given.
+        parameters = resolve(DECLARATIONS, record=original_record(), overrides={"time.end": 20.0})
 
-    @NOT_WRITTEN
-    def test_change_to_fixed_parameter_is_refused(self) -> None:
-        """Check that a new value for a fixed parameter is refused, stating that the restart file fixes it (PAR16)."""
-        pytest.fail("Not written yet.")
+        ## The recorded 0.3, not the default 0.4.
+        assert parameters["hydro.cfl"] == 0.3
+        assert parameters.origins["hydro.cfl"].source == "restart"
 
-    @NOT_WRITTEN
-    def test_equal_value_is_not_a_change(self) -> None:
+    def test_change_to_fixed_parameter_is_refused(self, tmp_path: Path) -> None:
+        """Check that a new value for a fixed parameter is refused, stating that the restart file fixes it (PAR16).
+
+        The refusal states the recorded value as well, and is reported among the other mistakes, with the origin of
+        the new value (PAR14).
+        """
+        ## A list in the file, an integer as an override, and a changeable parameter as well, whose change is accepted.
+        file = parameter_file(tmp_path, '[output]\nvariables = ["rho"]\n')
+        with pytest.raises(ParameterError) as refusal:
+            resolve(DECLARATIONS, record=original_record(), file=file, overrides=["mesh.nx1=256", "hydro.cfl=0.5"])
+
+        ## Both changes to fixed parameters, in the order declared, and nothing else.
+        assert str(refusal.value).splitlines()[1:] == [
+            "- override: 'mesh.nx1' is fixed by the restart file at 128, got 256.",
+            f"- parameter file {file}: 'output.variables' is fixed by the restart file at ['rho', 'pressure'], got "
+            "['rho'].",
+        ]
+
+    def test_equal_value_is_not_a_change(self, tmp_path: Path) -> None:
         """Check that a fixed parameter given its recorded value is accepted, as no change (PAR16).
 
         The original parameter file can then be used unchanged for the restart, a value with a unit included.
         """
-        pytest.fail("Not written yet.")
+        ## The parameter file of the original run, with a fixed parameter given with a unit: a number density of
+        ## 2e-3 per cubic centimetre, converted to code units when the original run was resolved.
+        file = parameter_file(
+            tmp_path,
+            '[mesh]\nnx1 = 128\n\n[output]\nvariables = ["rho", "pressure"]\n\n[ambient]\nn = "2e-3 cm^-3"\n',
+        )
+        original = resolve(DECLARATIONS, file=file, units=UNITS)
+
+        ## The restart with the same file: every value equals its recorded one in code units, so nothing is refused.
+        ## A value with a unit is converted again, with the same unit system, to the same double.
+        parameters = resolve(DECLARATIONS, record=original.to_record(), file=file, units=UNITS)
+        assert dict(parameters) == dict(original)
+        assert parameters.origins["ambient.n"].value == "2e-3 cm^-3"
 
     ## ---- The list of changes (PAR17) ----
 

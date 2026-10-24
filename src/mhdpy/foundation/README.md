@@ -144,7 +144,11 @@ file holds, then replaces the defaults as the lowest layer, so that every value 
 run used, and the group each set of alternatives selected stays selected. A parameter declared since the restart file
 was written keeps its default, and a recorded name that is no longer declared is ignored, so that a run can be
 continued after its modules were updated; a recorded value that its declaration now refuses is refused with the other
-mistakes (PAR15).
+mistakes (PAR15). The parameter file and the overrides may then change only the parameters declared changeable: a new
+value for a fixed parameter is refused, since the restart file would no longer describe the run, but a value equal to
+the recorded one, compared in code units, is no change, so that the original parameter file can be used unchanged
+(PAR16). Likewise, another group of a set of alternatives may be selected only if every parameter of both groups is
+changeable (PAR22).
 
 A number on its own is a value in code units. A value with a unit, a string such as ``"100 pc"`` given for a number in
 any layer, is converted to code units by the unit system of the run (PAR09). It is refused if the run has no unit
@@ -189,7 +193,7 @@ For example, a run with a parameter file, one override and a unit system::
     parameters["hydro.cfl"]                         ## 0.3
     parameters.origins["hydro.cfl"].source          ## "override"
 
-The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR06-PAR15,
+The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR06-PAR16,
 PAR18-PAR19, PAR22-PAR24), and they are tested in ``tests/test_supplying_values.py``, ``tests/test_checks.py``,
 ``tests/test_restarts.py``, ``tests/test_records.py`` and ``tests/test_alternatives.py``.
 

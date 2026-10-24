@@ -1,12 +1,14 @@
 """Tests of the parameters of a restarted run: the record as the lowest layer, and what may change (PAR15-PAR17)."""
 
+import dataclasses
 from pathlib import Path
+from typing import Any, cast
 
 import pytest
 
 from mhdpy.foundation.parameters.declarations import Alternatives, Check, Declarations, Parameter
-from mhdpy.foundation.parameters.resolution import Origin, ParameterError, Record, resolve
-from mhdpy.foundation.parameters.tests import NOT_WRITTEN, parameter_file
+from mhdpy.foundation.parameters.resolution import Change, Changes, Origin, ParameterError, Record, resolve
+from mhdpy.foundation.parameters.tests import parameter_file
 from mhdpy.foundation.parameters.values import is_list
 from mhdpy.foundation.units.constants import MEGAYEAR, PARSEC, SOLAR_MASS
 from mhdpy.foundation.units.system import UnitSystem
@@ -61,6 +63,17 @@ ORIGINAL = {
     "time.end": "10 Myr",
     "ambient.n": 2.0,
 }
+
+
+## The same parameters with those of the ambient medium changeable, so that a restart may select the other group of
+## its density (PAR22). dataclasses.replace makes a new declaration with the given items changed, checked as any other.
+CHANGEABLE_AMBIENT = Declarations(
+    parameters=[
+        dataclasses.replace(parameter, changeable=parameter.name.startswith("ambient."))
+        for parameter in DECLARATIONS.parameters
+    ],
+    alternatives=DECLARATIONS.alternatives,
+)
 
 
 def original_record() -> Record:
@@ -251,20 +264,97 @@ class TestRestarts:
 
     ## ---- The list of changes (PAR17) ----
 
-    @NOT_WRITTEN
     def test_changes_are_listed(self) -> None:
-        """Check that every parameter whose value differs from the record is listed with both values (PAR17)."""
-        pytest.fail("Not written yet.")
+        """Check that every parameter whose value differs from the record is listed with both values (PAR17).
 
-    @NOT_WRITTEN
+        In code units, as the parameters give them; a value given anew that equals the recorded one is no change, and
+        is not listed.
+        """
+        ## Two changeable parameters changed, the end time with a unit, and a fixed one given its recorded value.
+        overrides = ["hydro.cfl=0.5", "time.end=20 Myr", "mesh.nx1=128"]
+        parameters = resolve(DECLARATIONS, record=original_record(), overrides=overrides, units=UNITS)
+
+        ## The changes alone, each with the recorded value and the new one.
+        changes = parameters.changes
+        assert changes is not None
+        assert dict(changes.values) == {
+            "hydro.cfl": Change(recorded=0.3, new=0.5),
+            "time.end": Change(
+                recorded=UNITS.to_code_units("10 Myr", "time"), new=UNITS.to_code_units("20 Myr", "time")
+            ),
+        }
+
+        ## Nothing else changed: no parameter is missing, no name ignored, and no group selected anew.
+        assert not changes.missing
+        assert not changes.ignored
+        assert not changes.selected
+
+    def test_no_changes_without_a_restart(self) -> None:
+        """Check that a run that is not a restart lists no changes at all, and a restart without changes an empty list.
+
+        So that the driver can tell a run that is no restart from a restart that changes nothing (PAR17).
+        """
+        assert resolve(DECLARATIONS).changes is None
+        assert resolve(DECLARATIONS, record=original_record()).changes == Changes(
+            values={}, missing={}, ignored={}, selected={}
+        )
+
     def test_change_of_selected_group_is_listed(self) -> None:
-        """Check that a set of alternatives whose selected group changed is listed with both groups (PAR17, PAR22)."""
-        pytest.fail("Not written yet.")
+        """Check that a set of alternatives whose selected group changed is listed with both groups (PAR17, PAR22).
 
-    @NOT_WRITTEN
+        As is a set whose recorded group is no longer one of its groups, which selects as without a restart (PAR15).
+        """
+        ## The original run selects the number density; its restart gives the mass density, at its recorded value, so
+        ## that only the selection changes, which the changeable parameters of the ambient medium allow (PAR16).
+        record = resolve(CHANGEABLE_AMBIENT, overrides=ORIGINAL, units=UNITS).to_record()
+        parameters = resolve(CHANGEABLE_AMBIENT, record=record, overrides={"ambient.rho": 1.0})
+        assert parameters.changes is not None
+        assert dict(parameters.changes.selected) == {
+            "ambient.density": Change(recorded="number_density", new="mass_density")
+        }
+
+        ## A recorded group that is no longer declared: the default group is selected instead, and listed.
+        record["selected"]["ambient.density"] = "column_density"
+        parameters = resolve(CHANGEABLE_AMBIENT, record=record)
+        assert parameters.changes is not None
+        assert dict(parameters.changes.selected) == {
+            "ambient.density": Change(recorded="column_density", new="mass_density")
+        }
+
     def test_missing_and_ignored_names_are_listed(self) -> None:
         """Check that missing parameters are listed with their default, and ignored names with their recorded value.
 
         These are the cases of PAR15 that are reported rather than refused (PAR17).
         """
-        pytest.fail("Not written yet.")
+        ## The record of a run made before the module declared hydro.cfl, and while a module still declared
+        ## gravity.constant and gravity.softening, the latter a list.
+        record = original_record()
+        del record["values"]["hydro.cfl"]
+        record["values"]["gravity.constant"] = 1.0
+        record["values"]["gravity.softening"] = [0.1, 0.2]
+
+        parameters = resolve(DECLARATIONS, record=record)
+        assert parameters.changes is not None
+        assert dict(parameters.changes.missing) == {"hydro.cfl": 0.4}
+        assert dict(parameters.changes.ignored) == {"gravity.constant": 1.0, "gravity.softening": (0.1, 0.2)}
+
+        ## A missing parameter given anew took no default, and is not listed as missing.
+        parameters = resolve(DECLARATIONS, record=record, overrides={"hydro.cfl": 0.5})
+        assert parameters.changes is not None
+        assert not parameters.changes.missing
+
+    def test_changes_cannot_change(self) -> None:
+        """Check that the list of changes cannot be changed once resolved, as the parameters cannot (PAR17, PAR18)."""
+        parameters = resolve(DECLARATIONS, record=original_record(), overrides={"hydro.cfl": 0.5})
+        changes = parameters.changes
+        assert changes is not None
+
+        ## Each as Any, so that the changes below can be written at all, as in the tests of the parameters themselves:
+        ## a list cannot be replaced, nor a change added to one, nor a change itself changed.
+        with pytest.raises(dataclasses.FrozenInstanceError):
+            cast(Any, changes).values = {}
+        with pytest.raises(TypeError):
+            cast(Any, changes.values)["mesh.nx1"] = Change(recorded=128, new=256)
+        with pytest.raises(dataclasses.FrozenInstanceError):
+            cast(Any, changes.values["hydro.cfl"]).new = 0.9
+        assert dict(changes.values) == {"hydro.cfl": Change(recorded=0.3, new=0.5)}

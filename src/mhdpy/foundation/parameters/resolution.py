@@ -16,7 +16,9 @@ mistakes (PAR15). The parameter file and the overrides may then change only the 
 value for a fixed parameter is refused, since the restart file would no longer describe the run, but a value equal to
 the recorded one, compared in code units, is no change, so that the original parameter file can be used unchanged
 (PAR16). Likewise, another group of a set of alternatives may be selected only if every parameter of both groups is
-changeable (PAR22).
+changeable (PAR22). What the restart changed is listed with the parameters, for the driver to log and the writers to
+record: every value and every selected group that differs from the record, with both, every parameter missing from the
+record, with the default it took, and every recorded name that was ignored, with its recorded value (PAR17).
 
 A number on its own is a value in code units. A value with a unit, a string such as ``"100 pc"`` given for a number in
 any layer, is converted to code units by the unit system of the run (PAR09). It is refused if the run has no unit
@@ -61,7 +63,7 @@ For example, a run with a parameter file, one override and a unit system::
     parameters["hydro.cfl"]                         ## 0.3
     parameters.origins["hydro.cfl"].source          ## "override"
 
-The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR06-PAR16,
+The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR06-PAR17,
 PAR18-PAR19, PAR22-PAR24), and they are tested in ``tests/test_supplying_values.py``, ``tests/test_checks.py``,
 ``tests/test_restarts.py``, ``tests/test_records.py`` and ``tests/test_alternatives.py``.
 """
@@ -80,7 +82,17 @@ from mhdpy.foundation.parameters.values import element_type, fits, is_finite, is
 from mhdpy.foundation.units import notation
 
 ## The public interface of this module (D15.7): only names listed here are meant for use outside it.
-__all__ = ["Mistake", "Origin", "ParameterError", "Parameters", "Record", "UnitConverter", "resolve"]
+__all__ = [
+    "Change",
+    "Changes",
+    "Mistake",
+    "Origin",
+    "ParameterError",
+    "Parameters",
+    "Record",
+    "UnitConverter",
+    "resolve",
+]
 
 
 class UnitConverter(Protocol):
@@ -152,6 +164,62 @@ class Record(TypedDict):
     selected: dict[str, str]
 
 
+## frozen=True and kw_only=True, as for an origin: a change cannot be changed once listed, and its items are given by
+## name, Change(recorded=0.3, new=0.5).
+@dataclass(frozen=True, kw_only=True)
+class Change:
+    """A value, or a selected group, that a restart changed: the one the record holds and the one resolved now (PAR17).
+
+    Parameters
+    ----------
+    recorded : bool, int, float, str or tuple
+        The value in the record of the original run, in code units, with a list as a tuple; for a set of
+        alternatives, the name of the group the original run selected.
+    new : bool, int, float, str or tuple
+        The value resolved now, in code units, with a list as a tuple; for a set of alternatives, the name of the
+        group selected now.
+    """
+
+    recorded: Any
+    new: Any
+
+
+## frozen=True and kw_only=True, as for a change, and for the same reasons.
+@dataclass(frozen=True, kw_only=True)
+class Changes:
+    """What a restart changed of the parameters of the original run, as the driver logs it and the writers record it.
+
+    D14.7 requires that the changes made on restart are recorded, in the history's header and in the provenance of
+    later files (PAR17). They are listed by name, in the order the parameters and the sets of alternatives were
+    declared, and the ignored names in the order the record holds them. Each list is a read-only mapping, so that the
+    changes, like the parameters they belong to, cannot be changed once resolved (PAR18).
+
+    Parameters
+    ----------
+    values : mapping of str to Change
+        Every parameter whose value differs from the record, given anew in the parameter file or the overrides (PAR16).
+    missing : mapping of str to bool, int, float, str or tuple
+        Every declared parameter missing from the record that no other layer gives: the default it took, in code units
+        (PAR15).
+    ignored : mapping of str to bool, int, float, str or tuple
+        Every name in the record that is no longer declared: its recorded value, with a list as a tuple (PAR15).
+    selected : mapping of str to Change
+        Every set of alternatives whose selected group differs from the group the record holds (PAR22).
+    """
+
+    values: Mapping[str, Change]
+    missing: Mapping[str, Any]
+    ignored: Mapping[str, Any]
+    selected: Mapping[str, Change]
+
+    def __post_init__(self) -> None:
+        """Keep each list as a read-only mapping of its own, so that the changes cannot be changed once listed."""
+        ## object.__setattr__, as the dataclass is frozen and refuses its own assignment even here. A copy behind a
+        ## MappingProxyType, so that the changes cannot be changed through the dictionaries they were made from either.
+        for name in ("values", "missing", "ignored", "selected"):
+            object.__setattr__(self, name, MappingProxyType(dict(getattr(self, name))))
+
+
 def _frozen(value: object) -> object:
     """Return a value as the parameters hold it: a list as a tuple of its elements, anything else as it is (PAR18).
 
@@ -178,8 +246,8 @@ class Parameters(Mapping[str, Any]):
     as those of a dictionary. It has no way of changing a value: Mapping, unlike dict, defines no assignment. The value
     of a list parameter is a tuple, which cannot be changed in place either; it is read as a list is, by index and in a
     loop. The origin of each value is recorded next to it, in ``origins`` (PAR10), and the group selected of each set of
-    alternatives in ``selected`` (PAR22). ``to_record`` gives the record that outputs store and a restart starts from
-    (PAR19).
+    alternatives in ``selected`` (PAR22). On restart, what the restart changed of the original run is listed in
+    ``changes`` (PAR17). ``to_record`` gives the record that outputs store and a restart starts from (PAR19).
 
     Parameters
     ----------
@@ -189,9 +257,18 @@ class Parameters(Mapping[str, Any]):
         The origin of each value, by its name.
     selected : mapping of str to str
         The group selected of each set of alternatives, by the name of the set.
+    changes : Changes, optional
+        On restart, what the restart changed of the parameters of the original run; None for a run that is not a
+        restart.
     """
 
-    def __init__(self, values: Mapping[str, Any], origins: Mapping[str, Origin], selected: Mapping[str, str]) -> None:
+    def __init__(
+        self,
+        values: Mapping[str, Any],
+        origins: Mapping[str, Origin],
+        selected: Mapping[str, str],
+        changes: Changes | None = None,
+    ) -> None:
         ## Copies, so that the parameters cannot be changed through the dictionaries they were made from either, with
         ## every list, of a value or of a value as given, as a tuple of its own (PAR18). The origins and the selected
         ## groups are kept behind a MappingProxyType, a read-only view of a dictionary, since they are handed out as
@@ -202,6 +279,7 @@ class Parameters(Mapping[str, Any]):
             {name: replace(origin, value=_frozen(origin.value)) for name, origin in origins.items()}
         )
         self._selected = MappingProxyType(dict(selected))
+        self._changes = changes
 
     def __getitem__(self, name: str) -> Any:
         """Return the value of a parameter by its name."""
@@ -224,6 +302,11 @@ class Parameters(Mapping[str, Any]):
     def selected(self) -> Mapping[str, str]:
         """The group selected of each set of alternatives, by the name of the set (PAR22)."""
         return self._selected
+
+    @property
+    def changes(self) -> Changes | None:
+        """What a restart changed of the parameters of the original run (PAR17); None for a run that is no restart."""
+        return self._changes
 
     def to_record(self) -> Record:
         """Return the record of the parameters: every value in code units, and the selected groups (PAR19).
@@ -565,6 +648,49 @@ def _joint_mistake(check: JointCheck, values: Mapping[str, Any], origins: Mappin
     return Mistake(name=None, origin=None, message=f"{check.description}, got {_in_words(described)}.")
 
 
+def _changes(
+    declarations: Declarations,
+    record: Record,
+    values: Mapping[str, Any],
+    origins: Mapping[str, Origin],
+    selected: Mapping[str, str],
+) -> Changes:
+    """Return what a restart changed of the parameters of the original run, once every value has passed (PAR17).
+
+    A value is compared with the recorded one in code units, as for a fixed parameter (PAR16): a value restored from
+    the record is the recorded one, and a value given anew that equals it is no change. Lists are listed as tuples,
+    as the parameters hold them (PAR18).
+    """
+    recorded = record["values"]
+    declared = {parameter.name for parameter in declarations.parameters}
+
+    ## Every value that differs from the recorded one, in the order the parameters were declared, as the values are.
+    changed = {
+        name: Change(recorded=_frozen(recorded[name]), new=_frozen(value))
+        for name, value in values.items()
+        if name in recorded and value != recorded[name]
+    }
+
+    ## Every declared parameter missing from the record that took its default, and not a value of another layer
+    ## (PAR15); and every recorded name that is no longer declared, with its recorded value.
+    missing = {
+        name: _frozen(value)
+        for name, value in values.items()
+        if name not in recorded and origins[name].source == "default"
+    }
+    ignored = {name: _frozen(value) for name, value in recorded.items() if name not in declared}
+
+    ## Every set of alternatives whose selected group differs from the recorded one, a recorded group that no longer
+    ## exists included; a set missing from the record has no recorded group to differ from (PAR15, PAR22).
+    groups = record["selected"]
+    switched = {
+        name: Change(recorded=groups[name], new=group)
+        for name, group in selected.items()
+        if name in groups and groups[name] != group
+    }
+    return Changes(values=changed, missing=missing, ignored=ignored, selected=switched)
+
+
 def resolve(
     declarations: Declarations,
     *,
@@ -587,7 +713,8 @@ def resolve(
     its default, and a recorded name that is no longer declared is ignored; a recorded value is checked as any other.
     The file and the overrides may change only the parameters declared changeable, and select another group only if
     every parameter of both groups is: any other change is refused among the mistakes, stating that the restart file
-    fixes the value, but a value equal to the recorded one in code units is no change (PAR16).
+    fixes the value, but a value equal to the recorded one in code units is no change (PAR16). What the restart
+    changed is listed in ``parameters.changes`` (PAR17).
 
     Every value is then checked against its declaration. A value must be of its parameter's type, and an integer given
     for a float is converted to a float (PAR12). A value with a unit, such as ``"100 pc"``, is converted to code units
@@ -626,7 +753,8 @@ def resolve(
     -------
     parameters : Parameters
         The value of every declared parameter, by its name, with a list as a tuple, its origin, in
-        ``parameters.origins``, and the group selected of each set of alternatives, in ``parameters.selected``.
+        ``parameters.origins``, the group selected of each set of alternatives, in ``parameters.selected``, and on
+        restart what the restart changed, in ``parameters.changes``.
     """
     ## The layers, from the bottom up, each recording the origin of the values it gives, with the value as given: each
     ## replaces the origins of the names it gives, and leaves the others (PAR10).
@@ -700,4 +828,7 @@ def resolve(
 
     if mistakes:
         raise ParameterError(mistakes)
-    return Parameters(values, origins, selected)
+
+    ## On restart, what the restart changed of the original run (PAR17); None for a run that is not a restart.
+    changes = _changes(declarations, record, values, origins, selected) if record is not None else None
+    return Parameters(values, origins, selected, changes)

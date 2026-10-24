@@ -161,11 +161,12 @@ passed in by the run; this module only asks it for its conversion, and never imp
 Resolving gives the parameters of the run as one read-only mapping from each name to its value, of its declared type and
 in code units, with the value of a list parameter as a tuple, so that no value can be changed once resolved, not even in
 place (PAR18). The parameters convert to a record of plain values, every value in code units and the selected groups,
-which outputs store as JSON and a restart starts from, exactly (PAR19). The driver (L6) resolves the declarations of all
-the modules in a run once, before the run starts, and hands each module the values it declared. Next to the values, the
-parameters record the origin of each: the layer it came from, the parameter file by name, and the value as it was given
-there, such as ``"100 pc"`` (PAR10). The driver logs the values that are not defaults when a run starts, and every
-mistake is reported with its origin (PAR14).
+which outputs store as JSON and a restart starts from, exactly (PAR19). These types of what resolving gives, and of the
+mistakes it reports, are in ``resolved.py``. The driver (L6) resolves the declarations of all the modules in a run once,
+before the run starts, and hands each module the values it declared. Next to the values, the parameters record the
+origin of each: the layer it came from, the parameter file by name, and the value as it was given there, such as
+``"100 pc"`` (PAR10). The driver logs the values that are not defaults when a run starts, and every mistake is reported
+with its origin (PAR14).
 
 Every value is checked against its declaration before the parameters are returned. A name that no module declared is
 refused, with the closest declared name as a suggestion where one is close enough to be a likely misspelling, so that
@@ -197,8 +198,32 @@ For example, a run with a parameter file, one override and a unit system::
     parameters.origins["hydro.cfl"].source          ## "override"
 
 The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR06-PAR17,
-PAR18-PAR19, PAR22-PAR24), and they are tested in ``tests/test_supplying_values.py``, ``tests/test_checks.py``,
+PAR22-PAR24), and they are tested in ``tests/test_supplying_values.py``, ``tests/test_checks.py``,
 ``tests/test_restarts.py``, ``tests/test_records.py`` and ``tests/test_alternatives.py``.
+
+### `mhdpy.foundation.parameters.resolved`
+
+The resolved parameters of a run: the values it uses, where each came from, and what was wrong with them.
+
+Resolving the parameters of a run (``resolution.py``) ends in one of two ways. Either every value passes its checks,
+and the run is given its ``Parameters``: a read-only mapping from each name to its value, of its declared type and in
+code units, with the value of a list parameter as a tuple, so that no value can be changed once resolved, not even in
+place (PAR18). Next to the values, the parameters hold the ``Origin`` of each: the layer it came from, the parameter
+file by name, and the value as it was given there, such as ``"100 pc"`` (PAR10); the group selected of each set of
+alternatives (PAR22); and, on restart, the ``Changes`` the restart made to the original run, each a ``Change`` (PAR17).
+They convert to a ``Record`` of plain values, which outputs store as JSON and a restart starts from, exactly (PAR19).
+
+Or some values do not pass, and resolving raises one ``ParameterError``, which lists every mistake at once, each a
+``Mistake`` with the name, the origin of the value and what was expected, so that a user corrects a parameter file in
+one pass (PAR14).
+
+The types live in this module of their own, apart from the process that makes them, so that the resolution and
+everything that reads its results share one definition of each. Like the rest of the component, the module depends on
+nothing beyond the standard library (PAR21).
+
+The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR10, PAR14,
+PAR17-PAR19), and they are tested in ``tests/test_supplying_values.py``, ``tests/test_checks.py``,
+``tests/test_records.py`` and ``tests/test_restarts.py``.
 
 ### `mhdpy.foundation.parameters.templates`
 

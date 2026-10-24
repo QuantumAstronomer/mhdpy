@@ -7,7 +7,8 @@ from typing import Any, cast
 import pytest
 
 from mhdpy.foundation.parameters.declarations import Alternatives, Check, Declarations, Parameter
-from mhdpy.foundation.parameters.resolution import Change, Changes, Origin, ParameterError, Record, resolve
+from mhdpy.foundation.parameters.resolution import resolve
+from mhdpy.foundation.parameters.resolved import Change, Changes, Origin, ParameterError, Record
 from mhdpy.foundation.parameters.tests import identical, parameter_file
 from mhdpy.foundation.parameters.values import is_list
 from mhdpy.foundation.units.constants import MEGAYEAR, PARSEC, SOLAR_MASS

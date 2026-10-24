@@ -9,7 +9,8 @@ from typing import Any
 import pytest
 
 from mhdpy.foundation.parameters.declarations import Alternatives, Check, Declarations, JointCheck, Parameter
-from mhdpy.foundation.parameters.resolution import Mistake, ParameterError, resolve
+from mhdpy.foundation.parameters.resolution import resolve
+from mhdpy.foundation.parameters.resolved import Mistake, ParameterError
 from mhdpy.foundation.parameters.tests import parameter_file
 from mhdpy.foundation.units.constants import MEGAYEAR, PARSEC, SOLAR_MASS
 from mhdpy.foundation.units.system import UnitSystem

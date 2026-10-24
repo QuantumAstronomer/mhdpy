@@ -8,7 +8,8 @@ from typing import Any
 import pytest
 
 from mhdpy.foundation.parameters.declarations import Check, Declarations, Parameter
-from mhdpy.foundation.parameters.resolution import Mistake, Origin, ParameterError, resolve
+from mhdpy.foundation.parameters.resolution import resolve
+from mhdpy.foundation.parameters.resolved import Mistake, Origin, ParameterError
 from mhdpy.foundation.parameters.tests import parameter_file
 from mhdpy.foundation.parameters.values import is_list
 from mhdpy.foundation.units.constants import MEGAYEAR, PARSEC, SOLAR_MASS

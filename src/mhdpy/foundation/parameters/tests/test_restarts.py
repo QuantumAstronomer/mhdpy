@@ -8,7 +8,7 @@ import pytest
 
 from mhdpy.foundation.parameters.declarations import Alternatives, Check, Declarations, Parameter
 from mhdpy.foundation.parameters.resolution import Change, Changes, Origin, ParameterError, Record, resolve
-from mhdpy.foundation.parameters.tests import parameter_file
+from mhdpy.foundation.parameters.tests import identical, parameter_file
 from mhdpy.foundation.parameters.values import is_list
 from mhdpy.foundation.units.constants import MEGAYEAR, PARSEC, SOLAR_MASS
 from mhdpy.foundation.units.system import UnitSystem
@@ -261,6 +261,37 @@ class TestRestarts:
         parameters = resolve(DECLARATIONS, record=original.to_record(), file=file, units=UNITS)
         assert dict(parameters) == dict(original)
         assert parameters.origins["ambient.n"].value == "2e-3 cm^-3"
+
+    def test_equal_value_keeps_the_recorded_value(self) -> None:
+        """Check that a value given anew that equals the recorded one leaves the recorded value, bit for bit (PAR16).
+
+        0.0 and -0.0 compare equal but differ in their sign bit: the restart continues with the value of the original
+        run, of a fixed parameter and of a changeable one alike, so that it continues bit for bit (PAR19).
+        """
+        ## A record with the number density, fixed, and the end time, changeable, both at 0.0, given anew as -0.0.
+        record = original_record()
+        record["values"]["ambient.n"] = 0.0
+        record["values"]["time.end"] = 0.0
+        parameters = resolve(DECLARATIONS, record=record, overrides={"ambient.n": -0.0, "time.end": -0.0})
+
+        ## Both keep the recorded 0.0, the sign included, and neither is a change; the origin still states where the
+        ## value was given anew, and how (PAR10).
+        for name in ("ambient.n", "time.end"):
+            assert identical(parameters[name], 0.0), name
+            assert parameters.origins[name].source == "override"
+        assert parameters.changes is not None
+        assert not parameters.changes.values
+
+    def test_equal_value_replaces_a_refused_record(self) -> None:
+        """Check that a value given anew is used where it equals a recorded value its declaration now refuses (PAR16).
+
+        The recorded value cannot be kept, as its declaration refuses it (PAR15); the equal value given anew can.
+        """
+        ## The number of cells recorded as a float, which the declaration of an int refuses, given anew as an integer.
+        record = original_record()
+        record["values"]["mesh.nx1"] = 128.0
+        parameters = resolve(DECLARATIONS, record=record, overrides={"mesh.nx1": 128})
+        assert identical(parameters["mesh.nx1"], 128)
 
     ## ---- The list of changes (PAR17) ----
 

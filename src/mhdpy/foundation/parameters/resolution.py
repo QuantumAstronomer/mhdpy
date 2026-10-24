@@ -7,18 +7,19 @@ parameter scan or a quick test. Overrides come from the command line, as strings
 Python, as a dictionary; values in strings are read as TOML, the same as in a parameter file, and a value that is not
 valid TOML, such as a bare word, as a string (PAR08).
 
-A restarted run continues the original run. The record of the original run's parameters (PAR19), which the restart
-file holds, then replaces the defaults as the lowest layer, so that every value not given anew is the one the original
-run used, and the group each set of alternatives selected stays selected. A parameter declared since the restart file
-was written keeps its default, and a recorded name that is no longer declared is ignored, so that a run can be
-continued after its modules were updated; a recorded value that its declaration now refuses is refused with the other
-mistakes (PAR15). The parameter file and the overrides may then change only the parameters declared changeable: a new
-value for a fixed parameter is refused, since the restart file would no longer describe the run, but a value equal to
-the recorded one, compared in code units, is no change, so that the original parameter file can be used unchanged
-(PAR16). Likewise, another group of a set of alternatives may be selected only if every parameter of both groups is
-changeable (PAR22). What the restart changed is listed with the parameters, for the driver to log and the writers to
-record: every value and every selected group that differs from the record, with both, every parameter missing from the
-record, with the default it took, and every recorded name that was ignored, with its recorded value (PAR17).
+A restarted run continues the original run. The record of the original run's parameters (PAR19), which the restart file
+holds, then replaces the defaults as the lowest layer, so that every value not given anew is the one the original run
+used, and the group each set of alternatives selected stays selected. A parameter declared since the restart file was
+written keeps its default, and a recorded name that is no longer declared is ignored, so that a run can be continued
+after its modules were updated; a recorded value that its declaration now refuses is refused with the other mistakes
+(PAR15). The parameter file and the overrides may then change only the parameters declared changeable: a new value for a
+fixed parameter is refused, since the restart file would no longer describe the run, but a value equal to the recorded
+one, compared in code units, is no change, and leaves the recorded value in place, so that the original parameter file
+can be used unchanged and the restart still continues the original run bit for bit (PAR16). Likewise, another group of a
+set of alternatives may be selected only if every parameter of both groups is changeable (PAR22). What the restart
+changed is listed with the parameters, for the driver to log and the writers to record: every value and every selected
+group that differs from the record, with both, every parameter missing from the record, with the default it took, and
+every recorded name that was ignored, with its recorded value (PAR17).
 
 A number on its own is a value in code units. A value with a unit, a string such as ``"100 pc"`` given for a number in
 any layer, is converted to code units by the unit system of the run (PAR09). It is refused if the run has no unit
@@ -557,20 +558,29 @@ def _resolved_value(parameter: Parameter, given: object, units: UnitConverter | 
     return value
 
 
-def _changed_fixed(parameter: Parameter, value: object, origin: Origin, recorded: Mapping[str, Any]) -> Mistake | None:
-    """Return the mistake of a fixed parameter given a new value on restart, or None if there is none (PAR16).
+def _kept(parameter: Parameter, value: object, recorded: object, units: UnitConverter | None) -> object:
+    """Return the value of a parameter given anew on restart at a value equal to its recorded one: the recorded one.
 
-    Only the parameter file and the overrides can change a value; the value is compared with the recorded one in code
-    units, after any conversion, so that a value equal to it is no change, however it is given. A parameter missing
-    from the record has no recorded value to keep (PAR15).
+    Equal values need not be the same: 0.0 and -0.0 compare equal, but differ in their sign bit, so that keeping the
+    value given anew would no longer continue the original run bit for bit (PAR16, PAR19). The recorded value is kept,
+    as a restored value would be, unless its declaration now refuses it (PAR15); then the value given anew is.
     """
-    if parameter.changeable or origin.source not in ("file", "override") or parameter.name not in recorded:
-        return None
-    kept = recorded[parameter.name]
-    if value == kept:
-        return None
+    try:
+        return _resolved_value(parameter, recorded, units)
+    except _Refusal:
+        ## A recorded value of another type, such as 128.0 for what is now an int, equals the value given anew, 128,
+        ## only as Python compares numbers; the value given anew is the valid one of the two.
+        return value
+
+
+def _changed_fixed(parameter: Parameter, value: object, origin: Origin, recorded: object) -> Mistake:
+    """Return the mistake of a fixed parameter given a value on restart other than its recorded one (PAR16).
+
+    The message states that the restart file fixes the value, and the recorded value it fixes it at.
+    """
     message = (
-        f"{parameter.name!r} is fixed by the restart file at {kept!r}, got {value!r}{_given_as(origin.value, value)}."
+        f"{parameter.name!r} is fixed by the restart file at {recorded!r}, got {value!r}"
+        f"{_given_as(origin.value, value)}."
     )
     return Mistake(name=parameter.name, origin=origin, message=message)
 
@@ -713,8 +723,8 @@ def resolve(
     its default, and a recorded name that is no longer declared is ignored; a recorded value is checked as any other.
     The file and the overrides may change only the parameters declared changeable, and select another group only if
     every parameter of both groups is: any other change is refused among the mistakes, stating that the restart file
-    fixes the value, but a value equal to the recorded one in code units is no change (PAR16). What the restart
-    changed is listed in ``parameters.changes`` (PAR17).
+    fixes the value, but a value equal to the recorded one in code units is no change, and leaves the recorded value
+    (PAR16). What the restart changed is listed in ``parameters.changes`` (PAR17).
 
     Every value is then checked against its declaration. A value must be of its parameter's type, and an integer given
     for a float is converted to a float (PAR12). A value with a unit, such as ``"100 pc"``, is converted to code units
@@ -794,15 +804,22 @@ def resolve(
         except _Refusal as refusal:
             mistakes.append(Mistake(name=parameter.name, origin=origin, message=str(refusal)))
 
-    ## On restart, a value given anew for a fixed parameter must equal its recorded value (PAR16). Only values that
-    ## passed their own checks are compared, so that a value that was refused is reported once, by itself.
+    ## On restart, a value given anew in the file or the overrides is compared with its recorded value, in code units
+    ## (PAR16). A value equal to it is no change, and leaves the recorded value, so that the restart continues bit for
+    ## bit (PAR19); a value that differs is refused for a fixed parameter. A parameter missing from the record has no
+    ## recorded value (PAR15), and only values that passed their own checks are compared, so that a value that was
+    ## refused is reported once, by itself.
     if record is not None:
         for parameter in declarations.parameters:
-            if parameter.name in values:
-                origin = origins[parameter.name]
-                mistake = _changed_fixed(parameter, values[parameter.name], origin, record["values"])
-                if mistake is not None:
-                    mistakes.append(mistake)
+            name = parameter.name
+            origin = origins[name]
+            if name not in values or name not in record["values"] or origin.source not in ("file", "override"):
+                continue
+            original = record["values"][name]
+            if values[name] == original:
+                values[name] = _kept(parameter, values[name], original, units)
+            elif not parameter.changeable:
+                mistakes.append(_changed_fixed(parameter, values[name], origin, original))
 
     ## The group selected of each set of alternatives, from the values given, and on restart from the groups the
     ## original run selected, of which another may be selected only if every parameter of both groups is changeable;

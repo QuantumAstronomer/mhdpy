@@ -139,18 +139,19 @@ parameter scan or a quick test. Overrides come from the command line, as strings
 Python, as a dictionary; values in strings are read as TOML, the same as in a parameter file, and a value that is not
 valid TOML, such as a bare word, as a string (PAR08).
 
-A restarted run continues the original run. The record of the original run's parameters (PAR19), which the restart
-file holds, then replaces the defaults as the lowest layer, so that every value not given anew is the one the original
-run used, and the group each set of alternatives selected stays selected. A parameter declared since the restart file
-was written keeps its default, and a recorded name that is no longer declared is ignored, so that a run can be
-continued after its modules were updated; a recorded value that its declaration now refuses is refused with the other
-mistakes (PAR15). The parameter file and the overrides may then change only the parameters declared changeable: a new
-value for a fixed parameter is refused, since the restart file would no longer describe the run, but a value equal to
-the recorded one, compared in code units, is no change, so that the original parameter file can be used unchanged
-(PAR16). Likewise, another group of a set of alternatives may be selected only if every parameter of both groups is
-changeable (PAR22). What the restart changed is listed with the parameters, for the driver to log and the writers to
-record: every value and every selected group that differs from the record, with both, every parameter missing from the
-record, with the default it took, and every recorded name that was ignored, with its recorded value (PAR17).
+A restarted run continues the original run. The record of the original run's parameters (PAR19), which the restart file
+holds, then replaces the defaults as the lowest layer, so that every value not given anew is the one the original run
+used, and the group each set of alternatives selected stays selected. A parameter declared since the restart file was
+written keeps its default, and a recorded name that is no longer declared is ignored, so that a run can be continued
+after its modules were updated; a recorded value that its declaration now refuses is refused with the other mistakes
+(PAR15). The parameter file and the overrides may then change only the parameters declared changeable: a new value for a
+fixed parameter is refused, since the restart file would no longer describe the run, but a value equal to the recorded
+one, compared in code units, is no change, and leaves the recorded value in place, so that the original parameter file
+can be used unchanged and the restart still continues the original run bit for bit (PAR16). Likewise, another group of a
+set of alternatives may be selected only if every parameter of both groups is changeable (PAR22). What the restart
+changed is listed with the parameters, for the driver to log and the writers to record: every value and every selected
+group that differs from the record, with both, every parameter missing from the record, with the default it took, and
+every recorded name that was ignored, with its recorded value (PAR17).
 
 A number on its own is a value in code units. A value with a unit, a string such as ``"100 pc"`` given for a number in
 any layer, is converted to code units by the unit system of the run (PAR09). It is refused if the run has no unit

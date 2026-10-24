@@ -199,6 +199,37 @@ The requirements this module fulfils are in ``docs/requirements/L0-foundation/pa
 PAR18-PAR19, PAR22-PAR24), and they are tested in ``tests/test_supplying_values.py``, ``tests/test_checks.py``,
 ``tests/test_restarts.py``, ``tests/test_records.py`` and ``tests/test_alternatives.py``.
 
+### `mhdpy.foundation.parameters.templates`
+
+Templates of parameter files: every parameter of a run at its default, documented, as a TOML document.
+
+A user who starts a new run needs to know which parameters exist, what they mean, and what their defaults are.
+``mhdpy parameters`` answers this by writing a template parameter file for a problem (D15.5), which the user then edits
+and passes to ``mhdpy run``. The template gives every parameter at its default, as declared, a default given with a
+unit as that string, such as ``"100 pc"``, so that the template, read back unchanged as a parameter file, resolves to
+exactly the defaults (PAR20). Comments give each parameter's documentation, unit, condition and restart behaviour, so
+that what a parameter means is at hand where its value is set.
+
+The parameters are written in one table per section, the section of a name being everything before its last dot, so
+that ``output.snapshot.dt`` is the key ``dt`` of the table ``[output.snapshot]``. The tables follow the order in which
+their first parameter was declared, and the parameters in a table the order of their declarations. Where a quantity
+can be given in more than one way, the parameters of every group but the default are written as comments, with their
+defaults, so that the template selects the default group of each set of alternatives; a comment before the first
+parameter of a set names its groups (PAR22).
+
+TOML is written here, by mhdpy itself: the standard library reads TOML but does not write it. The types of PAR03 are
+simple enough to write exactly: a float as the shortest digits that read back as the same double, which every default
+has, being finite (PAR24), and a string with every character that TOML does not allow as it is escaped.
+
+For example, the template of a run, as ``mhdpy parameters`` writes it::
+
+    from mhdpy.foundation.parameters.templates import template
+
+    Path("run.toml").write_text(template(declarations))
+
+The requirement this module fulfils is in ``docs/requirements/L0-foundation/parameters.md`` (PAR20), and it is tested in
+``tests/test_templates.py``.
+
 ### `mhdpy.foundation.parameters.values`
 
 The types of the values of parameters: which types a parameter may have, and when a value is of its type.

@@ -1,7 +1,6 @@
 """Tests of reading the resolved parameters and of their record (PAR18-PAR19)."""
 
 import json
-from collections.abc import Sequence
 from typing import Any, cast
 
 import pytest
@@ -10,6 +9,7 @@ from hypothesis import strategies as st
 
 from mhdpy.foundation.parameters.declarations import Alternatives, Declarations, Parameter
 from mhdpy.foundation.parameters.resolution import resolve
+from mhdpy.foundation.parameters.tests import identical
 from mhdpy.foundation.parameters.values import is_list
 from mhdpy.foundation.units.constants import MEGAYEAR, PARSEC, SOLAR_MASS
 from mhdpy.foundation.units.system import UnitSystem
@@ -48,25 +48,6 @@ DECLARATIONS = Declarations(
         ),
     ],
 )
-
-
-def identical(first: object, second: object) -> bool:
-    """Return whether two values are identical: of the same type, and equal bit for bit, a list or tuple element-wise.
-
-    == alone cannot tell them apart: in Python, 1 == 1.0 == True and 0.0 == -0.0. float.hex() writes the exact bits of a
-    double, sign, exponent and digits, so that two floats with the same hex are the same double.
-    """
-    if type(first) is not type(second):
-        return False
-    if isinstance(first, list | tuple):
-        ## The type checker learns that second is a list or tuple as well only from the comparison of types above, which
-        ## it does not follow; cast tells it so, and that the elements may be of any type.
-        firsts = cast(Sequence[object], first)
-        seconds = cast(Sequence[object], second)
-        return len(firsts) == len(seconds) and all(identical(a, b) for a, b in zip(firsts, seconds, strict=True))
-    if isinstance(first, float):
-        return first.hex() == cast(float, second).hex()
-    return first == second
 
 
 class TestRecords:

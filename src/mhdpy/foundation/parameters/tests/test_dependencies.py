@@ -12,6 +12,7 @@ MODULES = [
     "mhdpy.foundation.parameters.declarations",
     "mhdpy.foundation.parameters.resolution",
     "mhdpy.foundation.parameters.resolved",
+    "mhdpy.foundation.parameters.restarts",
     "mhdpy.foundation.parameters.templates",
     "mhdpy.foundation.parameters.values",
 ]

@@ -7,19 +7,10 @@ parameter scan or a quick test. Overrides come from the command line, as strings
 Python, as a dictionary; values in strings are read as TOML, the same as in a parameter file, and a value that is not
 valid TOML, such as a bare word, as a string (PAR08).
 
-A restarted run continues the original run. The record of the original run's parameters (PAR19), which the restart file
-holds, then replaces the defaults as the lowest layer, so that every value not given anew is the one the original run
-used, and the group each set of alternatives selected stays selected. A parameter declared since the restart file was
-written keeps its default, and a recorded name that is no longer declared is ignored, so that a run can be continued
-after its modules were updated; a recorded value that its declaration now refuses is refused with the other mistakes
-(PAR15). The parameter file and the overrides may then change only the parameters declared changeable: a new value for a
-fixed parameter is refused, since the restart file would no longer describe the run, but a value equal to the recorded
-one, compared in code units, is no change, and leaves the recorded value in place, so that the original parameter file
-can be used unchanged and the restart still continues the original run bit for bit (PAR16). Likewise, another group of a
-set of alternatives may be selected only if every parameter of both groups is changeable (PAR22). What the restart
-changed is listed with the parameters, for the driver to log and the writers to record: every value and every selected
-group that differs from the record, with both, every parameter missing from the record, with the default it took, and
-every recorded name that was ignored, with its recorded value (PAR17).
+A restarted run continues the original run: the record of its parameters (PAR19), which the restart file holds, replaces
+the defaults as the lowest layer, and the parameter file and the overrides may change only the parameters declared
+changeable. The rules of restarts, and the list of what a restart changed, are in ``restarts.py`` (PAR15-PAR17), and are
+applied here, as steps among the checks.
 
 A number on its own is a value in code units. A value with a unit, a string such as ``"100 pc"`` given for a number in
 any layer, is converted to code units by the unit system of the run (PAR09). It is refused if the run has no unit
@@ -65,7 +56,7 @@ For example, a run with a parameter file, one override and a unit system::
     parameters["hydro.cfl"]                         ## 0.3
     parameters.origins["hydro.cfl"].source          ## "override"
 
-The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR06-PAR17,
+The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR06-PAR16,
 PAR22-PAR24), and they are tested in ``tests/test_supplying_values.py``, ``tests/test_checks.py``,
 ``tests/test_restarts.py``, ``tests/test_records.py`` and ``tests/test_alternatives.py``.
 """
@@ -78,17 +69,8 @@ from collections.abc import Mapping, Sequence, Set
 from typing import Any, Protocol, TypeIs
 
 from mhdpy.foundation.parameters.declarations import Alternatives, Declarations, JointCheck, Parameter
-from mhdpy.foundation.parameters.resolved import (
-    Change,
-    Changes,
-    Mistake,
-    Origin,
-    ParameterError,
-    Parameters,
-    Record,
-    frozen,
-    given_as,
-)
+from mhdpy.foundation.parameters.resolved import Mistake, Origin, ParameterError, Parameters, Record, given_as
+from mhdpy.foundation.parameters.restarts import changes, fixed_mistake, restored
 from mhdpy.foundation.parameters.values import element_type, fits, is_finite, is_list, type_name
 from mhdpy.foundation.units import notation
 
@@ -291,18 +273,6 @@ def _kept(parameter: Parameter, value: object, recorded: object, units: UnitConv
         return value
 
 
-def _changed_fixed(parameter: Parameter, value: object, origin: Origin, recorded: object) -> Mistake:
-    """Return the mistake of a fixed parameter given a value on restart other than its recorded one (PAR16).
-
-    The message states that the restart file fixes the value, and the recorded value it fixes it at.
-    """
-    message = (
-        f"{parameter.name!r} is fixed by the restart file at {recorded!r}, got {value!r}"
-        f"{given_as(origin.value, value)}."
-    )
-    return Mistake(name=parameter.name, origin=origin, message=message)
-
-
 def _in_words(items: Sequence[str]) -> str:
     """Return items as they are written in a sentence: "a", "a and b", or "a, b and c"."""
     return items[0] if len(items) == 1 else f"{', '.join(items[:-1])} and {items[-1]}"
@@ -376,49 +346,6 @@ def _joint_mistake(check: JointCheck, values: Mapping[str, Any], origins: Mappin
     return Mistake(name=None, origin=None, message=f"{check.description}, got {_in_words(described)}.")
 
 
-def _changes(
-    declarations: Declarations,
-    record: Record,
-    values: Mapping[str, Any],
-    origins: Mapping[str, Origin],
-    selected: Mapping[str, str],
-) -> Changes:
-    """Return what a restart changed of the parameters of the original run, once every value has passed (PAR17).
-
-    A value is compared with the recorded one in code units, as for a fixed parameter (PAR16): a value restored from
-    the record is the recorded one, and a value given anew that equals it is no change. Lists are listed as tuples,
-    as the parameters hold them (PAR18).
-    """
-    recorded = record["values"]
-    declared = {parameter.name for parameter in declarations.parameters}
-
-    ## Every value that differs from the recorded one, in the order the parameters were declared, as the values are.
-    changed = {
-        name: Change(recorded=frozen(recorded[name]), new=frozen(value))
-        for name, value in values.items()
-        if name in recorded and value != recorded[name]
-    }
-
-    ## Every declared parameter missing from the record that took its default, and not a value of another layer
-    ## (PAR15); and every recorded name that is no longer declared, with its recorded value.
-    missing = {
-        name: frozen(value)
-        for name, value in values.items()
-        if name not in recorded and origins[name].source == "default"
-    }
-    ignored = {name: frozen(value) for name, value in recorded.items() if name not in declared}
-
-    ## Every set of alternatives whose selected group differs from the recorded one, a recorded group that no longer
-    ## exists included; a set missing from the record has no recorded group to differ from (PAR15, PAR22).
-    groups = record["selected"]
-    switched = {
-        name: Change(recorded=groups[name], new=group)
-        for name, group in selected.items()
-        if name in groups and groups[name] != group
-    }
-    return Changes(values=changed, missing=missing, ignored=ignored, selected=switched)
-
-
 def resolve(
     declarations: Declarations,
     *,
@@ -490,13 +417,8 @@ def resolve(
         parameter.name: Origin(source="default", value=parameter.default) for parameter in declarations.parameters
     }
     if record is not None:
-        ## On restart, the record replaces the defaults for every parameter it holds that is still declared, which are
-        ## the only names in the origins so far. A parameter missing from the record keeps its default, and a recorded
-        ## name that is no longer declared is ignored, rather than refused as an unknown name, so that a run can be
-        ## continued after its modules were updated (PAR15).
-        for name, value in record["values"].items():
-            if name in origins:
-                origins[name] = Origin(source="restart", value=value)
+        ## On restart, the record replaces the defaults for every parameter it holds that is still declared (PAR15).
+        origins.update(restored(declarations, record))
     if file is not None:
         ## The name as passed, a path turned into its string, as the user wrote it.
         file_name = os.fspath(file)
@@ -537,7 +459,7 @@ def resolve(
             if values[name] == original:
                 values[name] = _kept(parameter, values[name], original, units)
             elif not parameter.changeable:
-                mistakes.append(_changed_fixed(parameter, values[name], origin, original))
+                mistakes.append(fixed_mistake(parameter, values[name], origin, original))
 
     ## The group selected of each set of alternatives, from the values given, and on restart from the groups the
     ## original run selected, of which another may be selected only if every parameter of both groups is changeable;
@@ -565,5 +487,5 @@ def resolve(
         raise ParameterError(mistakes)
 
     ## On restart, what the restart changed of the original run (PAR17); None for a run that is not a restart.
-    changes = _changes(declarations, record, values, origins, selected) if record is not None else None
-    return Parameters(values, origins, selected, changes)
+    changed = changes(declarations, record, values, origins, selected) if record is not None else None
+    return Parameters(values, origins, selected, changed)

@@ -4,6 +4,7 @@ py.install_sources(
   'declarations.py',
   'resolution.py',
   'resolved.py',
+  'restarts.py',
   'templates.py',
   'values.py',
   subdir: 'mhdpy/foundation/parameters',

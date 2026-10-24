@@ -139,19 +139,10 @@ parameter scan or a quick test. Overrides come from the command line, as strings
 Python, as a dictionary; values in strings are read as TOML, the same as in a parameter file, and a value that is not
 valid TOML, such as a bare word, as a string (PAR08).
 
-A restarted run continues the original run. The record of the original run's parameters (PAR19), which the restart file
-holds, then replaces the defaults as the lowest layer, so that every value not given anew is the one the original run
-used, and the group each set of alternatives selected stays selected. A parameter declared since the restart file was
-written keeps its default, and a recorded name that is no longer declared is ignored, so that a run can be continued
-after its modules were updated; a recorded value that its declaration now refuses is refused with the other mistakes
-(PAR15). The parameter file and the overrides may then change only the parameters declared changeable: a new value for a
-fixed parameter is refused, since the restart file would no longer describe the run, but a value equal to the recorded
-one, compared in code units, is no change, and leaves the recorded value in place, so that the original parameter file
-can be used unchanged and the restart still continues the original run bit for bit (PAR16). Likewise, another group of a
-set of alternatives may be selected only if every parameter of both groups is changeable (PAR22). What the restart
-changed is listed with the parameters, for the driver to log and the writers to record: every value and every selected
-group that differs from the record, with both, every parameter missing from the record, with the default it took, and
-every recorded name that was ignored, with its recorded value (PAR17).
+A restarted run continues the original run: the record of its parameters (PAR19), which the restart file holds, replaces
+the defaults as the lowest layer, and the parameter file and the overrides may change only the parameters declared
+changeable. The rules of restarts, and the list of what a restart changed, are in ``restarts.py`` (PAR15-PAR17), and are
+applied here, as steps among the checks.
 
 A number on its own is a value in code units. A value with a unit, a string such as ``"100 pc"`` given for a number in
 any layer, is converted to code units by the unit system of the run (PAR09). It is refused if the run has no unit
@@ -197,7 +188,7 @@ For example, a run with a parameter file, one override and a unit system::
     parameters["hydro.cfl"]                         ## 0.3
     parameters.origins["hydro.cfl"].source          ## "override"
 
-The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR06-PAR17,
+The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR06-PAR16,
 PAR22-PAR24), and they are tested in ``tests/test_supplying_values.py``, ``tests/test_checks.py``,
 ``tests/test_restarts.py``, ``tests/test_records.py`` and ``tests/test_alternatives.py``.
 
@@ -224,6 +215,35 @@ nothing beyond the standard library (PAR21).
 The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR10, PAR14,
 PAR17-PAR19), and they are tested in ``tests/test_supplying_values.py``, ``tests/test_checks.py``,
 ``tests/test_records.py`` and ``tests/test_restarts.py``.
+
+### `mhdpy.foundation.parameters.restarts`
+
+The parameters of a restarted run: what a restart keeps, what it may change, and what it changed (PAR15-PAR17).
+
+A restarted run continues the original run. The record of the original run's parameters (PAR19), which the restart file
+holds, then replaces the defaults as the lowest layer, so that every value not given anew is the one the original run
+used, and the group each set of alternatives selected stays selected. A parameter declared since the restart file was
+written keeps its default, and a recorded name that is no longer declared is ignored, so that a run can be continued
+after its modules were updated; a recorded value that its declaration now refuses is refused with the other mistakes
+(PAR15).
+
+The parameter file and the overrides may then change only the parameters declared changeable: a new value for a fixed
+parameter is refused, since the restart file would no longer describe the run, but a value equal to the recorded one,
+compared in code units, is no change, and leaves the recorded value in place, so that the original parameter file can be
+used unchanged and the restart still continues the original run bit for bit (PAR16). Likewise, another group of a set of
+alternatives may be selected only if every parameter of both groups is changeable (PAR22).
+
+What the restart changed is listed with the parameters, for the driver to log and the writers to record: every value and
+every selected group that differs from the record, with both, every parameter missing from the record, with the default
+it took, and every recorded name that was ignored, with its recorded value (PAR17).
+
+The rules of this module are applied by ``resolve`` (``resolution.py``), as one step among its checks: the record layer
+before the parameter file and the overrides, the comparison with the record once every value has passed its own checks,
+and the list of changes last. Keeping a recorded value means resolving it, which only the resolution can do, and the
+selection of another group is refused where the groups are selected; both stay there.
+
+The requirements this module fulfils are in ``docs/requirements/L0-foundation/parameters.md`` (PAR15-PAR17), and they
+are tested in ``tests/test_restarts.py``.
 
 ### `mhdpy.foundation.parameters.templates`
 

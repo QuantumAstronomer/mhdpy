@@ -135,6 +135,40 @@ A difference near the edge of the domain needs values outside it, such as $f_{\m
 
 The text names four extensions as directions for further study (§3.5). Domain decomposition divides the domain into sub-domains for the processors of a parallel computer. Each sub-domain has its own perimeter of ghost cells, filled from neighbouring sub-domains or from the physical boundary conditions (fig. 3.3). Adaptive mesh refinement focuses resolution through a hierarchy of grids, after Berger and Colella (1989, doi:10.1016/0021-9991(89)90035-1). Each level is an even integer multiple finer than the next coarser one, with cells that line up, which makes conservation natural, and corrections at coarse-fine interfaces keep the levels consistent. Mapped grids transform a logically Cartesian mesh into a curvilinear one, and keep the integer indexing and the performance of structured grids. Lagrangian grids move particles with the flow and build a finite-volume grid from their Voronoi tessellation, as in the Arepo code (arXiv:0901.4107). **[GK]** Berger and Colella refine in time by the same ratio as in space, so that one explicit scheme is stable on every level, and admit only even ratios to simplify their error estimation (1989, §2). A coarse cell covered by a fine grid takes the conservative average of its fine cells. A coarse cell beside a fine grid takes, through the shared face, the sum of the fine fluxes over the fine time steps (1989, §3).
 
+### 2.3 Advection
+
+Chapters 4 and 5 develop the numerical methods for linear advection, the model problem for hyperbolic equations.
+
+#### 2.3.1 The linear advection equation
+
+The linear advection equation $a_t + u a_x = 0$ (eq. 4.1) carries a scalar $a(x, t)$ with the velocity $u$, to the right for $u > 0$ (§4.1). Any profile $a(x - ut)$ solves it, so the initial data move at the speed $u$ with their shape preserved, and the solution is constant along the parallel characteristics $x - ut = \mathrm{const}$ (fig. 4.1). Many hyperbolic systems, among them the equations of hydrodynamics, can be written as systems of nonlinear advection equations, so linear advection gives insight into their methods. Stability is a central concern: some discretisations blow up to unphysically large values within a few steps, and others are stable only for limited time steps.
+
+#### 2.3.2 Upwind differencing and the CFL condition
+
+A finite-difference grid stores $a^n_i = a(x_i, t^n)$ at points $x_i$ and times $t^n = n \Delta t$ (§4.2, fig. 4.2). The first-order upwind method $(a^{n+1}_i - a^n_i)/\Delta t = -u (a^n_i - a^n_{i-1})/\Delta x$ (eq. 4.2) is explicit, as the new value depends only on the old time level. Its one-sided difference takes the zone on the side from which information arrives, the upwind side, and this choice makes the method stable. The difference reaches one zone to the left, so one ghost point at each boundary lets the same update apply to every point. Stability also limits the time step to the time that information needs to cross a zone, $\Delta t \le \Delta x/u$ (eq. 4.3), the Courant-Friedrichs-Lewy (CFL) condition. With the CFL number $\mathcal{C} = u \Delta t/\Delta x$ (eq. 4.4), stability requires $\mathcal{C} \le 1$, and the time step is chosen as $\Delta t = \mathcal{C} \Delta x/u$ (eq. 4.5), with a typical value $\mathcal{C} = 0.7$.
+
+At $\mathcal{C} = 1$ the upwind method shifts the data by exactly one zone per step and so advects without error. In a nonlinear system the speed varies from zone to zone, so $\mathcal{C} = 1$ cannot hold everywhere, and the most restrictive time step over all zones sets the step for the whole grid. The upwind method is first-order accurate and shows substantial numerical dissipation, the more so at small $\mathcal{C}$ (fig. 4.3). Standard tests are a Gaussian profile and the top hat, with $a = 1$ for $1/3 \le x < 2/3$ and $a = 0$ elsewhere on $[0, 1]$ (eq. 4.6), both with periodic boundaries. The forward-time centred-space (FTCS) method, with the centred difference $(a_{i+1} - a_{i-1})/(2 \Delta x)$, is unconditionally unstable: its amplitude grows without bound for any $\mathcal{C}$ (fig. 4.4).
+
+#### 2.3.3 Stability
+
+Stability is analysed by following a single Fourier mode, $a^n_i = A^n e^{I i \theta}$, with $I = \sqrt{-1}$ and a phase $\theta$; a method is stable if $|A^{n+1}/A^n| \le 1$ (§4.3). For FTCS, $a^{n+1}_i = a^n_i - (\mathcal{C}/2)(a^n_{i+1} - a^n_{i-1})$ (eq. 4.7) gives $A^{n+1} = A^n (1 - I \mathcal{C} \sin\theta)$ and so $|A^{n+1}/A^n|^2 = 1 + \mathcal{C}^2 \sin^2\theta$ (eqs. 4.8 to 4.11). This exceeds one for every $\mathcal{C} > 0$, unless $\sin\theta = 0$. For the upwind method, $|A^{n+1}/A^n|^2 = 1 - 2\mathcal{C}(1 - \mathcal{C})(1 - \cos\theta)$ (eq. 4.12), which is stable for $0 \le \mathcal{C} \le 1$. The analysis holds only for linear equations, whose Fourier modes decouple, but its ideas guide nonlinear problems as well. **[GK]** The method is known as von Neumann stability analysis. Charney, Fjørtoft and von Neumann (1950, doi:10.1111/j.2153-3490.1950.tb00336.x) applied it to numerical weather prediction.
+
+Truncation analysis offers another view: the higher-order terms of the Taylor expansions show which equation a scheme actually solves. For the upwind method, this is $a_t + u a_x = (u \Delta x/2)(1 - \mathcal{C})\, a_{xx}$ (eqs. 4.13 to 4.15), an advection equation with a diffusion term. For $\mathcal{C} > 1$ the diffusion coefficient turns negative, so the scheme sharpens smooth features instead of spreading them, which is unphysical. For FTCS, the diffusion term is negative for every $\mathcal{C}$. **[GK]** This is modified-equation analysis (Warming and Hyett 1974, doi:10.1016/0021-9991(74)90011-4). For FTCS, the diffusion coefficient is $-u^2 \Delta t/2 = -(u \Delta x/2)\mathcal{C}$.
+
+The domain of dependence gives a third view (§4.3.1, fig. 4.5). The numerical domain of dependence of $a^{n+1}_i$ holds the points that can influence it, for the upwind method $a^n_{i-1}$ and $a^n_i$. The physical one follows the characteristic back over one time step, to $x_i - u \Delta t = x_i - \mathcal{C} \Delta x$. A stable method must have a numerical domain of dependence that contains the physical one, since its update would otherwise miss information that determines the solution. The condition is necessary, but not sufficient: FTCS satisfies it and is unstable. **[GK]** This containment is the condition of Courant, Friedrichs and Lewy (1928, doi:10.1007/BF01448839), necessary for a difference scheme to converge. Eq. 4.3 is its form for the upwind method.
+
+#### 2.3.4 Implicit differencing
+
+Evaluating the spatial difference at the new time gives the implicit upwind method $(a^{n+1}_i - a^n_i)/\Delta t = -u (a^{n+1}_i - a^{n+1}_{i-1})/\Delta x$ (eq. 4.16). Its equations $-\mathcal{C} a^{n+1}_{i-1} + (1 + \mathcal{C}) a^{n+1}_i = a^n_i$ (eq. 4.17) form a coupled linear system (§4.4). With periodic boundaries, its matrix is bidiagonal with one corner entry (eq. 4.18), and other boundary conditions change its form. The matrix solve makes implicit methods more expensive than explicit ones, but this method is stable for any $\mathcal{C}$. Stability is not accuracy, however, and accurate solutions still need a small $\mathcal{C}$ (fig. 4.6). **[GK]** The amplification factor is $1/[1 + \mathcal{C}(1 - e^{-I\theta})]$, whose magnitude does not exceed one for any $\mathcal{C} \ge 0$.
+
+#### 2.3.5 Eulerian and Lagrangian frames
+
+The total time derivative of $a(x, t)$ along a path $x(t)$ is $da/dt = \partial a/\partial t + (\partial a/\partial x)(dx/dt)$ (eq. 4.19, §4.5). A stationary observer, with $dx/dt = 0$, sees $\partial a/\partial t$: this is the Eulerian frame. An observer moving with the flow, with $dx/dt = u$, follows a feature and sees the Lagrangian, material or advective derivative $D/Dt = \partial/\partial t + u\, \partial/\partial x$ (eq. 4.20). Linear advection then reads $Da/Dt = 0$. The methods here are Eulerian, on a fixed grid through which the fluid moves, but the Lagrangian frame helps to understand how a fluid element changes.
+
+#### 2.3.6 Errors and convergence
+
+With periodic boundaries, a profile advected for one period should return to its initial state, so any difference is numerical error (§4.6). Its absolute size is the norm $\epsilon_\mathrm{abs} = \|a^\mathrm{final} - a^\mathrm{init}\|_2$, and its relative size $\epsilon_\mathrm{rel} = \epsilon_\mathrm{abs}/\|a^\mathrm{init}\|_2$ (eqs. 4.21 and 4.22), with the normalised norms of 2.1.6. The normalisation by $N$ keeps the absolute error comparable between resolutions; for the relative error it cancels. **[GK]** If the error scales as $\Delta x^p$, the errors at $N$ and $2N$ zones give the measured order of convergence, $p = \log_2(\epsilon_N/\epsilon_{2N})$.
+
 ## 3. Software architecture
 
 The software architecture draws on §3.4, §13.6, §13.7 and appendices A to C of the text.
@@ -167,9 +201,12 @@ Works cited by the text:
 
 Further works **[GK]**:
 
+- Charney, J. G., Fjørtoft, R. and von Neumann, J., Numerical integration of the barotropic vorticity equation, Tellus 2, 237–254 (1950), doi:10.1111/j.2153-3490.1950.tb00336.x.
 - Cooley, J. W. and Tukey, J. W., An algorithm for the machine calculation of complex Fourier series, Mathematics of Computation 19, 297–301 (1965), doi:10.1090/S0025-5718-1965-0178586-1.
+- Courant, R., Friedrichs, K. and Lewy, H., Über die partiellen Differenzengleichungen der mathematischen Physik, Mathematische Annalen 100, 32–74 (1928), doi:10.1007/BF01448839.
 - NIST Digital Library of Mathematical Functions, dlmf.nist.gov, consulted on 27 October 2026: §3.5(v) on Gauss quadrature and §3.8 on nonlinear equations.
 - Smith, J. O., Mathematics of the Discrete Fourier Transform (DFT), with Audio Applications, 2nd edition, W3K Publishing (2007), ISBN 978-0-9745607-4-8, online at ccrma.stanford.edu/~jos/st.
+- Warming, R. F. and Hyett, B. J., The modified equation approach to the stability and accuracy analysis of finite-difference methods, Journal of Computational Physics 14, 159–179 (1974), doi:10.1016/0021-9991(74)90011-4.
 - Weisstein, E. W., Partial Differential Equation, MathWorld, mathworld.wolfram.com/PartialDifferentialEquation.html, consulted on 27 October 2026.
 
 Web sources **[GK]**, consulted on 27 October 2026:

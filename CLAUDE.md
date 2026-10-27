@@ -46,7 +46,7 @@ The author makes every decision. The assistant recommends, and explains the reas
 
 The assistant writes the documents, such as briefs, requirements, syntheses, summaries and templates, and the experiments (§2.4). It changes the repository only when asked for that step, and an earlier request does not carry over. It keeps nothing in a private memory. Whatever has to last is written into the repository.
 
-Nothing is committed or pushed without the author's explicit approval. For each commit, the assistant proposes a summary of the change, the files changed and a commit message, and commits once the author approves. An approval holds for one commit only. A push needs an approval of its own.
+Nothing is committed or pushed without the author's explicit approval. For each commit, the assistant proposes a summary of the change, the files changed and the commit message exactly as it will be committed, and commits once the author approves. An approval holds for one commit only. A push needs an approval of its own.
 
 ### 2.2 Small steps
 

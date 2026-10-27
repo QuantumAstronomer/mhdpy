@@ -42,7 +42,7 @@ The way of working guards against two ways of losing hold of the project: steps 
 
 ### 2.1 Roles
 
-The author makes every decision. The assistant recommends, and explains the reasoning behind each recommendation, since learning is the main goal. Where the author's input is needed, the assistant asks rather than assumes. It asks questionnaire-style, one decision per question.
+The author makes every decision. The assistant recommends, and explains the reasoning behind each recommendation, since learning is the main goal. Where the author's input is needed, or the assistant is unsure, it asks rather than assumes. It asks questionnaire-style, one decision per question, also about the points it reports for review.
 
 The assistant writes the documents, such as briefs, requirements, syntheses, summaries and templates, and the experiments (§2.4). It changes the repository only when asked for that step, and an earlier request does not carry over. It keeps nothing in a private memory. Whatever has to last is written into the repository.
 

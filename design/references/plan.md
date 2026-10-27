@@ -42,7 +42,7 @@ Each chapter is one step, and the two chapters longer than 25 pages are cut at s
 | 13 | Ch. 9, Elliptic Equations and Multigrid | 163–184 | 2.6 | done |
 | 14 | Ch. 10, Diffusion | 185–199 | 2.7 | done |
 | 15 | Ch. 11, Model Multiphysics Problems | 203–208 | 2.8 | done |
-| 16 | Ch. 12, Reactive Flow | 209–216 | 2.8 | |
+| 16 | Ch. 12, Reactive Flow | 209–216 | 2.8 | done |
 | 17 | Ch. 13, Planning a Simulation | 217–221 | 2.9, 3 | |
 | 18 | Ch. 14, Incompressible Flow and Projection Methods | 225–241 | 2.10 | |
 | 19 | Ch. 15, Low Mach Number Methods | 243–252 | 2.10 | |

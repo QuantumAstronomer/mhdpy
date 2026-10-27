@@ -48,3 +48,7 @@ Each chapter is one step, and the two chapters longer than 25 pages are cut at s
 | 19 | Ch. 15, Low Mach Number Methods | 243–252 | 2.10 | |
 | 20 | App. A–C: the companion codes | 255–266 | 3 | |
 | 21 | Drafts: `gravity.tex` and `radiation.tex` | – | 2.6 | |
+
+## Athena and Athena++
+
+The steps of this synthesis are set when its work begins. In step 10 of the synthesis of Zingale's text, the edge values of the piecewise parabolic method and their limiter were left to this synthesis. Stone et al. (2008, arXiv:0804.0402, §4.2.3) state them, but both lines of their eq. 46 put a plus sign between the slope terms, as in $(\delta w^m_i + \delta w^m_{i-1})/6$, where a minus is right. With the plus sign, the edge value of a linear profile is wrong, and the interpolation of smooth data is first-order instead of fourth-order accurate. Athena++ uses the minus sign, in `src/reconstruct/reconstruction.cpp`.

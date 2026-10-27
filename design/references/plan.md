@@ -40,7 +40,7 @@ Each chapter is one step, and the two chapters longer than 25 pages are cut at s
 | 11 | §8.6–8.9: multi-dimensional problems, source terms, geometries, test problems | 131–148 | 2.5 | done |
 | 12 | §8.10–8.12: method of lines, thermodynamics, WENO | 148–159 | 2.5 | done |
 | 13 | Ch. 9, Elliptic Equations and Multigrid | 163–184 | 2.6 | done |
-| 14 | Ch. 10, Diffusion | 185–199 | 2.7 | |
+| 14 | Ch. 10, Diffusion | 185–199 | 2.7 | done |
 | 15 | Ch. 11, Model Multiphysics Problems | 203–208 | 2.8 | |
 | 16 | Ch. 12, Reactive Flow | 209–216 | 2.8 | |
 | 17 | Ch. 13, Planning a Simulation | 217–221 | 2.9, 3 | |

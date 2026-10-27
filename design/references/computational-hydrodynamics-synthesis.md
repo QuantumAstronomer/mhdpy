@@ -47,7 +47,7 @@ Ten subjects group the numerical methods, each drawn from one or two consecutive
 
 ### 2.1 Numerical foundations
 
-Chapter 1 reviews the numerical basics that later chapters assume, and refers to standard texts for depth: Garcia (1999), Newman (2012) and Pang (2006).
+Chapter 1 reviews the numerical basics that later chapters assume, and refers to standard texts for depth: Garcia (1999), Newman (2012) and Pang (2006). Chapter 2 introduces the three classes of partial differential equations.
 
 #### 2.1.1 Simulation and its approximations
 
@@ -95,6 +95,16 @@ The discrete Fourier transform takes $N$ equally spaced samples $f_n$ to $F_k = 
 
 **[GK]** For real $f_n$, eq. 1.39 gives $\mathrm{Im}(F_k) = -\sum_n f_n \sin(2\pi n k/N)$, since $e^{-i\theta} = \cos\theta - i \sin\theta$; eq. 1.41 lacks the minus sign. With the normalisation of eqs. 1.39 and 1.42, Parseval's theorem reads $\sum_n |f_n|^2 = (1/N) \sum_k |F_k|^2$, so the total powers differ by the factor $N$ (Smith 2007, section on the Rayleigh energy theorem). The factor $1/N$ in eq. 1.42 follows from the orthogonality of the discrete exponentials, $\sum_{k=0}^{N-1} e^{2\pi i k (n - m)/N} = N \delta_{nm}$. The FFT goes back to Cooley and Tukey (1965, doi:10.1090/S0025-5718-1965-0178586-1).
 
+#### 2.1.9 Classes of partial differential equations
+
+PDEs are grouped as hyperbolic, parabolic or elliptic (§2.1). The text sets the formal definitions aside as not very intuitive, and characterises each class by its prototype instead. The systems of multiphysics problems span the classes, but the methods for each class are developed separately before they are combined. **[GK]** Formally, a second-order equation $A \phi_{xx} + 2B \phi_{xy} + C \phi_{yy} + \ldots = 0$ in two variables is hyperbolic if $B^2 - AC > 0$, parabolic if $B^2 - AC = 0$ and elliptic if $B^2 - AC < 0$ (Weisstein, MathWorld, Partial Differential Equation). The wave, heat and Poisson equations below are prototypes of the three cases.
+
+The prototype of a hyperbolic equation is the wave equation $\phi_{tt} = c^2 \phi_{xx}$ (eq. 2.1, §2.2). Its general solution $\phi(x, t) = \alpha f_0(x - ct) + \beta g_0(x + ct)$ (eq. 2.2) consists of two profiles, set by the initial conditions, that travel at the speed $c$ to the right and to the left. The simplest first-order hyperbolic equation is linear advection, $a_t + u a_x = 0$ (eq. 2.3), which moves any initial profile unchanged at the velocity $u$. It serves as the model equation for the numerical methods for hyperbolic equations. A system $\mathbf{a}_t + \mathbf{A} \mathbf{a}_x = 0$, with $\mathbf{a} = (a_0, \ldots, a_{N-1})^\intercal$ (eq. 2.4), is called hyperbolic if the eigenvalues of the matrix $\mathbf{A}$ are real, for which the text refers to LeVeque (2002, doi:10.1017/CBO9780511791253). Characteristics are curves in the space-time plane along which the solution is constant, and their speed is the speed at which information travels. For a linear equation or system, they determine the solution completely. **[GK]** For a system, the standard definition also requires $\mathbf{A}$ to be diagonalisable, so that its eigenvectors can split any data into waves (LeVeque 2002, §2.9). Along each characteristic $dx/dt = \lambda_p$, it is then the characteristic variable $w_p = \mathbf{l}_p \cdot \mathbf{a}$ that stays constant, rather than the solution as a whole (LeVeque 2002, §3.1 to §3.3).
+
+The prototype of an elliptic equation is the Poisson equation $\nabla^2 \phi = f$ (eq. 2.5, §2.3). It contains no time: it is a pure boundary value problem, whose solution follows from the source $f$ and the boundary conditions alone. No information propagates, and $\phi$ responds instantly throughout the domain. In astrophysical flows it arises mostly as the equation for the gravitational potential.
+
+The prototype of a parabolic equation is the heat equation $\phi_t = k\, \phi_{xx}$ (eq. 2.6, §2.4), which shares aspects of both other classes. It describes diffusion: a sharp feature spreads into a smoother profile, on a timescale set by the coefficient $k$. Parabolic equations appear for thermal diffusion, for the diffusion of species, and with viscosity. **[GK]** Eq. 2.6 as printed has $f$ in place of $\phi$ on its right-hand side. Dimensional analysis of eq. 2.6 gives the timescale of diffusion over a length $L$ as $L^2/k$.
+
 ## 3. Software architecture
 
 To be written from §3.4, §13.6, §13.7 and appendices A to C, in the steps of `plan.md` that cover them.
@@ -111,6 +121,7 @@ Works cited by the text:
 - Frenk, C. S., et al., The Santa Barbara cluster comparison project: a comparison of cosmological hydrodynamics solutions, ApJ 525, 554 (1999), arXiv:astro-ph/9906160, cited as [33].
 - Garcia, A., Numerical Methods for Physics, 2nd edition (1999), cited as [35].
 - Goldberg, D., What every computer scientist should know about floating-point arithmetic, ACM Computing Surveys 23, 5–48 (1991), doi:10.1145/103162.103163, cited as [38].
+- LeVeque, R. J., Finite Volume Methods for Hyperbolic Problems, Cambridge University Press (2002), doi:10.1017/CBO9780511791253, cited as [46].
 - Newman, M., Computational Physics (2012), cited as [56].
 - Pang, T., An Introduction to Computational Physics, 2nd edition (2006), cited as [60].
 - Timmes, F. X., Integration of nuclear reaction networks for stellar hydrodynamics, ApJS 124, 241 (1999), 1999ApJS..124..241T, cited as [78].
@@ -122,10 +133,12 @@ Further works **[GK]**:
 - Cooley, J. W. and Tukey, J. W., An algorithm for the machine calculation of complex Fourier series, Mathematics of Computation 19, 297–301 (1965), doi:10.1090/S0025-5718-1965-0178586-1.
 - NIST Digital Library of Mathematical Functions, dlmf.nist.gov, consulted on 27 October 2026: §3.5(v) on Gauss quadrature and §3.8 on nonlinear equations.
 - Smith, J. O., Mathematics of the Discrete Fourier Transform (DFT), with Audio Applications, 2nd edition, W3K Publishing (2007), ISBN 978-0-9745607-4-8, online at ccrma.stanford.edu/~jos/st.
+- Weisstein, E. W., Partial Differential Equation, MathWorld, mathworld.wolfram.com/PartialDifferentialEquation.html, consulted on 27 October 2026.
 
 Web sources **[GK]**, consulted on 27 October 2026:
 
 - github.com/Open-Astrophysics-Bookshelf/numerical_exercises: README.md, CompHydroTutorial.tex, the three other draft chapters and the commit history, in the version of 26 January 2025.
 - github.com/python-hydro/hydro_examples, the present location of hydro_examples.
 - python-hydro.github.io/pyro2, the documentation of pyro 4.5.
+- faculty.washington.edu/rjl/slides/fvmhp/fvmhp04_linsys.pdf, LeVeque's slides on linear hyperbolic systems, which confirm the definition of hyperbolicity cited from §2.9 of his book.
 - github.com/zingale/hydro1d: README.md at commit 0187eb7 of 13 August 2024.

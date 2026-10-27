@@ -105,9 +105,43 @@ The prototype of an elliptic equation is the Poisson equation $\nabla^2 \phi = f
 
 The prototype of a parabolic equation is the heat equation $\phi_t = k\, \phi_{xx}$ (eq. 2.6, §2.4), which shares aspects of both other classes. It describes diffusion: a sharp feature spreads into a smoother profile, on a timescale set by the coefficient $k$. Parabolic equations appear for thermal diffusion, for the diffusion of species, and with viscosity. **[GK]** Eq. 2.6 as printed has $f$ in place of $\phi$ on its right-hand side. Dimensional analysis of eq. 2.6 gives the timescale of diffusion over a length $L$ as $L^2/k$.
 
+### 2.2 Finite-volume grids
+
+Chapter 3 introduces discretisation and the finite-volume grid on which the rest of the text builds.
+
+#### 2.2.1 Discretisation
+
+A continuous function $f(x, t)$ is represented on a computer by a finite number of values, at discrete points and times (§3.1). Gridless methods expand the function in continuous basis functions, as spectral methods do with sines and cosines. Alternatively, they represent the mass by particles and recover continuous fields by integrating over these with a kernel. The latter is smoothed particle hydrodynamics (doi:10.1016/0010-4655(88)90026-4), a method popular in astrophysics. Grid-based methods differ in the style of the grid and in the discretisation. Structured grids are logically Cartesian: each cell is addressed by one integer index per dimension, and the grid maps exactly onto a multi-dimensional array. Unstructured grids, for instance of triangles or tetrahedra, fit irregular domains easily, but need more complex data structures with less efficient memory access. On structured grids, finite-difference methods start from the differential form of the PDEs, finite-volume methods from the integral form. Conservation then follows naturally from the finite-volume discretisation, which explains its popularity in astrophysics. The text treats finite-volume methods on structured grids, which suffice for the boxes, discs and spheres of astrophysical problems (§3.2).
+
+#### 2.2.2 Grids and their data
+
+Three structured grids hold the same data in different ways (§3.2, fig. 3.1). A finite-difference grid stores point values $f_i = f(x_i)$ at $x_i = i \Delta x$, for $i = 0, \ldots, N$, with a point on each boundary (eq. 3.1). A cell-centred finite-difference grid divides the domain into $N$ zones and stores point values at their centres, $x_i = (i + 1/2) \Delta x$ for $i = 0, \ldots, N - 1$, so that the first value lies $\Delta x/2$ inside the boundary. Some finite-difference schemes stagger their variables, with the velocity on the zone edges and the density at the centres, for example. A finite-volume grid has the layout of the cell-centred one, but stores the average of $f$ over each zone, $\langle f \rangle_i = (1/\Delta x) \int_{x_{i-1/2}}^{x_{i+1/2}} f(x)\, dx$ (eq. 3.2, §3.3). The zone edges carry half-integer indices, $x_{i \pm 1/2} = x_i \pm \Delta x/2$, and $\Delta x \langle f \rangle_i$ is the total amount of $f$ in the zone. On a regular grid, $\Delta x$ is constant. To second order, the zone average equals the value at the zone centre, $\langle f \rangle_i \approx f(x_i)$ (eq. 3.3), as a Taylor expansion inside the integral shows (eq. 3.4). **[GK]** The expansion gives $\langle f \rangle_i = f(x_i) + (\Delta x^2/24) f''(x_i) + \mathcal{O}(\Delta x^4)$.
+
+Interpolation on a finite-volume grid must be conservative: the reconstructed $f(x)$, averaged over a zone, returns the average of that zone. The quadratic $f(x) = A (x - x_i)^2 + B (x - x_i) + C$ through three neighbouring averages has $A = (\langle f \rangle_{i-1} - 2 \langle f \rangle_i + \langle f \rangle_{i+1})/(2 \Delta x^2)$, $B = (\langle f \rangle_{i+1} - \langle f \rangle_{i-1})/(2 \Delta x)$ and $C = (-\langle f \rangle_{i-1} + 26 \langle f \rangle_i - \langle f \rangle_{i+1})/24$ (eqs. 3.5 to 3.9).
+
+#### 2.2.3 Differences and stencils
+
+Derivatives of finite-volume data can use the centred difference of 2.1.3, treating the averages as point values at the zone centres, and remain second-order accurate (§3.3.1). Higher accuracy comes from differentiating a conservative interpolant fitted to more zones. Every difference approximation is a linear combination of nearby values, its stencil, whose width counts the zones reached on either side. The second derivative $(f_{i+1} - 2 f_i + f_{i-1})/\Delta x^2$ (eq. 3.10), for example, spans three zones. **[GK]** A Taylor expansion shows this second difference to be second-order accurate.
+
+#### 2.2.4 Conservation
+
+Finite-volume grids suit conservation laws $\partial \boldsymbol{\mathcal{U}}/\partial t + \nabla \cdot \mathbf{F}(\boldsymbol{\mathcal{U}}) = 0$ (eq. 3.11), with conserved quantities $\boldsymbol{\mathcal{U}}$, such as mass, momentum and energy, and their fluxes $\mathbf{F}$ (§3.3.2). Integrating over a zone in one dimension and dividing by $\Delta x$ gives $\partial \langle \boldsymbol{\mathcal{U}} \rangle_i/\partial t = -[\mathbf{F}(\boldsymbol{\mathcal{U}})|_{x_{i+1/2}} - \mathbf{F}(\boldsymbol{\mathcal{U}})|_{x_{i-1/2}}]/\Delta x$ (eqs. 3.12 and 3.13), whatever the discretisation in time. The average of a zone thus changes only by the difference of the fluxes through its two faces. Neighbouring zones share each face flux with opposite signs (eq. 3.14), so the sum over all zones telescopes, and the conserved quantities are conserved to round-off. Conservation is not accuracy, however: fluxes drawn from a random number generator would conserve just as well.
+
+#### 2.2.5 Boundary conditions and ghost cells
+
+A difference near the edge of the domain needs values outside it, such as $f_{\mathrm{lo}-1}$ for the one-sided difference $(f_i - f_{i-1})/\Delta x$ (eq. 3.15) in the first zone, $\mathrm{lo}$ (§3.3.3). The grid is therefore extended beyond the domain by ghost cells, which exist only to impose the boundary conditions, so that one update applies to every zone of the domain (fig. 3.2). Wider stencils need more ghost cells. Periodic boundaries copy from the opposite end, $f_{\mathrm{hi}+1} = f_\mathrm{lo}$ and $f_{\mathrm{lo}-1} = f_\mathrm{hi}$ (eqs. 3.16 and 3.17). A simple outflow, or zero-gradient, boundary copies the adjacent value, $f_{\mathrm{hi}+1} = f_\mathrm{hi}$ and $f_{\mathrm{lo}-1} = f_\mathrm{lo}$ (eqs. 3.18 and 3.19).
+
+#### 2.2.6 Beyond the uniform grid
+
+The text names four extensions as directions for further study (§3.5). Domain decomposition divides the domain into sub-domains for the processors of a parallel computer. Each sub-domain has its own perimeter of ghost cells, filled from neighbouring sub-domains or from the physical boundary conditions (fig. 3.3). Adaptive mesh refinement focuses resolution through a hierarchy of grids, after Berger and Colella (1989, doi:10.1016/0021-9991(89)90035-1). Each level is an even integer multiple finer than the next coarser one, with cells that line up, which makes conservation natural, and corrections at coarse-fine interfaces keep the levels consistent. Mapped grids transform a logically Cartesian mesh into a curvilinear one, and keep the integer indexing and the performance of structured grids. Lagrangian grids move particles with the flow and build a finite-volume grid from their Voronoi tessellation, as in the Arepo code (arXiv:0901.4107). **[GK]** Berger and Colella refine in time by the same ratio as in space, so that one explicit scheme is stable on every level, and admit only even ratios to simplify their error estimation (1989, §2). A coarse cell covered by a fine grid takes the conservative average of its fine cells. A coarse cell beside a fine grid takes, through the shared face, the sum of the fine fluxes over the fine time steps (1989, §3).
+
 ## 3. Software architecture
 
-To be written from §3.4, §13.6, §13.7 and appendices A to C, in the steps of `plan.md` that cover them.
+The software architecture draws on §3.4, §13.6, §13.7 and appendices A to C of the text.
+
+### 3.1 Data layout on the grid
+
+A finite-volume grid maps onto a multi-dimensional array (§3.4). In NumPy, the state of a one-dimensional grid with $n_x$ zones and $n_g$ ghost cells at each end is an array of shape $(n_x + 2 n_g, n_\mathrm{var})$, for $n_\mathrm{var}$ state variables per zone. The interior runs from index $i_\mathrm{lo} = n_g$ to $i_\mathrm{hi} = n_x + n_g - 1$, and loops over the domain use these bounds. Fluxes live on the zone edges, which half-integer indices cannot address, so by convention element $i$ of a flux array holds the flux $F_{i-1/2}$ on the left edge of zone $i$.
 
 ## 4. Sources
 
@@ -115,6 +149,7 @@ The text: Zingale, M., *Introduction to Computational Astrophysical Hydrodynamic
 
 Works cited by the text:
 
+- Berger, M. J. and Colella, P., Local adaptive mesh refinement for shock hydrodynamics, Journal of Computational Physics 82, 64–84 (1989), doi:10.1016/0021-9991(89)90035-1, cited as [15].
 - Byrne, G. D. and Hindmarsh, A. C., Stiff ODE solvers: a review of current and coming attractions, preprint UCRL-94297 (1986), cited as [20]. **[GK]** Journal of Computational Physics 70, 1–62 (1987), doi:10.1016/0021-9991(87)90001-5.
 - de Val-Borro, M., et al., A comparative study of disc-planet interaction, MNRAS 370, 529 (2006), arXiv:astro-ph/0605237, cited as [30].
 - Dimonte, G., et al., A comparative study of the turbulent Rayleigh-Taylor instability using high-resolution three-dimensional numerical simulations: the Alpha-Group collaboration, Physics of Fluids 16, 1668 (2004), doi:10.1063/1.1688328, cited as [31].
@@ -122,8 +157,10 @@ Works cited by the text:
 - Garcia, A., Numerical Methods for Physics, 2nd edition (1999), cited as [35].
 - Goldberg, D., What every computer scientist should know about floating-point arithmetic, ACM Computing Surveys 23, 5–48 (1991), doi:10.1145/103162.103163, cited as [38].
 - LeVeque, R. J., Finite Volume Methods for Hyperbolic Problems, Cambridge University Press (2002), doi:10.1017/CBO9780511791253, cited as [46].
+- Monaghan, J. J., An introduction to SPH, Computer Physics Communications 48, 89–96 (1988), doi:10.1016/0010-4655(88)90026-4, cited as [55].
 - Newman, M., Computational Physics (2012), cited as [56].
 - Pang, T., An Introduction to Computational Physics, 2nd edition (2006), cited as [60].
+- Springel, V., E pur si muove: Galilean-invariant cosmological hydrodynamical simulations on a moving mesh, MNRAS 401, 791–851 (2010), arXiv:0901.4107, cited as [75].
 - Timmes, F. X., Integration of nuclear reaction networks for stellar hydrodynamics, ApJS 124, 241 (1999), 1999ApJS..124..241T, cited as [78].
 - Yakowitz, S. and Szidarovszky, F., An Introduction to Numerical Computations, 2nd edition (1989), cited as [85].
 - Zingale, M., pyro: a teaching code for computational astrophysical hydrodynamics, arXiv:1306.6883, cited as [86]. **[GK]** Astronomy and Computing 6, 52–62 (2014), doi:10.1016/j.ascom.2014.07.003.

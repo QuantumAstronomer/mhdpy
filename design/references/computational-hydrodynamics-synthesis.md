@@ -1,6 +1,6 @@
 # Synthesis of Zingale's *Introduction to Computational Astrophysical Hydrodynamics*
 
-This synthesis digests the text by Michael Zingale in its version of 26 January 2025, kept as `References/Computational Hydrodynamics Book/CompHydroTutorial.pdf`. Additions found by web search, which fill gaps in the text or check its claims, are marked **[GK]** and cited. A **[GK]** mark covers the rest of its paragraph or list item. Sections, equations, figures and tables of the text are cited by their numbers in this version. A section sign, as in §8.7, always refers to the text.
+This synthesis digests the text by Michael Zingale in its version of 26 January 2025, kept as `References/Computational Hydrodynamics Book/CompHydroTutorial.pdf`. Additions found by web search, which fill gaps in the text or check its claims, are marked **[GK]** and cited. A **[GK]** mark covers the rest of its paragraph or list item. Sections, equations, figures and tables of the text are cited by their numbers in this version. A section sign without a named source, as in §8.7, refers to the text.
 
 ## 1. Overview
 
@@ -43,7 +43,57 @@ Thermodynamic quantities are specific, that is per unit mass: $e$ is the interna
 
 ## 2. Numerical methods
 
-To be written in ten subjects, each fed by one or two consecutive chapters, in the steps of `plan.md`.
+Ten subjects group the numerical methods, each drawn from one or two consecutive chapters of the text. `plan.md` lists them, with the steps that write them.
+
+### 2.1 Numerical foundations
+
+Chapter 1 reviews the numerical basics that later chapters assume, and refers to standard texts for depth: Garcia (1999), Newman (2012) and Pang (2006).
+
+#### 2.1.1 Simulation and its approximations
+
+Simulation stands in for the experiments that astronomy cannot perform: a model system is built and probed under a range of conditions (§1.1). Every simulation rests on approximations, starting with the choice of equations. The central one here is the fluid approximation. It describes the bulk properties of fluid elements, which are much larger than the mean free path of the particles yet much smaller than the system (fig. 1.1). Further approximations concern the physics included and the discretisation, which turns a continuous system of PDEs into a finite representation in memory.
+
+The output of a code is therefore tested against problems with known solutions and against physical intuition, and never trusted blindly. The systems are strongly nonlinear, so small changes in the code or its environment, such as the compiler or its optimisation, can change the numbers considerably. Trends thus matter more than precise values, and parameter and convergence studies show the limits of a simulation. No code is best for everything, since every algorithm has its approximations and limits. Comparisons between codes build confidence, as for disc-planet interaction (arXiv:astro-ph/0605237), turbulent Rayleigh-Taylor mixing (doi:10.1063/1.1688328) and the Santa Barbara cluster (arXiv:astro-ph/9906160). Understanding a code requires understanding its methods, which are best learned by implementing them.
+
+#### 2.1.2 Round-off and truncation error
+
+Two kinds of error affect every algorithm (§1.2.1). Round-off error comes from representing numbers with a finite number of bits, for which the text refers to Goldberg (1991, doi:10.1145/103162.103163). Machine epsilon is the last value of $\epsilon$, halved repeatedly from one, for which $1 + \epsilon$ still differs from one in floating point. It differs between single and double precision. Rearranging an expression can reduce round-off, as in $x^3 - y^3 = (x - y)(x^2 + xy + y^2)$ (eq. 1.1), which the text presents as avoiding the subtraction of two very large numbers. Round-off can be reduced in this way, but never removed.
+
+Truncation error belongs to the algorithm. An operator or function is approximated by a series in a small quantity, and the terms dropped form the error. For $|x| \ll 1$, the approximation $\sin x \approx x - x^3/6$ (eq. 1.3) leaves an error whose leading term scales as $x^5$; it is $\mathcal{O}(x^5)$, or fifth-order accurate. Measuring how the error falls as the small quantity shrinks, here by a factor of $2^5$ each time $x$ is halved, is a convergence test.
+
+**[GK]** Halving from one yields $2^{-52} \approx 2.2 \times 10^{-16}$ in double and $2^{-23} \approx 1.2 \times 10^{-7}$ in single precision. These are the spacings of floating-point numbers just above one, for the precisions $p = 53$ and $p = 24$ of IEEE 754 (Goldberg 1991, table 1). Goldberg calls half this value machine epsilon, as the bound on the relative error of rounding (Goldberg 1991, §1.2), so the term differs by a factor of two between conventions. The loss in a subtraction stems from operands that are close, not large: their leading digits cancel and expose the rounding errors they carry. A rearrangement such as eq. 1.1 replaces this catastrophic cancellation by a benign one between exact operands (Goldberg 1991, §1.4).
+
+#### 2.1.3 Differentiation
+
+Derivatives are needed either from values $a_i$ at equally spaced points $x_i$ with spacing $\Delta x$, the case that matters for the text, or from a function known analytically (§1.2.2). The one-sided differences $(a_i - a_{i-1})/\Delta x$ and $(a_{i+1} - a_i)/\Delta x$ (eqs. 1.4 and 1.5) follow from Taylor expansion about $x_i$ (eq. 1.6). They are first-order accurate: their truncation error is $\mathcal{O}(\Delta x)$, with a leading term of magnitude $\tfrac{1}{2} \Delta x\, |\partial^2 a/\partial x^2|$ at $x_i$ (eqs. 1.7 and 1.8). The centred difference $(a_{i+1} - a_{i-1})/(2 \Delta x)$ is second-order accurate, with an error $\mathcal{O}(\Delta x^2)$. Higher order generally brings a smaller error at the cost of a wider range of points (fig. 1.2), and second and higher derivatives follow from the same expansions.
+
+For a function known analytically, the spacing $\delta x$ of a difference such as $[f(x_0 + \delta x) - f(x_0)]/\delta x$ (eq. 1.9) can be chosen. It balances truncation error, which falls with $\delta x$, against round-off error, which grows as $\delta x$ approaches machine epsilon (fig. 1.3). The balance is discussed by Yakowitz and Szidarovszky (1989), and $\delta x \approx \sqrt{\epsilon}$ is a good rule of thumb. Estimates for $\delta x$ and $\delta x/2$ together give an error estimate and, combined, a better result, which is the basis of Richardson extrapolation.
+
+**[GK]** Eq. 1.7 does not follow from eq. 1.6 as printed. Solving eq. 1.6 for the derivative gives the right-sided difference, $\partial a/\partial x|_i = (a_{i+1} - a_i)/\Delta x - \tfrac{1}{2} \Delta x\, \partial^2 a/\partial x^2|_i + \ldots$, whereas eq. 1.7 pairs that error term with the left-sided difference. Expanding $a_{i-1}$ instead gives the left-sided difference, with an error term of opposite sign. The order of accuracy is unaffected.
+
+#### 2.1.4 Integration
+
+A quadrature rule approximates an integral by a weighted sum of function values (§1.2.2). On $[a, b]$ with $N$ equal intervals of width $\Delta x = (b - a)/N$, and so $N + 1$ points, the rectangle rule sums $\Delta x\, f(x_i)$ over the intervals (eq. 1.10). The trapezoid rule interpolates linearly in each interval and sums $\Delta x\, [f(x_i) + f(x_{i+1})]/2$ (eq. 1.11). Summing a simple rule over the intervals is called compound integration. Simpson's rule takes the intervals in pairs, so that $N$ is even, and fits a parabola through the three points of each pair. For points $\alpha$, $\beta$ and $\gamma$ it gives $(\gamma - \alpha)(f_\alpha + 4 f_\beta + f_\gamma)/6$ (eq. 1.12). Compounded, it weights the samples as $(\Delta x/3)(f_0 + 4 f_1 + 2 f_2 + 4 f_3 + \ldots + 2 f_{N-2} + 4 f_{N-1} + f_N)$ (eq. 1.13). The compound trapezoid rule converges at second order, and Simpson's rule at fourth. In practice, quadratic interpolation is as high as such rules go, and analogous rules exist for unequal spacing. Where the evaluation points can be chosen, Gaussian quadrature places them at the zeros of polynomials and is far more accurate. **[GK]** An $n$-point Gauss rule is exact for polynomials of degree up to $2n - 1$ (DLMF §3.5(v)).
+
+#### 2.1.5 Root finding
+
+The Newton-Raphson method improves a guess $x_0$ for a root of $f$ by the correction $\delta x = -f(x_0)/f'(x_0)$, from a first-order Taylor expansion (eqs. 1.14 and 1.15). It iterates until the correction falls below a tolerance (§1.2.3, fig. 1.5). It needs a good initial guess, since the dropped terms are small only near the root, and a derivative that does not vanish there, and it can fall into a cycle instead of converging. The secant method replaces the derivative with a difference. Bisection halves an interval that brackets a root, found by the change of sign of $f$, and Brent's method combines several methods into a robust one. **[GK]** Near a simple root, Newton's method converges quadratically and the secant method with order $(1 + \sqrt{5})/2 \approx 1.62$, while bisection converges slowly (DLMF §3.8(ii) and §3.8(iii)).
+
+#### 2.1.6 Norms
+
+A norm condenses the pointwise errors $\epsilon_i = |f_i - f(x_i)|$ of an approximation at $N$ points into one number (§1.2.4). The text uses the maximum norm $\|q\|_\infty = \max_i |q_i|$ and the normalised norms $\|q\|_p = [(1/N) \sum_{i=0}^{N-1} |q_i|^p]^{1/p}$, among them the $L_1$ and $L_2$ norms (eqs. 1.16 to 1.19). The factor $1/N$ makes norms on grids of different resolution comparable, as convergence studies require. The maximum norm is local, giving a single element all the weight, while the others are global.
+
+#### 2.1.7 Ordinary differential equations
+
+A system of first-order ODEs $\dot{\mathbf{y}} = \mathbf{f}(t, \mathbf{y})$ (eq. 1.20) covers higher-order ODEs too, through added variables (§1.2.5). Explicit methods evaluate $\mathbf{f}$ with known values only, as Euler's method $\mathbf{y}^{n+1} = \mathbf{y}^n + \Delta t\, \mathbf{f}(t^n, \mathbf{y}^n)$ does at first order (eq. 1.22). The most popular is the fourth-order Runge-Kutta method, which averages four slopes. These are $\mathbf{k}_1 = \mathbf{f}(t^n, \mathbf{y}^n)$, then $\mathbf{k}_2$ and $\mathbf{k}_3$ at the midpoint after half steps with $\mathbf{k}_1$ and $\mathbf{k}_2$, and $\mathbf{k}_4$ at the end after a full step with $\mathbf{k}_3$. They combine as $\mathbf{y}^{n+1} = \mathbf{y}^n + (\Delta t/6)(\mathbf{k}_1 + 2\mathbf{k}_2 + 2\mathbf{k}_3 + \mathbf{k}_4)$, with weights like those of Simpson's rule (eqs. 1.23 to 1.27, fig. 1.6). The step size trades accuracy against cost, and an adaptive step size, driven by an estimate of the truncation error, balances the two.
+
+Implicit methods evaluate $\mathbf{f}$ with the new values. Backward Euler, $\mathbf{y}^{n+1} = \mathbf{y}^n + \Delta t\, \mathbf{f}(t^{n+1}, \mathbf{y}^{n+1})$ (eq. 1.30), is solved by Newton iteration. A guess, naturally $\mathbf{y}^{n+1}_0 = \mathbf{y}^n$, is corrected by $\Delta\mathbf{y}$ from the linear system $(\mathbf{I} - \Delta t\, \mathbf{J})\, \Delta\mathbf{y} = \mathbf{y}^n - \mathbf{y}^{n+1}_k + \Delta t\, \mathbf{f}(t^{n+1}, \mathbf{y}^{n+1}_k)$, with the Jacobian $\mathbf{J} = \partial\mathbf{f}/\partial\mathbf{y}$ at the current iterate $\mathbf{y}^{n+1}_k$ (eqs. 1.31 to 1.38). The iteration stops once $\|\Delta\mathbf{y}\| < \epsilon \|\mathbf{y}^n\|$, for a small tolerance $\epsilon$. The Jacobian plays the role of the derivative in Newton's method, and a cheaper approximation to it may suffice. Explicit methods are simpler and cheaper per step, but implicit methods suit stiff problems, whose solutions change on widely different timescales (doi:10.1016/0021-9991(87)90001-5), such as nuclear reaction networks (1999ApJS..124..241T). A large spread in the eigenvalues of the Jacobian usually marks a system as stiff. Higher-order implicit methods exist as well.
+
+#### 2.1.8 Discrete Fourier transforms
+
+The discrete Fourier transform takes $N$ equally spaced samples $f_n$ to $F_k = \sum_{n=0}^{N-1} f_n e^{-2\pi i n k/N}$, for $k = 0, \ldots, N-1$ (eq. 1.39). The inverse is $f_n = (1/N) \sum_{k=0}^{N-1} F_k e^{2\pi i n k/N}$ (eq. 1.42). The transform serves both the analysis of data and the solution of certain linear problems (§1.2.6, §9.2). Its real part collects the cosine terms, belonging to symmetric functions, and its imaginary part the sine terms, belonging to antisymmetric ones (eqs. 1.40 and 1.41); amplitude and phase are an alternative. The text explains the factor $1/N$ by Parseval's theorem, read as equality of the total power in real and in frequency space, and checks it on the transform of a constant, which is a delta function. For real $f_n$ half of the $F_k$ are redundant, since $F_{-k} = F_k^*$, so the transform holds no more information than the samples. Direct summation costs $\mathcal{O}(N^2)$ operations. The fast Fourier transform (FFT) reorders the sums to reuse partial sums, at a cost of $\mathcal{O}(N \log N)$. It assumes a periodic function on evenly spaced points, also across the boundary. On $[0, 1]$ with five points, the samples therefore lie at $0, 0.2, \ldots, 0.8$, not at $0, 0.25, \ldots, 1$. A function that is not periodic shows a signal at the wavenumber of the domain size.
+
+**[GK]** For real $f_n$, eq. 1.39 gives $\mathrm{Im}(F_k) = -\sum_n f_n \sin(2\pi n k/N)$, since $e^{-i\theta} = \cos\theta - i \sin\theta$; eq. 1.41 lacks the minus sign. With the normalisation of eqs. 1.39 and 1.42, Parseval's theorem reads $\sum_n |f_n|^2 = (1/N) \sum_k |F_k|^2$, so the total powers differ by the factor $N$ (Smith 2007, section on the Rayleigh energy theorem). The factor $1/N$ in eq. 1.42 follows from the orthogonality of the discrete exponentials, $\sum_{k=0}^{N-1} e^{2\pi i k (n - m)/N} = N \delta_{nm}$. The FFT goes back to Cooley and Tukey (1965, doi:10.1090/S0025-5718-1965-0178586-1).
 
 ## 3. Software architecture
 
@@ -55,7 +105,23 @@ The text: Zingale, M., *Introduction to Computational Astrophysical Hydrodynamic
 
 Works cited by the text:
 
+- Byrne, G. D. and Hindmarsh, A. C., Stiff ODE solvers: a review of current and coming attractions, preprint UCRL-94297 (1986), cited as [20]. **[GK]** Journal of Computational Physics 70, 1–62 (1987), doi:10.1016/0021-9991(87)90001-5.
+- de Val-Borro, M., et al., A comparative study of disc-planet interaction, MNRAS 370, 529 (2006), arXiv:astro-ph/0605237, cited as [30].
+- Dimonte, G., et al., A comparative study of the turbulent Rayleigh-Taylor instability using high-resolution three-dimensional numerical simulations: the Alpha-Group collaboration, Physics of Fluids 16, 1668 (2004), doi:10.1063/1.1688328, cited as [31].
+- Frenk, C. S., et al., The Santa Barbara cluster comparison project: a comparison of cosmological hydrodynamics solutions, ApJ 525, 554 (1999), arXiv:astro-ph/9906160, cited as [33].
+- Garcia, A., Numerical Methods for Physics, 2nd edition (1999), cited as [35].
+- Goldberg, D., What every computer scientist should know about floating-point arithmetic, ACM Computing Surveys 23, 5–48 (1991), doi:10.1145/103162.103163, cited as [38].
+- Newman, M., Computational Physics (2012), cited as [56].
+- Pang, T., An Introduction to Computational Physics, 2nd edition (2006), cited as [60].
+- Timmes, F. X., Integration of nuclear reaction networks for stellar hydrodynamics, ApJS 124, 241 (1999), 1999ApJS..124..241T, cited as [78].
+- Yakowitz, S. and Szidarovszky, F., An Introduction to Numerical Computations, 2nd edition (1989), cited as [85].
 - Zingale, M., pyro: a teaching code for computational astrophysical hydrodynamics, arXiv:1306.6883, cited as [86]. **[GK]** Astronomy and Computing 6, 52–62 (2014), doi:10.1016/j.ascom.2014.07.003.
+
+Further works **[GK]**:
+
+- Cooley, J. W. and Tukey, J. W., An algorithm for the machine calculation of complex Fourier series, Mathematics of Computation 19, 297–301 (1965), doi:10.1090/S0025-5718-1965-0178586-1.
+- NIST Digital Library of Mathematical Functions, dlmf.nist.gov, consulted on 27 October 2026: §3.5(v) on Gauss quadrature and §3.8 on nonlinear equations.
+- Smith, J. O., Mathematics of the Discrete Fourier Transform (DFT), with Audio Applications, 2nd edition, W3K Publishing (2007), ISBN 978-0-9745607-4-8, online at ccrma.stanford.edu/~jos/st.
 
 Web sources **[GK]**, consulted on 27 October 2026:
 

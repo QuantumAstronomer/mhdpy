@@ -6,7 +6,7 @@ This file records how each synthesis of §4.1 of CLAUDE.md is split into steps, 
 
 The synthesis is kept in `computational-hydrodynamics-synthesis.md`. Its sources are `References/Computational Hydrodynamics Book/CompHydroTutorial.pdf` and, in the subfolder `drafts/` there, the draft chapters `gravity.tex` and `radiation.tex` of the same version.
 
-The text is cited by title and date, as Zingale, *Introduction to Computational Astrophysical Hydrodynamics*, version of 26 January 2025, and its sections, equations, figures and tables by their numbers in that version. A **[GK]** mark covers the rest of its paragraph or list item. Where a web source disagrees with the text, the disagreement is reported for a decision, not settled in the synthesis. Exercises are not named, but a result of an exercise that the text relies on later is stated where it is used. Pointers to companion scripts are left out, and the overview names the three companion codes once.
+The text is cited by title and date, as Zingale, *Introduction to Computational Astrophysical Hydrodynamics*, version of 26 January 2025, and its sections, equations, figures and tables by their numbers in that version. A **[GK]** mark covers the rest of its paragraph or list item. Where a web source disagrees with the text, the disagreement is reported for a decision, not settled in the synthesis. Slips that a derivation exposes are noted as **[GK]** without asking, and listed in the review of their step. Exercises are not named, but a result of an exercise that the text relies on later is stated where it is used. Pointers to companion scripts are left out, and the overview names the three companion codes once.
 
 The numerical methods are grouped into ten subjects, each fed by one or two consecutive chapters. The drafts join subject 2.6, marked as drafts. The software architecture draws on §3.4, §13.6, §13.7 and the appendices.
 
@@ -28,7 +28,7 @@ Each chapter is one step, and the two chapters longer than 25 pages are cut at s
 | Step | Part of the text | Pages | Feeds | Status |
 |---:|---|---|---|---|
 | 1 | Front matter: overview, scope, companion codes, notation | i–xxi | 1 | done |
-| 2 | Ch. 1, Simulation Overview | 3–20 | 2.1 | |
+| 2 | Ch. 1, Simulation Overview | 3–20 | 2.1 | done |
 | 3 | Ch. 2, Classification of PDEs | 21–23 | 2.1 | |
 | 4 | Ch. 3, Finite-Volume Grids | 25–33 | 2.2, 3 | |
 | 5 | Ch. 4, Advection Basics | 37–47 | 2.3 | |

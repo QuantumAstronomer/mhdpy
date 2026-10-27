@@ -45,7 +45,7 @@ Each chapter is one step, and the two chapters longer than 25 pages are cut at s
 | 16 | Ch. 12, Reactive Flow | 209–216 | 2.8 | done |
 | 17 | Ch. 13, Planning a Simulation | 217–221 | 2.9, 3 | done |
 | 18 | Ch. 14, Incompressible Flow and Projection Methods | 225–241 | 2.10 | done |
-| 19 | Ch. 15, Low Mach Number Methods | 243–252 | 2.10 | |
+| 19 | Ch. 15, Low Mach Number Methods | 243–252 | 2.10 | done |
 | 20 | App. A–C: the companion codes | 255–266 | 3 | |
 | 21 | Drafts: `gravity.tex` and `radiation.tex` | – | 2.6 | |
 

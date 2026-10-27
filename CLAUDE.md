@@ -54,7 +54,7 @@ Each step is small enough to be understood before the next one begins. This hold
 
 ### 2.3 Order of work
 
-The reference material is summarised first (§4.1). The form and place of the summaries are agreed with the author at the start of that step. The templates are designed next (§3.4). An overview then sets out the layers of the architecture and what each of them holds, drawing on both. This has to be clear from the start, since briefs of higher layers can change what a lower layer must provide. The layers are then built one at a time: the briefs of a layer, then its requirements, then its code, before the briefs of the next layer.
+The reference material is summarised first, per reference and then per topic (§4.1), and the templates are designed next (§3.4). An overview then sets out the layers of the architecture and what each of them holds, drawing on both. This has to be clear from the start, since briefs of higher layers can change what a lower layer must provide. The layers are then built one at a time: the briefs of a layer, then its requirements, then its code, before the briefs of the next layer.
 
 Redoing work is to be avoided. Building pieces without a use in the near future is worse, as it leaves unclear why they are built at all. A provision for a later layer is therefore built now only if it costs little. Larger provisions wait until their use is near.
 
@@ -84,7 +84,7 @@ Texts read as prose, with lists only where they help, and without words added fo
 
 ### 3.1 Writing
 
-Documents use a passive, scientific voice and name neither the author nor the assistant. Where an agent is needed, the text says "the author". This file is the exception, as it names the assistant. Sentences are short, without contractions. Spelling is British: discretisation, licence, centred. Mathematics is typeset in inline LaTeX (`$...$`), never as Unicode symbols and without displayed equations. A fraction is written with a slash where that reads better in a sentence. In briefs, anything not taken from the reference material is marked **[GK]**, for general knowledge.
+Documents use a passive, scientific voice and name neither the author nor the assistant. Where an agent is needed, the text says "the author". This file is the exception, as it names the assistant. Sentences are short, without contractions. Spelling is British: discretisation, licence, centred. Mathematics is typeset in inline LaTeX (`$...$`), never as Unicode symbols and without displayed equations. A fraction is written with a slash where that reads better in a sentence. In briefs and summaries, anything not taken from the reference material is marked **[GK]**, for general knowledge.
 
 ### 3.2 Code
 
@@ -107,6 +107,10 @@ The templates of briefs, requirement documents and experiments, the naming of th
 ### 4.1 References
 
 `References/` holds the third-party material: the code and papers of Athena and Athena++, Pyro and Ulula, the papers of ZEUS, and Michael Zingale's text on computational astrophysical hydrodynamics (`CompHydroTutorial.pdf`). The folder is read-only, and each part keeps its own licence. The repository ignores the folder from its first commit, so that no commit can include third-party material.
+
+Each folder of `References/` is summarised in a file of its own in `design/references/`, so that Athena and Athena++ share one summary. A summary is a full digest, readable without the source. It holds an overview of the reference and its scope, its numerical methods, its software architecture and a list of its sources. A reference without material for a section says so in one line. Papers are cited by arXiv identifier or ADS bibcode, with section and equation numbers, and code by its repository path at a recorded version. A summary is written in its own words, without passages, tables or figures copied from the source. The summaries are written in the order Zingale's text, Pyro, Ulula, ZEUS and Athena, one source per step: one paper, or one part of a code.
+
+A second layer of summaries in `design/topics/` condenses the knowledge on one component, such as Riemann solvers or slope limiting, across all references. The topics are agreed with the author once the reference summaries are done, and all topic summaries are written straight after them. A topic summary draws on the reference summaries and carries over their citations. Where a reference summary falls short, the source is read again and that reference summary is completed first, so that the two layers agree. A topic summary compares the methods and assesses them, with the assessment marked **[GK]**. The choice between them is made in a brief (§2.4).
 
 ### 4.2 Development machine
 

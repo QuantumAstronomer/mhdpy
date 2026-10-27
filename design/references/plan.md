@@ -37,7 +37,7 @@ Each chapter is one step, and the two chapters longer than 25 pages are cut at s
 | 8 | Ch. 6, Burgers' Equation | 81–91 | 2.4 | done |
 | 9 | Ch. 7, Euler Equations: Theory | 93–113 | 2.5 | done |
 | 10 | §8.1–8.5: reconstruction, Riemann solvers, conservative update, boundary conditions | 115–131 | 2.5 | done |
-| 11 | §8.6–8.9: multi-dimensional problems, source terms, geometries, test problems | 131–148 | 2.5 | |
+| 11 | §8.6–8.9: multi-dimensional problems, source terms, geometries, test problems | 131–148 | 2.5 | done |
 | 12 | §8.10–8.12: method of lines, thermodynamics, WENO | 148–159 | 2.5 | |
 | 13 | Ch. 9, Elliptic Equations and Multigrid | 163–184 | 2.6 | |
 | 14 | Ch. 10, Diffusion | 185–199 | 2.7 | |

@@ -47,7 +47,7 @@ Each chapter is one step, and the two chapters longer than 25 pages are cut at s
 | 18 | Ch. 14, Incompressible Flow and Projection Methods | 225–241 | 2.10 | done |
 | 19 | Ch. 15, Low Mach Number Methods | 243–252 | 2.10 | done |
 | 20 | App. A–C: the companion codes | 255–266 | 3 | done |
-| 21 | Drafts: `gravity.tex` and `radiation.tex` | – | 2.6 | |
+| 21 | Drafts: `gravity.tex` and `radiation.tex` | – | 2.6 | done |
 
 ## Athena and Athena++
 

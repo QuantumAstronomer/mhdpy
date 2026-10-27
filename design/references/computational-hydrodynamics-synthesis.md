@@ -377,7 +377,7 @@ The main advantage of WENO is that it keeps its high order in several dimensions
 
 ### 2.6 Elliptic equations and multigrid
 
-Chapter 9 treats elliptic equations and their solution by Fourier transforms, relaxation and multigrid.
+Chapter 9 treats elliptic equations and their solution by Fourier transforms, relaxation and multigrid. Two draft chapters of the same version, on self-gravity and on radiation, follow in 2.6.9.
 
 #### 2.6.1 Elliptic equations and their discretisation
 
@@ -414,6 +414,10 @@ With periodic or Neumann boundaries all round, integrating $\nabla^2 \phi = f$ o
 #### 2.6.8 Further directions
 
 For parallel domain decomposition, smoothing often uses red-black Gauss-Seidel (§9.6.1, fig. 9.13). The grid is coloured like a checkerboard, and the red zones, whose neighbours are all black, are updated in one pass and the black zones in the next, so that each pass is parallel. This holds for the five-point Laplacian, but not for every stencil. The most general second-order elliptic equation, $\alpha \phi + \nabla \cdot (\beta \nabla \phi) + \boldsymbol{\gamma} \cdot \nabla \phi + \nabla \cdot (\boldsymbol{\zeta} \phi) = f$ with vectors $\boldsymbol{\gamma}$ and $\boldsymbol{\zeta}$, yields to the same multigrid ideas (eq. 9.77, §9.6.2). The smoother and the residual then discretise the general operator, and the coefficients are restricted to the coarse grids, some of them on edges. The variable-coefficient Poisson equation $\nabla \cdot (\beta \nabla \phi) = f$ follows in §15.2 (eq. 9.78).
+
+#### 2.6.9 Drafts on self-gravity and radiation
+
+The repository of the text holds draft chapters on self-gravity and on radiation that the published version does not include, and both are mostly outlines (`gravity/gravity.tex` and `radiation/radiation.tex`). The gravity draft has headings without text: self-gravity and hydrodynamics; the monopole approximation, with notes on radial sampling, centring in time, a predictor, the Runge-Kutta formalism with a solve in each stage, and the choice of centre; multipole expansions; full Poisson gravity with isolated boundaries, and the special case of triply periodic domains with FFTs; and conservative formulations. The radiation draft outlines the equations of radiation hydrodynamics, with reference frames, angular approximations or moments, and closures, followed by a hyperbolic and a parabolic system. It works out a single part, a general elliptic solver for gray radiation hydrodynamics. The solver treats $\alpha \phi + \nabla \cdot \beta \nabla \phi + \boldsymbol{\gamma} \cdot \nabla \phi = f$, citing Zhang et al. for its form, discretised for a cell-centred $\phi$ to second order, with the face-centred differences of $\beta \nabla \phi$ of 2.10.8 and centred differences for the term in $\boldsymbol{\gamma}$. With $\tilde{\beta} = \beta/\Delta x^2$ or $\beta/\Delta y^2$ on the faces, $\tilde{\gamma}^{(x)} = \gamma^{(x)}/2\Delta x$ and $\tilde{\gamma}^{(y)} = \gamma^{(y)}/2\Delta y$, the smoother divides $f_{i,j} - (\tilde{\beta}_{i+1/2,j} + \tilde{\gamma}^{(x)}_{i,j}) \phi_{i+1,j} - (\tilde{\beta}_{i-1/2,j} - \tilde{\gamma}^{(x)}_{i,j}) \phi_{i-1,j}$, minus the corresponding y terms, by $D_{i,j}$ to give $\phi_{i,j}$, where $D_{i,j}$ is $\alpha_{i,j}$ minus the sum of $\tilde{\beta}$ over the four faces. Only the smoother and the residual of the multigrid solver change. Radiation needs inhomogeneous boundary conditions, which are filled through the ghost cells as in 2.6.3, since boundary charges (2.6.6) are no longer simple for this operator. A test on the unit square takes $\phi = \cos(\pi x/2) \cos(\pi y/2)$ with inhomogeneous Dirichlet boundaries, $\alpha = 10$, $\beta = xy + 1$ and $\boldsymbol{\gamma} = \hat{\mathbf{x}} + \hat{\mathbf{y}}$. Its source is $f = [10 - (xy + 1)\pi^2/2] \cos(\pi x/2) \cos(\pi y/2) - (\pi/2)(x + 1) \cos(\pi x/2) \sin(\pi y/2) - (\pi/2)(y + 1) \sin(\pi x/2) \cos(\pi y/2)$, and the solver converges at second order, as expected for this discretisation. **[GK]** The draft gives no full reference for Zhang et al. Its equation matches the canonical form of the linear systems of the gray radiation solver of Castro, $A E - \nabla \cdot (\mathbf{B} \nabla E) + \nabla \cdot (\mathbf{C} E) + \mathbf{D} \cdot \nabla E = \mathrm{rhs}$, which is eq. 46 in the arXiv version of Zhang et al. (2011, arXiv:1105.2466), with $\beta = -\mathbf{B}$ and without the term in $\mathbf{C}$; the draft cites it as eq. 45.
 
 ### 2.7 Diffusion
 
@@ -681,6 +685,7 @@ Further works **[GK]**:
 - Toro, E. F., Spruce, M. and Speares, W., Restoration of the contact surface in the HLL-Riemann solver, Shock Waves 4, 25–34 (1994), doi:10.1007/BF01414629.
 - Warming, R. F. and Hyett, B. J., The modified equation approach to the stability and accuracy analysis of finite-difference methods, Journal of Computational Physics 14, 159–179 (1974), doi:10.1016/0021-9991(74)90011-4.
 - Weisstein, E. W., Partial Differential Equation, MathWorld, mathworld.wolfram.com/PartialDifferentialEquation.html, consulted on 27 October 2026.
+- Zhang, W., Howell, L., Almgren, A., Burrows, A. and Bell, J., CASTRO: a new compressible astrophysical solver. II. Gray radiation hydrodynamics, ApJS 196, 20 (2011), arXiv:1105.2466, doi:10.1088/0067-0049/196/2/20.
 
 Web sources **[GK]**, consulted on 27 October 2026:
 

@@ -32,7 +32,7 @@ Each chapter is one step, and the two chapters longer than 25 pages are cut at s
 | 3 | Ch. 2, Classification of PDEs | 21–23 | 2.1 | done |
 | 4 | Ch. 3, Finite-Volume Grids | 25–33 | 2.2, 3 | done |
 | 5 | Ch. 4, Advection Basics | 37–47 | 2.3 | done |
-| 6 | §5.1–5.3: finite-volume advection, limiting, method of lines | 49–62 | 2.3 | |
+| 6 | §5.1–5.3: finite-volume advection, limiting, method of lines | 49–62 | 2.3 | done |
 | 7 | §5.4–5.7: multi-dimensional advection, high-order methods, WENO | 62–80 | 2.3 | |
 | 8 | Ch. 6, Burgers' Equation | 81–91 | 2.4 | |
 | 9 | Ch. 7, Euler Equations: Theory | 93–113 | 2.5 | |

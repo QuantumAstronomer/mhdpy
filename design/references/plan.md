@@ -49,6 +49,10 @@ Each chapter is one step, and the two chapters longer than 25 pages are cut at s
 | 20 | App. A–C: the companion codes | 255–266 | 3 | done |
 | 21 | Drafts: `gravity.tex` and `radiation.tex` | – | 2.6 | done |
 
+## Pyro
+
+The steps of this synthesis are set when its work begins. Step 18 of the synthesis of Zingale's text left one attribution unchecked. Zingale's text says in §14.3.5 that Chorin found the lagged pressure gradient $Gp^{n-1/2}$ in the provisional velocity necessary for second-order accuracy when viscosity is modelled, and cites only Chorin (1968, doi:10.1090/S0025-5718-1968-0242392-2). This is doubtful, as the scheme of that paper is generally described as computing the provisional velocity without a pressure gradient. The paper could not be reached, so 2.10.4 of the synthesis of Zingale's text keeps the claim as the text's. pyro implements projection methods, which makes this synthesis the place to settle it.
+
 ## Athena and Athena++
 
 The steps of this synthesis are set when its work begins. In step 10 of the synthesis of Zingale's text, the edge values of the piecewise parabolic method and their limiter were left to this synthesis. Stone et al. (2008, arXiv:0804.0402, §4.2.3) state them, but both lines of their eq. 46 put a plus sign between the slope terms, as in $(\delta w^m_i + \delta w^m_{i-1})/6$, where a minus is right. With the plus sign, the edge value of a linear profile is wrong, and the interpolation of smooth data is first-order instead of fourth-order accurate. Athena++ uses the minus sign, in `src/reconstruct/reconstruction.cpp`.

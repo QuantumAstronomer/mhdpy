@@ -88,7 +88,7 @@ Step 1 takes the README, licence, citation notes and change log, the introductor
 | 10 | `compressible`: 18 problem setups, comparisons with Sod and Sedov | §3.2.1–3.2.3 | 1,810 | 2.4 | done |
 | 11 | `compressible_rk`, `compressible_fv4`, `compressible_sdc`, `compressible_react` | – | 1,030 | 2.4 | done |
 | 12 | `swe` | – | 1,950 | 2.5 | done |
-| 13 | `multigrid` | §3.3 | 1,290, examples 2,230 | 2.6 | |
+| 13 | `multigrid` | §3.3 | 1,290, examples 2,230 | 2.6 | done |
 | 14 | `diffusion` | §3.4 | 400 | 2.7 | |
 | 15 | `incompressible`, `incompressible_viscous` | §3.5 | 1,530 | 2.8 | |
 | 16 | `lm_atm` | – | 1,510 | 2.9 | |

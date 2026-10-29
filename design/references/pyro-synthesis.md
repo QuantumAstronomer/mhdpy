@@ -74,6 +74,38 @@ A table records for the Riemann solvers which types are solid walls, through whi
 
 Restriction averages blocks of $2 \times 2$ or $4 \times 4$ fine zones into one coarse zone (`pyro/mesh/patch.py`, `CellCenterData2d.restrict`). Prolongation refines by two with the linear reconstruction $a_{i,j} \pm m_x/4 \pm m_y/4$ at the four child centres, with the centred, unlimited slopes $m_x = (a_{i+1,j} - a_{i-1,j})/2$ and $m_y = (a_{i,j+1} - a_{i,j-1})/2$ (`CellCenterData2d.prolong`). These are the transfers of Zingale's text, given in 2.6.5 of its synthesis, and on a uniform grid both conserve the total, as the unit tests check. Neither weights the zones by volume, and the coarser or finer grid is a plain `Grid2d`, without geometry. Face-centred data offer neither operation.
 
+#### 2.1.5 Slopes and limiters
+
+A single function returns the limited difference of a variable across each zone, in the units of the variable rather than per unit length, on the valid zones and two ghost cells on each side (`pyro/mesh/reconstruction.py`, `limit`). The parameter `limiter` selects the method. With 0, the difference is centred and unlimited, $(a_{i+1} - a_{i-1})/2$. With 1, it is the second-order monotonised central limiter of 2.3.9 of the synthesis of Zingale's text: the smallest in magnitude of the centred difference and twice each one-sided difference, with their common sign, and zero where the one-sided differences differ in sign (`limit2`). Any other value gives the fourth-order variant, which Zingale's text cites without stating it (`limit4`). It applies the same limiting to the centred estimate $\tfrac{4}{3}(a_{i+1} - a_{i-1})/2 - (\Delta a_{i+1} + \Delta a_{i-1})/6$, built from the second-order limited differences $\Delta a$ of the two neighbours.
+
+For a gravitating atmosphere, a well-balanced variant limits the pressure in y as a deviation from hydrostatic equilibrium (`well_balance`). It sets $p'_j = 0$ and $p'_{j \pm 1} = p_{j \pm 1} - [p_j \pm (\Delta y/2)(\rho_j + \rho_{j \pm 1})\, g]$, and limits $p'$ with the second-order limiter, so that a discretely hydrostatic profile gets no slope. It works only with `limiter` 1 and stops the program otherwise, and `compressible_rk` uses it.
+
+#### 2.1.6 Flattening
+
+Flattening coefficients reduce the slopes at strong shocks (`pyro/mesh/reconstruction.py`, `flatten`). In each direction, $z = |p_{i+1} - p_{i-1}| / \max(|p_{i+2} - p_{i-2}|, 10^{-10})$ measures how steep the pressure jump is over three zones against five, and gives $\xi = \min[1, \max(0, 1 - (z - z_0)/(z_1 - z_0))]$. The coefficient applies only where the flow converges, $u_{i-1} > u_{i+1}$, and the relative jump in pressure, $|p_{i+1} - p_{i-1}| / \min(p_{i+1}, p_{i-1})$, exceeds $\delta$, and it is 1 elsewhere. The constants $\delta$, $z_0$ and $z_1$ are runtime parameters of the compressible solver. The multi-dimensional coefficient is the smallest of $\xi$ in x and in y, each at the zone and at its neighbour towards lower pressure (`flatten_multid`). The solvers `compressible`, `compressible_rk`, `compressible_fv4` and `swe` use these coefficients. 2.5.13 of the synthesis of Zingale's text treats flattening in general.
+
+#### 2.1.7 WENO reconstruction
+
+`weno_upwind` reconstructs the value at the right edge of a zone from the $2r - 1$ values around it, for $r = 2$ or 3, in the notation of 2.3.19 of the synthesis of Zingale's text (`pyro/mesh/reconstruction.py`). Each of the $r$ stencils of $r$ zones gives a candidate value and a smoothness indicator $\beta$, a quadratic form in the values. The weights are $\alpha/\sum \alpha$ with $\alpha = C/(\epsilon + \beta^2)$ and $\epsilon = 10^{-16}$, as in eq. 5.79b of Zingale's text, and the optimal weights $C$ are $1/3$ and $2/3$ for $r = 2$, and $1/10$, $3/5$ and $3/10$ for $r = 3$, in the order of the stencils of 2.3.19. For the left edge the data are passed in reverse. A function `weno` would do both edges along a whole row, but nothing calls it. **[GK]** It takes the shape of the array, a tuple, as the number of points, and so would fail if called.
+
+#### 2.1.8 Fourth-order interface states
+
+The fourth-order solvers reconstruct the interface states from zone averages with the method of McCorquodale and Colella (2011), whose eqs. 24 to 32 the comments of the code follow (`pyro/mesh/fourth_order.py`, `states`). The edge value $a_{i-1/2} = \tfrac{7}{12}(a_{i-1} + a_i) - \tfrac{1}{12}(a_{i-2} + a_{i+1})$ is fourth-order accurate. With $\delta a^- = a_i - a_{i-1/2}$ and $\delta a^+ = a_{i+1/2} - a_i$, a zone counts as an extremum if their product is not positive, or if that of $a_i - a_{i-2}$ and $a_{i+2} - a_i$ is not.
+
+- At an extremum, the second difference of the parabola through the zone, $\delta^2 a = 6(a_{i-1/2} - 2a_i + a_{i+1/2})$, is compared with the centred second differences $\delta^2 a_c$ of the zone and its two neighbours. If all four share a sign $s$, the limited value is $s \min(|\delta^2 a|, 1.25|\delta^2 a_{c,i-1}|, 1.25|\delta^2 a_{c,i}|, 1.25|\delta^2 a_{c,i+1}|)$, and otherwise zero, and $\rho$ is its ratio to $\delta^2 a$, or zero where $\delta^2 a$ is negligible.
+- Where $\rho < 1$ and the third differences on the four nearby interfaces vary by at least a tenth of their largest magnitude, the edge values are limited. At a strict extremum, $\delta a^- \delta a^+ < 0$, they become $a_i - \rho\, \delta a^-$ and $a_i + \rho\, \delta a^+$. Otherwise a side whose departure from $a_i$ is at least twice that of the other is blended, to $a_i - 2(1 - \rho)\delta a^+ - \rho\, \delta a^-$ or its mirror image.
+- Away from extrema, an edge value that departs from $a_i$ by at least twice the departure on the other side is cut back to twice it, $a_i - 2\delta a^+$ or $a_i + 2\delta a^-$.
+
+A comment marks eq. 29 of the paper as misprinted. The form the code uses, $a_i - \rho\, \delta a^-$, reduces to the unlimited edge value at $\rho = 1$. Each zone sets the right state of its left interface and the left state of its right interface, and the arrays index both states of interface $i - 1/2$ by $i$. `states_nolimit` returns the interpolated edge values without limiting. Both functions are explicit loops over the zones, compiled by numba.
+
+#### 2.1.9 Averages and centres
+
+Beyond second order, a zone average differs from the value at the centre (2.1.1). `FV2d`, a subclass of `CellCenterData2d`, holds zone averages and converts them to fourth order, assuming $\Delta x = \Delta y$ (`pyro/mesh/fv.py`). `to_centers` returns the centre values $a - (\Delta x^2/24) \nabla^2 a$, with the five-point Laplacian of 3.2, on the valid zones and all but the outermost ghost cells. On request it keeps the average where the centre value would be negative. `from_centers` turns centre values into averages in place, $a + (\Delta x^2/24) \nabla^2 a$, after filling the ghost cells.
+
+#### 2.1.10 Runge-Kutta integration
+
+`RKIntegrator` advances data by an explicit Runge-Kutta method given as a Butcher tableau (`pyro/mesh/integration.py`). The methods are `RK2`, the midpoint method, `TVD2` and `TVD3`, the second- and third-order total variation diminishing methods of Gottlieb and Shu, and `RK4`, the classic fourth-order method and the default. `TVD3` has the stages $y_n$, $y_n + \Delta t\, k_1$ and $y_n + (\Delta t/4)(k_1 + k_2)$, at the times $t$, $t + \Delta t$ and $t + \Delta t/2$, and the weights $1/6$, $1/6$ and $2/3$. A solver stores the starting state and asks for the state of each stage, $y_n + \Delta t \sum_s a_{is} k_s$ at $t + c_i \Delta t$, a clone of the start (3.2). It evaluates its right-hand side there and stores the increment $k_i$ without the factor $\Delta t$. The final update overwrites the start with $y_n + \Delta t \sum_i b_i k_i$. 2.1.7 and 2.3.12 of the synthesis of Zingale's text treat these methods in general.
+
 ## 3. Software architecture
 
 The software architecture draws on steps 1 to 4 of `plan.md`.
@@ -148,6 +180,7 @@ Works cited by the sources:
 - Ferland, G., Reliability in the face of complexity; the challenge of high-end scientific computing, arXiv:astro-ph/0210161 (2002).
 - Flash Center for Computational Science, FLASH User's Guide, version 4.2 (2014), flash.uchicago.edu/site/flashcode/user_support/flash4_ug_4p2/.
 - Fryxell, B., Olson, K., Ricker, P., Timmes, F. X., Zingale, M., Lamb, D. Q., MacNeice, P., Rosner, R., Truran, J. W. and Tufo, H., FLASH: an adaptive mesh hydrodynamics code for modeling astrophysical thermonuclear flashes, ApJS 131, 273–334 (2000), doi:10.1086/317361.
+- Gottlieb, S. and Shu, C.-W., cited by name only in `pyro/mesh/integration.py`. **[GK]** Total variation diminishing Runge-Kutta schemes, Mathematics of Computation 67, 73–85 (1998), doi:10.1090/S0025-5718-98-00913-2.
 - Hubber, D. A., Falle, S. A. E. G. and Goodwin, S. P., Convergence of AMR and SPH simulations. I. Hydrodynamical resolution and convergence tests, MNRAS 432, 711–727 (2013), arXiv:1304.3456.
 - LeVeque, R. J., Finite Volume Methods for Hyperbolic Problems, Cambridge University Press (2002), doi:10.1017/CBO9780511791253.
 - McCorquodale, P. and Colella, P., A high-order finite-volume method for conservation laws on locally refined grids, Communications in Applied Mathematics and Computational Science 6, 1–25 (2011), doi:10.2140/camcos.2011.6.1.

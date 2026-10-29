@@ -51,7 +51,50 @@ Each chapter is one step, and the two chapters longer than 25 pages are cut at s
 
 ## Pyro
 
-The steps of this synthesis are set when its work begins. Step 18 of the synthesis of Zingale's text left one attribution unchecked. Zingale's text says in §14.3.5 that Chorin found the lagged pressure gradient $Gp^{n-1/2}$ in the provisional velocity necessary for second-order accuracy when viscosity is modelled, and cites only Chorin (1968, doi:10.1090/S0025-5718-1968-0242392-2). This is doubtful, as the scheme of that paper is generally described as computing the provisional velocity without a pressure gradient. The paper could not be reached, so 2.10.4 of the synthesis of Zingale's text keeps the claim as the text's. pyro implements projection methods, which makes this synthesis the place to settle it.
+The synthesis is kept in `pyro-synthesis.md`. Its sources are the pyro2 code with its documentation, in `References/Pyro/Code`, and two papers in `References/Pyro/Docs`: the pyro paper, Zingale (2014, `1306.6883v3.pdf`), and the paper in the Journal of Open Source Software (JOSS), Harpole et al. (2019, `1902.08702v1.pdf`). The copy of the code has no git metadata, and `pyproject.toml` takes the version from git tags, so the code is cited at version 4.5.1, the latest entry of `CHANGES.md`.
+
+Code is cited by its path in the repository and the name of a function or class, as in (`pyro/compressible/riemann.py`, `riemann_hllc`), and the documentation by the path of its page. The papers are cited by arXiv identifier, with the numbers of sections, equations and figures in the local versions. A section sign without a named source refers to the pyro paper. The rules of the synthesis of Zingale's text carry over. A **[GK]** mark covers the rest of its paragraph or list item, and a disagreement with a web source is reported for a decision. Slips that a derivation exposes are noted as **[GK]** without asking. Slips in wording without consequence are paraphrased correctly without a note, and gap fills go in without asking. The review of each step lists all three. A gap fill or correction that can be neither derived nor checked against an accessible source, the other folders of `References/` included, is left out and reported in the review. Exercises, explorations and extensions that the documentation and the paper suggest are left out. The two rules on the companion codes lapse, as pyro is itself a code. A disagreement between the paper, the documentation and the code is reported for a decision in the review of its step, before it enters the synthesis. Each problem setup is digested with its initial data, its boundary conditions and the parameters of its main inputs file, and its variants, such as other resolutions, in a line.
+
+The numerical methods are grouped into ten subjects by solver family, following the packages of the code and its documentation. The software architecture draws on steps 1 to 4.
+
+| Subsection | Subject | Packages |
+|---|---|---|
+| 2.1 | Grids, reconstruction and time integration | `mesh` |
+| 2.2 | Advection | `advection`, `advection_rk`, `advection_fv4`, `advection_weno`, `advection_nonuniform` |
+| 2.3 | Burgers' equation | `burgers`, `burgers_viscous` |
+| 2.4 | Compressible hydrodynamics | `compressible`, `compressible_rk`, `compressible_fv4`, `compressible_sdc`, `compressible_react` |
+| 2.5 | Shallow water | `swe` |
+| 2.6 | Multigrid | `multigrid` |
+| 2.7 | Diffusion | `diffusion` |
+| 2.8 | Incompressible flow | `incompressible`, `incompressible_viscous` |
+| 2.9 | Low Mach number atmospheric flow | `lm_atm` |
+| 2.10 | Tracer particles | `particles` |
+
+Each step takes one package, or a family of solvers that build on one another. With it come its pages of the documentation, its notebooks, problems and tests, the analysis scripts that check its output, and the sections of the pyro paper on it. Parts of more than about 2,000 lines, problems, tests and examples aside, are cut at module boundaries: `mesh`, the driver with its utilities, and `compressible`, whose problems take a step of their own. The framework comes first, then the shared kernels, then the solvers, with multigrid before the solvers that use it.
+
+Step 1 takes the README, licence, citation notes and change log, the introductory pages of the documentation, the JOSS paper, and §1, §4 and the acknowledgements of the pyro paper. Steps 2 to 4 share §2 of the pyro paper, step 2 also takes the introduction of its §3, and step 4 its §2.1. Its §3.1 to §3.5 join the steps on their solvers, with the Riemann solvers of §3.2 in step 9 and its tests, §3.2.1 to §3.2.3, in step 10. The pages `design`, `running` and `problems` of the documentation join step 3, with the notebooks on adding a problem and on running pyro. The pages `output`, `analysis` and `testing` join step 4, with the two notebooks for testing. A review of the whole synthesis follows the last step. Left out are `presentations/`, `www/`, `logo/`, the API pages and build scripts of the documentation, and the files for continuous integration and the community. `paper/`, the source of the JOSS paper, serves only to check the PDF. Sizes are lines of Python without the tests, except in step 1.
+
+| Step | Part of the reference | Pyro paper | Size | Feeds | Status |
+|---:|---|---|---|---|---|
+| 1 | Front matter, introductory pages, JOSS paper | §1, §4 | 3,440 words, 2 pp. | 1, 3 | |
+| 2 | `mesh`: grids, cell- and face-centred data, `ArrayIndexer`, boundary conditions | §2, §3 (introduction) | 1,810 | 3, 2.1 | |
+| 3 | Driver, `Pyro` and `NullSimulation` classes, runtime parameters | §2 | 1,150 | 3 | |
+| 4 | Output, plotting, profiling, testing, general analysis scripts | §2, §2.1 | 1,170 | 3 | |
+| 5 | `mesh`: limiters, flattening, WENO, fourth-order states, conversion between averages and centres, Runge-Kutta integration | – | 760 | 2.1 | |
+| 6 | The five advection solvers | §3.1 | 1,420 | 2.2 | |
+| 7 | `burgers`, `burgers_viscous` | – | 970 | 2.3 | |
+| 8 | `compressible`: interface states, unsplit fluxes, sources, boundaries, equation of state | §3.2 (method) | 1,920 | 2.4 | |
+| 9 | `compressible`: Riemann solvers | §3.2 (Riemann solvers) | 1,180 | 2.4 | |
+| 10 | `compressible`: 18 problem setups, comparisons with Sod and Sedov | §3.2.1–3.2.3 | 1,810 | 2.4 | |
+| 11 | `compressible_rk`, `compressible_fv4`, `compressible_sdc`, `compressible_react` | – | 1,030 | 2.4 | |
+| 12 | `swe` | – | 1,950 | 2.5 | |
+| 13 | `multigrid` | §3.3 | 1,290, examples 2,230 | 2.6 | |
+| 14 | `diffusion` | §3.4 | 400 | 2.7 | |
+| 15 | `incompressible`, `incompressible_viscous` | §3.5 | 1,530 | 2.8 | |
+| 16 | `lm_atm` | – | 1,510 | 2.9 | |
+| 17 | `particles` | – | 360 | 2.10 | |
+
+Two checks concern the synthesis of Zingale's text. Step 18 of that synthesis left one attribution unchecked. Zingale's text says in §14.3.5 that Chorin found the lagged pressure gradient $Gp^{n-1/2}$ in the provisional velocity necessary for second-order accuracy when viscosity is modelled, and cites only Chorin (1968, doi:10.1090/S0025-5718-1968-0242392-2). This is doubtful, as the scheme of that paper is generally described as computing the provisional velocity without a pressure gradient. The paper could not be reached, so 2.10.4 of the synthesis of Zingale's text keeps the claim as the text's. pyro's own material does not settle it. The pyro paper cites Chorin (1968) only for projection methods in general (§3.5), and the code offers the provisional update both with and without the lagged gradient (`proj_type` 1 and 2) without attributing either. Step 15 settles it from Chorin (1968) itself or from a review of projection methods. Step 4 checks 3.5 of the synthesis of Zingale's text, which describes pyro from the text, against the code. Each outcome is recorded where the claim is made, as a note marked **[GK]** in 2.10.4 or 3.5 of that synthesis, written in the step that settles it, and in this paragraph.
 
 ## Athena and Athena++
 

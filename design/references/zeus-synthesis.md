@@ -1,0 +1,73 @@
+# Synthesis of ZEUS-2D
+
+This synthesis digests the three papers on ZEUS-2D, a code for radiation magnetohydrodynamics in two space dimensions. They are kept in `References/Zeus/Docs` and present, in turn, its hydrodynamic, magnetohydrodynamic and radiation hydrodynamic algorithms and tests: Stone and Norman (1992a, doi:10.1086/191680), Stone and Norman (1992b, doi:10.1086/191681) and Stone, Mihalas and Norman (1992, doi:10.1086/191682). The code itself is not among the sources. Additions found by web search, which fill gaps in the papers or check their claims, are marked **[GK]** and cited. A **[GK]** mark covers the rest of its paragraph or list item. A paper is cited by author and year, with the numbers of its sections, equations, figures and tables, as in Stone and Norman (1992a, §2, eq. 3). Within a paragraph, later citations of the same paper give the numbers alone.
+
+## 1. Overview
+
+### 1.1 Origin and publication
+
+The three papers appeared together in volume 80 of the Astrophysical Journal Supplement Series, in June 1992, on pages 753–790, 791–818 and 819–845. Stone and Norman wrote the first two, and Stone, Mihalas and Norman the third. The first paper gives James M. Stone and Michael L. Norman as members of the National Center for Supercomputing Applications and of the Department of Astronomy, both at the University of Illinois at Urbana-Champaign. It was received on 9 January 1991 and accepted on 29 October 1991. Its copyright is held by the American Astronomical Society, with all rights reserved, and the local copies are scans from the NASA Astrophysics Data System (ADS).
+
+ZEUS-2D descends from ZEUS, a code for astrophysical fluid dynamics that began as Norman's doctoral project, on how rotating interstellar clouds collapse and evolve as stars form (Stone and Norman 1992a, §3; Norman 1980; Norman, Wilson and Barton 1980). Its algorithms were later improved and extended (Norman and Winkler 1986), and it served widely in models of jets in radio galaxies (Norman et al. 1981, 1982). Last, David Clarke added an algorithm for MHD, for jets in radio galaxies held together by magnetic fields (Clarke 1988; Clarke, Norman and Burns 1986, 1989). ZEUS-2D keeps ZEUS as its foundation but is a new code. It differences the equations in a covariant formalism that admits any orthogonal coordinate system, has a simpler and more accurate MHD algorithm than the later versions of ZEUS, and improves the management, control and portability of the code.
+
+**[GK]** Stone's doctoral thesis at the University of Illinois, supervised by Norman and Mihalas, describes in detail how the code was developed and tested, and applies it to mass outflows from star-forming regions (Stone 1990). The ADS holds the thesis under two records, 1990PhDT.......418S, which names the supervisors, and 1990PhDT........16S, which gives the abstract.
+
+### 1.2 Aims and scope
+
+Hydrodynamic flows occur throughout astrophysics, from compact objects and stars up to interstellar and intergalactic gas (Stone and Norman 1992a, §1). Their equations can rarely be solved analytically without restrictive assumptions, so that models rely on numerical solutions. Of the many numerical methods, finite differences are among the most developed and straightforward: robust, easy to code, efficient, and easy to modify and extend with new algorithms. A frontier of modelling is to include every physical effect that may matter for the dynamics, such as the Galactic magnetic field, which can dominate how the interstellar medium evolves, or the strong magnetic and radiation fields of the central object in accretion flows. Realistic models then need methods that treat all these effects self-consistently.
+
+ZEUS-2D is a general-purpose code for astrophysical fluid dynamics in two space dimensions, with magnetic fields and radiation transfer (Stone and Norman 1992a, §1). Generality drove its development, so that it can model a wide variety of systems. Its hydrodynamic algorithms were chosen as the most accurate ones that still let more complex physics be added easily and self-consistently. The MHD assumes flux freezing but is otherwise general. It is designed to treat all families of MHD waves properly, and to keep the evolved field free of divergence at all times. The radiation transfer uses a full transport algorithm. Closing the equations of radiation hydrodynamics with a solution of the transfer equation avoids the diffusion approximation, so that the method applies to optically thin and thick media alike, without flux limiters. Self-gravity enters through the Poisson equation, whose discretisation yields a sparse banded matrix that is solved iteratively (abstract).
+
+ZEUS is an explicit Eulerian finite-difference code in two dimensions, built for simplicity, robustness and speed (Stone and Norman 1992a, §3). Simple algorithms make for simple coding. Improvements can then be built in and tested quickly, new physics is easy to add, and a problem can be solved with different algorithms to tell the features of a solution that the numerics cause from those that are physical. More complex algorithms, such as higher-order Godunov methods like the piecewise parabolic method (PPM) of Colella and Woodward (1984), give better results for purely hydrodynamic problems, but often need years of development before new physics can be added to them. The speed of the ZEUS algorithms allows large problems at high resolution, which is among the most important considerations in finding the converged solution of a physical problem.
+
+Of the physical processes that the equations of hydrodynamics leave out, the papers add magnetic fields and radiation transport, but not others, such as heat conduction (Stone and Norman 1992a, §2). They present no applications to particular astrophysical problems, and refer to Stone (1990) for them (§1).
+
+### 1.3 The three papers
+
+The algorithms of ZEUS-2D fall into three areas, and each paper treats one (Stone and Norman 1992a, abstract, §1). Stone and Norman (1992a) describe the hydrodynamics, which forms the foundation for the rest, Stone and Norman (1992b) the MHD, and Stone, Mihalas and Norman (1992) the radiation hydrodynamics. The first paper calls the other two Paper II and Paper III. The division follows the subject matter, and lets readers who are interested only in MHD or radiation skip the rest. Each paper is meant to be detailed enough for others to implement the methods, and to serve as a basis for comparing the results of other methods.
+
+The first paper, Stone and Norman (1992a), runs to 38 pages, with 148 numbered equations, 18 figures, 3 tables and 39 references. It writes down the equations of hydrodynamics that the code solves (§2), traces the roots of ZEUS-2D and the reasons for its choice of algorithms (§3), describes the code in detail over most of its length (§4), presents its tests (§5) and summarises (§6). Three appendices give covariant expressions for vector and tensor operators, the tensor artificial viscosity, and some finite-difference formulae.
+
+## 2. Numerical methods
+
+Twelve subjects group the numerical methods by component. `plan.md` lists them, with the steps that write them.
+
+### 2.1 The equations and the split solution procedure
+
+Astrophysical plasmas are dilute mixtures of electrons, ions, atoms and molecules (Stone and Norman 1992a, §2). Their microscopic state is given at each instant by the distribution function in phase space, which evolves by the Boltzmann equation. When particles collide so often that their mean free path is much shorter than the length scales of the system, a statistical description by conserved macroscopic quantities suffices. These evolve by the velocity moments of the Boltzmann equation, and successively higher moments yield the equations of hydrodynamics. The paper does not derive them rigorously, but notes that collisions are frequent enough for this continuum description in many astrophysical problems of gas dynamics.
+
+The equations are written in Lagrangian form, with the comoving derivative $D/Dt \equiv \partial/\partial t + \mathbf{v} \cdot \nabla$ (Stone and Norman 1992a, eq. 4). The variables evolved are the mass density $\rho$, the velocity $\mathbf{v}$ and the internal energy per unit volume, $e$. They obey the continuity equation $D\rho/Dt + \rho \nabla \cdot \mathbf{v} = 0$ (eq. 1), the equation of motion $\rho\, D\mathbf{v}/Dt = -\nabla p - \rho \nabla \Phi$ (eq. 2) and the internal energy equation $\rho\, D(e/\rho)/Dt = -p \nabla \cdot \mathbf{v}$ (eq. 3). Two relations close the system: an equation of state for the gas pressure $p$ as a function of $\rho$ and $e$, or equivalently of $\rho$ and the temperature, and the Poisson equation $\nabla^2 \Phi = 4\pi G \rho$ for the gravitational potential $\Phi$ (eq. 5). The equations carry neither viscous stresses nor a heat flux. The continuity equation states the conservation of mass, and the equation of motion that of momentum.
+
+For the energy, the internal energy equation is solved rather than an equation that conserves the total energy, so that the internal energy, and with it the temperature, is more accurate in highly supersonic flows (Stone and Norman 1992a, §2). **[GK]** At high Mach numbers the kinetic energy dominates. An internal energy found by subtracting it from the total energy then suffers from the truncation errors of the kinetic energy relative to the total, and can even turn negative (2.5 of `computational-hydrodynamics-synthesis.md`). Evolving $e$ itself avoids the subtraction. The price is that eq. 3, with its term $-p \nabla \cdot \mathbf{v}$, is not in conservation form, so that conservation of the total energy to round-off is no longer built into the scheme.
+
+## 3. Software architecture
+
+The software architecture draws on steps 2, 6, 11 and 17 of `plan.md`.
+
+## 4. Sources
+
+The papers:
+
+- Stone, J. M. and Norman, M. L., ZEUS-2D: a radiation magnetohydrodynamics code for astrophysical flows in two space dimensions. I. The hydrodynamic algorithms and tests, ApJS 80, 753–790 (1992), doi:10.1086/191680. The local copy is `References/Zeus/Docs/1992ApJS80753S.pdf`, a scan of the ADS record 1992ApJS...80..753S.
+- Stone, J. M. and Norman, M. L., ZEUS-2D: a radiation magnetohydrodynamics code for astrophysical flows in two space dimensions. II. The magnetohydrodynamic algorithms and tests, ApJS 80, 791–818 (1992), doi:10.1086/191681. The local copy is `References/Zeus/Docs/1992ApJS80791S.pdf`, a scan of the ADS record 1992ApJS...80..791S.
+- Stone, J. M., Mihalas, D. and Norman, M. L., ZEUS-2D: a radiation magnetohydrodynamics code for astrophysical flows in two space dimensions. III. The radiation hydrodynamic algorithms and tests, ApJS 80, 819–845 (1992), doi:10.1086/191682. The local copy is `References/Zeus/Docs/1992ApJS80819S.pdf`, a scan of the ADS record 1992ApJS...80..819S.
+
+Works cited by the sources:
+
+- Clarke, D. A., A search for the effects of active magnetic fields in extra-galactic radio sources, PhD thesis, University of New Mexico (1988), 1988PhDT.........6C.
+- Clarke, D. A., Norman, M. L. and Burns, J. O., Numerical simulations of a magnetically confined jet, ApJ 311, L63–L67 (1986), doi:10.1086/184799.
+- Clarke, D. A., Norman, M. L. and Burns, J. O., Numerical observations of a simulated jet with a passive helical magnetic field, ApJ 342, 700–717 (1989), doi:10.1086/167631.
+- Colella, P. and Woodward, P. R., The piecewise parabolic method (PPM) for gas-dynamical simulations, Journal of Computational Physics 54, 174–201 (1984), doi:10.1016/0021-9991(84)90143-8.
+- Norman, M. L., Numerical study of rotating interstellar clouds: equilibrium and collapse, PhD thesis, University of California, Davis, Lawrence Livermore Laboratory report UCRL-52946 (1980), doi:10.2172/5406878.
+- Norman, M. L., Smarr, L., Wilson, J. R. and Smith, M. D., Hydrodynamic formation of twin-exhaust jets, ApJ 247, 52–58 (1981), doi:10.1086/159009.
+- Norman, M. L., Smarr, L., Winkler, K.-H. A. and Smith, M. D., Structure and dynamics of supersonic jets, A&A 113, 285–302 (1982), 1982A&A...113..285N.
+- Norman, M. L., Wilson, J. R. and Barton, R. T., A new calculation on rotating protostar collapse, ApJ 239, 968–981 (1980), doi:10.1086/158185.
+- Norman, M. L. and Winkler, K.-H. A., 2-D Eulerian hydrodynamics with fluid interfaces, self-gravity and rotation, in Winkler, K.-H. A. and Norman, M. L. (eds.), Astrophysical Radiation Hydrodynamics, Reidel, 187–221 (1986), doi:10.1007/978-94-009-4754-2_6.
+- Stone, J. M., Numerical simulations of mass outflows from star-forming regions, PhD thesis, University of Illinois at Urbana-Champaign (1990), 1990PhDT.......418S.
+
+Web sources **[GK]**, consulted on 29 October 2026:
+
+- api.crossref.org: the records of the DOIs above.
+- ui.adsabs.harvard.edu: the records 1982A&A...113..285N and 1988PhDT.........6C, and the two records of Stone's thesis, 1990PhDT.......418S and 1990PhDT........16S.
+- scixplorer.org, the scans of the ADS: the title pages of Norman, Wilson and Barton (1980), Norman et al. (1981, 1982) and Clarke, Norman and Burns (1986, 1989), which confirm their authors and pages.
+- www.osti.gov/biblio/5406878: the record of the report UCRL-52946.

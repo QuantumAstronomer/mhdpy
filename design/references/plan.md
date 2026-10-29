@@ -78,7 +78,7 @@ Step 1 takes the README, licence, citation notes and change log, the introductor
 |---:|---|---|---|---|---|
 | 1 | Front matter, introductory pages, JOSS paper | §1, §4 | 3,440 words, 2 pp. | 1, 3 | done |
 | 2 | `mesh`: grids, cell- and face-centred data, `ArrayIndexer`, boundary conditions | §2, §3 (introduction) | 1,810 | 3, 2.1 | done |
-| 3 | Driver, `Pyro` and `NullSimulation` classes, runtime parameters | §2 | 1,150 | 3 | |
+| 3 | Driver, `Pyro` and `NullSimulation` classes, runtime parameters | §2 | 1,150 | 3 | done |
 | 4 | Output, plotting, profiling, testing, general analysis scripts | §2, §2.1 | 1,170 | 3 | |
 | 5 | `mesh`: limiters, flattening, WENO, fourth-order states, conversion between averages and centres, Runge-Kutta integration | – | 760 | 2.1 | |
 | 6 | The five advection solvers | §3.1 | 1,420 | 2.2 | |

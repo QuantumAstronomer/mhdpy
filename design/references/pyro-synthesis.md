@@ -422,6 +422,22 @@ Before the first step, `preevolve` projects the initial velocity in the same way
 
 The regression tests run `bubble` (3.4), and the solver has no unit tests.
 
+### 2.10 Tracer particles
+
+`particles` follows massless tracer particles that move with the velocity on the grid (`pyro/particles/particles.py`; `docs/source/particles_basics.rst`). A `Particle` holds its position and velocity, and could be extended to particles with mass or charge. `Particles` holds a collection in a dictionary whose keys are the initial positions, which serve to dye the particles in plots and are written to the output with the current positions (3.4). The particles came with version 2.2 (1.1).
+
+#### 2.10.1 Generation and motion
+
+The parameter `particles.do_particles` switches the particles on, off by default, `particles.n_particles` sets their number, 100 by default, and `particles.particle_generator` chooses the generator, `random` in the general defaults and `grid` in those of the solvers. `random` places the particles uniformly at random over the domain, without a fixed seed. `grid` places $\mathrm{round}(\sqrt{n})^2$ particles at the centres of an equal division of each direction, with a warning where this changes their number, so that the spacings differ in x and y unless the domain is square. `array` takes given positions, as when an output is read back (3.4), and a function passed in place of the name may generate the particles itself.
+
+`update_particles` moves each particle by the midpoint method of `AdvectWithUcc` in AMReX, as its docstring says. The velocity interpolated at the particle moves it half a step, and the velocity interpolated there moves it a full step from its start. The velocities are those on the grid at the time of the call, given by the solver or taken from the derived velocity, and the interpolation is bilinear between the four nearest centres of zones, using one ghost cell. The boundaries then apply. Outflow and Neumann boundaries remove the particle, periodic ones wrap it round, and reflecting or Dirichlet ones mirror its position, while other types stop the program. **[GK]** Within half a zone of the lower boundaries, the index of the lower-left zone is truncated towards zero rather than rounded down, so that the interpolation takes zones one place too far in. For $u = x$ on eight zones, a particle at $x = 0.02$ receives $u = 0.145$. The unit tests, whose velocities are uniform near the particles, cannot see this.
+
+#### 2.10.2 Use in the solvers and tests
+
+As the documentation shows, a solver creates the particles in `initialize` from these parameters and the boundary conditions of its data, and moves them after its update in `evolve`. It passes the velocities where they are not derived variables, as the advection and Burgers solvers do. The advection, Burgers, shallow-water and incompressible solvers carry particles in this way, while `diffusion` and `lm_atm` have none. The documentation shows tracer particles, dyed by their initial x-position, over the density of `kh` run with `compressible`. **[GK]** At 4.5.1 `compressible` passes its runtime parameters where the number of particles belongs. Comparing them with zero stops the program whenever particles are switched on, in all five compressible solvers.
+
+The unit tests check a single particle, the three generators, motion with uniform velocities through periodic boundaries, and reflecting and outflow boundaries with velocities uniform in the four triangles between the diagonals of the domain (`pyro/particles/tests/test_particles.py`).
+
 ## 3. Software architecture
 
 The software architecture draws on steps 1 to 4 of `plan.md`.

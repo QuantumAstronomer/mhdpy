@@ -132,7 +132,7 @@ Each step takes consecutive sections of one paper, at most about 4,000 words, cu
 | 7 | I §5.1–§5.4: advection tests, pressure-free collapse, the Sod shock tube | 772–776 | 2,300 | 2.7 | done |
 | 8 | I §5.5–§6: tests with strong shocks, tests of the Poisson solver, summary | 776–785 | 3,500 | 2.7, 1 | done |
 | 9 | II §1–§3.1: the equations of magnetohydrodynamics, the divergence constraint and the wave families, the centring of variables | 791–793 | 2,700 | 1, 2.8 | done |
-| 10 | II §3.2–§3.2.2: the poloidal field by constrained transport, the EMFs by the method of characteristics | 793–797 | 3,200 | 2.8 | |
+| 10 | II §3.2–§3.2.2: the poloidal field by constrained transport, the EMFs by the method of characteristics | 793–797 | 3,200 | 2.8 | done |
 | 11 | II §3.2.3–§3.5: the Lorentz force, the toroidal field, boundary conditions, incorporation into ZEUS-2D | 797–801 | 2,900 | 2.8, 3 | |
 | 12 | II §4.1–§4.3: advection tests, an MHD Riemann problem, the Weber–Davis wind | 801–811 | 4,300 | 2.9 | |
 | 13 | II §4.4–§5: the coronal transient models of Low, magnetic braking of an aligned rotator, shear Alfvén waves, summary | 811–818 | 4,100 | 2.9, 1 | |

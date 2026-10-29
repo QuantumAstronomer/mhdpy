@@ -1,0 +1,82 @@
+# Synthesis of pyro
+
+This synthesis digests pyro, a two-dimensional hydrodynamics code written in Python, in its release 4.5.1, kept with its documentation as `References/Pyro/Code`. Two papers on the code complete the sources, kept in `References/Pyro/Docs`: the pyro paper (Zingale 2014, arXiv:1306.6883v3) and the paper in the Journal of Open Source Software (Harpole et al. 2019, arXiv:1902.08702v1), the JOSS paper. Additions found by web search, which fill gaps in these sources or check their claims, are marked **[GK]** and cited. A **[GK]** mark covers the rest of its paragraph or list item. Code is cited by its path in the repository and the name of a function or class, as in (`pyro/compressible/riemann.py`, `riemann_hllc`), and a page of the documentation by its path. A section sign without a named source refers to the pyro paper.
+
+## 1. Overview
+
+### 1.1 Origin, version and licence
+
+pyro, short for python hydro (§1), was first written in 2003 and 2004 to help Michael Zingale understand the methods of computational hydrodynamics (`docs/source/history.rst`). It used the Numeric array package, with hand-written C extensions for the costly kernels, and was ported to numarray when that replaced Numeric. The present code, pyro2, was revived from 2012, rewritten for NumPy with kernels in Fortran through f2py, and later moved to numba. It served as a tool to learn the methods for research before they were built into production codes (acknowledgements of the pyro paper). The pyro paper of 2014 presents it as a teaching code, and its results were made with git version 3a17947.
+
+The change log begins at version 2.0, the state towards the end of 2017, when fourth-order finite-volume methods had just been introduced (`CHANGES.md`). Version 2.1 brought documentation in Sphinx, unit tests on a continuous-integration service and a compressible solver with spectral deferred corrections, and 2.2 the shallow-water solver and tracer particles. Version 3.0 replaced the Fortran kernels by functions that numba compiles at run time, so that pyro is now written entirely in Python (JOSS paper). Version 3.1 is essentially that of the JOSS paper, which also names a `Pyro` class that runs the code from Jupyter notebooks as well as from the command line, and output in HDF5 instead of through Python's pickle module. Version 4.0 gave the source the standard layout of a Python package, published on PyPI and usable from anywhere. Versions 4.1 to 4.5 added solvers for the inviscid and viscous Burgers' equation and for viscous incompressible flow, spherical geometry in $r$ and $\theta$ for the mesh and the compressible solver, and problem setups written in Jupyter notebooks. A special relativistic solver, `compressible_sr`, was removed in 4.3.0. Version 4.5.1 brings fixes, tests on Python 3.14 and macOS, and a check that the fourth-order solvers run only on square cells.
+
+The code is kept on GitHub as python-hydro/pyro2, and its documentation is published at python-hydro.github.io/pyro2 (`README.md`). In 2014 they were at github.com/zingale/pyro2 and bender.astro.sunysb.edu/hydro_by_example (§1). The package installs from PyPI as pyro-hydro. **[GK]** Release 4.5.1 is the tag 4.5.1 of python-hydro/pyro2, commit adaf5c5 of 24 July 2026, which on 29 October 2026 is also the head of its main branch. The local copy agrees with that commit in all 521 files, and lacks only 17 hidden files, such as those that configure continuous integration, linters and Zenodo. PyPI received release 4.5.1 on the same day. github.com/zingale/pyro2 is now a fork of python-hydro/pyro2, and commit 3a17947 dates from 11 June 2014.
+
+pyro is distributed under the three-clause BSD licence, with the copyright for 2013 to 2018 held by the pyro development team (`LICENSE`). The code and its notes may be used in classes, credited to the pyro development team, and the developers ask to be told of such use in the discussions of the repository (`docs/source/citing.rst`). Publications are asked to cite the JOSS paper and the latest Zenodo record of the code, and may cite the pyro paper as well (`CITATION.md`). The pyro paper is by Zingale alone. The JOSS paper, published under CC BY 4.0, is by Alice Harpole, Michael Zingale, Ian Hawke and Taher Chegini. The documentation thanks Ann Almgren, John Bell and Andy Nonaka for discussions (`docs/source/ack.rst`), and the pyro paper adds Alan Calder and Chris Malone. **[GK]** The Zenodo file of release 4.5.1, `.zenodo.json`, lists as creators the pyro development team, Taher Chegini, Zhi Chen, Simon Guichandut, Ian Hawke, Alice Harpole, Eric Johnson, Alexander Smith Clark and Michael Zingale. Zenodo holds no record of 4.5.1. Its latest record of pyro is 4.5.0 of 27 January 2025 (doi:10.5281/zenodo.14748211), under the concept DOI 10.5281/zenodo.2575564 that `CITATION.md` gives. The archive of the JOSS paper, doi:10.5281/zenodo.2575565, is version 3.1 of 22 February 2019.
+
+### 1.2 Aims and scope
+
+pyro is meant to show how the basic methods of astrophysical simulations work, and to prototype new ideas (`docs/source/index.rst`). The pyro paper explains the need for a teaching code (§1). The methods of astrophysical fluid flow mostly appear first in journals of applied mathematics, which astrophysics students rarely meet in their courses, and the few students who take up computational astrophysics each year cannot fill regular courses. Production codes such as Flash (Fryxell et al. 2000) and Castro (Almgren et al. 2010) favour performance and a breadth of options over simplicity and clarity. Experience with Flash, Castro and Maestro (Nonaka et al. 2010) has shown that the methods are best learned by coding them, or by substantial changes to an existing code, for which a simple code is a good start. Texts such as LeVeque (2002) on finite volumes and Briggs et al. (2000) on multigrid give the theory, but details such as the number of ghost cells each part of an algorithm needs come only from practice. In 2014 pyro implemented one method representative of astrophysical practice for each system of equations, took clarity over performance, and left variations and extensions to the students. Its algorithms are established ones. What pyro adds is a careful implementation aimed at teaching, with exercises to work through.
+
+All solvers work in two dimensions (§1). Some key design questions of a solver do not arise in one dimension, two dimensions are complex enough that the step to three is then straightforward, and they allow grid effects and instabilities to be explored. All simulations use a single grid, without domain decomposition, and runtime visualisation can show the solution as it evolves (`docs/source/intro.rst`). Given the choice between clarity and performance, clarity is still taken, and pyro is not meant for demanding scientific simulations. It is intended for self-study, together with notes that derive the methods (§1), which the documentation identifies as Zingale's text, digested in `computational-hydrodynamics-synthesis.md` (`docs/source/notes.rst`).
+
+By the time of the JOSS paper, pyro had also become a framework for prototyping solvers before they go into science codes. Its object-oriented design lets solvers reuse the core components. The fourth-order compressible solver with spectral deferred corrections served as the model for higher-order schemes in Castro, and the low Mach number solver for atmospheres, based on Maestro, is to prototype new low Mach number algorithms.
+
+Release 4.5.1 holds 17 solvers in seven families, each solver a package under `pyro/`, and several families offer more than one method for the same equations (`README.md`; docstrings of the packages).
+
+- Linear advection: `advection`, a second-order unsplit method after Colella (1990), with characteristic tracing and corner coupling; `advection_rk`, piecewise linear in space with Runge-Kutta integration in time; `advection_fv4`, fourth-order finite volumes after McCorquodale and Colella (2011), with fourth-order Runge-Kutta integration; `advection_weno`, a finite-difference method with WENO reconstruction and Lax-Friedrichs flux splitting; `advection_nonuniform`, for a velocity field that varies in space.
+- Burgers' equation: `burgers`, a second-order unsplit method for the inviscid equation; `burgers_viscous`, which adds constant-coefficient viscosity, treated by Crank-Nicolson.
+- Compressible hydrodynamics: `compressible`, the second-order unsplit piecewise linear method of Colella (1990), with a two-shock or HLLC approximate Riemann solver; `compressible_rk`, with Runge-Kutta integration in place of characteristic tracing; `compressible_fv4`, of fourth order after McCorquodale and Colella (2011); `compressible_sdc`, the same reconstruction with spectral deferred corrections in time; `compressible_react`, the method of `compressible` with reactions by Strang splitting.
+- Shallow water: `swe`, a second-order unsplit method after Colella (1990).
+- Diffusion: `diffusion`, second-order implicit diffusion by Crank-Nicolson, solved with multigrid.
+- Incompressible flow: `incompressible`, a second-order cell-centred approximate projection method; `incompressible_viscous`, which adds viscosity.
+- Low Mach number flow: `lm_atm`, a second-order approximate projection method for atmospheres.
+
+`multigrid` solves elliptic equations with constant and variable coefficients, both for the solvers that need it and on its own (`README.md`; `docs/source/design.rst`). `particles` follows Lagrangian tracer particles in any solver with a velocity field (JOSS paper). In 2014 pyro had five solvers, for linear advection, compressible hydrodynamics, elliptic equations by multigrid, implicit diffusion and incompressible flow, all of second order in space and time (§1). At 4.5.1, `advection_fv4`, `compressible_fv4` and `compressible_sdc` are of fourth order and `advection_weno` reconstructs with WENO, while the other solvers are of second order.
+
+The pyro paper foresaw solvers for MHD and for radiation hydrodynamics in the flux-limited diffusion approximation, examples of multiphysics such as diffusion with reactions and the viscous Burgers' equation, and unit tests (§4). Release 4.5.1 has the viscous Burgers' equation and unit tests, but no solver for MHD, radiation or diffusion with reactions. The README announces `lm_combustion`, a low Mach number solver for small-scale combustion, as in development. **[GK]** `lm_combustion` exists only on a branch of the repository, last changed in March 2018, as does `radhydro`, and a branch `mhd` was last changed in February 2019.
+
+### 1.3 Papers and documentation
+
+The pyro paper sets out the motivation and design of the code, summarises the algorithms of its five solvers with verification tests, and suggests extensions for students. Its sections are digested with the parts of the code they describe, in the steps of `plan.md`. The JOSS paper, two pages long, describes the framework, its use for prototyping, and its solvers and changes since 2014. The documentation is written for Sphinx in `docs/source/`, as pages and Jupyter notebooks that run when it is built, and is published at python-hydro.github.io/pyro2 (`README.md`). It covers running pyro and working with its output, the mesh, multigrid, each family of solvers, worked examples, the tools for analysis and testing, the community, and a reference of the API (`docs/source/index.rst`). The derivations of the methods are left to Zingale's text.
+
+## 2. Numerical methods
+
+To be written in ten subjects by solver family, in the steps of `plan.md`.
+
+## 3. Software architecture
+
+The software architecture draws on steps 1 to 4 of `plan.md`.
+
+### 3.1 Packaging, installation and development
+
+pyro is the Python package pyro-hydro, built with setuptools, which takes its version from the git tags through setuptools_scm (`pyproject.toml`). It needs numpy, numba, matplotlib and h5py, and assumes Python 3.9 or later (`README.md`). It installs from PyPI with `pip install pyro-hydro`, or from a clone of the repository with `pip install .`, and with `pip install -e .` for work on the solvers, so that changes to the source take effect without a new installation (`docs/source/installation.rst`). Installation puts the driver, `pyro_sim.py`, on the path. As a quick test, `pyro_sim.py advection smooth inputs.smooth` should show a smooth pulse that advects diagonally through the periodic domain. Plotting during a run needs an interactive backend of matplotlib, such as TkAgg (`README.md`), and the unit tests need pytest. The file `requirements.txt` adds the packages for development: scipy and prettytable, which two analysis scripts import, nbval and pytest-cov for the tests, flake8 and codespell, and the tools that build the documentation. **[GK]** PyPI states no minimum version of Python for pyro-hydro, and its wheel is pure Python.
+
+Contributions arrive as pull requests from forks against the main branch, and any change that may alter results must take this route (`docs/source/help.rst`). The unit and regression tests run automatically on each pull request, after which a developer reviews it. A pull request of many small commits may be squashed on merge, so that its title and first post become the commit message. Issues serve for bug reports and requests for features, and the discussions of the repository for questions and support. The documentation is built with `make html`, which runs all its notebooks unless `SKIP_EXECUTE=TRUE` is given.
+
+## 4. Sources
+
+The code: pyro2, release 4.5.1, the latest entry of `CHANGES.md`, at github.com/python-hydro/pyro2, under the three-clause BSD licence, installed from PyPI as pyro-hydro. Its documentation is in `docs/source/`, published at python-hydro.github.io/pyro2. The local copy is `References/Pyro/Code`.
+
+The papers:
+
+- Zingale, M., pyro: a teaching code for computational astrophysical hydrodynamics, Astronomy and Computing 6, 52–62 (2014), arXiv:1306.6883v3, doi:10.1016/j.ascom.2014.07.003. The local copy is `References/Pyro/Docs/1306.6883v3.pdf`.
+- Harpole, A., Zingale, M., Hawke, I. and Chegini, T., pyro: a framework for hydrodynamics explorations and prototyping, Journal of Open Source Software 4(34), 1265 (2019), arXiv:1902.08702v1, doi:10.21105/joss.01265. The local copy is `References/Pyro/Docs/1902.08702v1.pdf`, and its source is `paper/paper.md` of the code.
+
+Works cited by the sources:
+
+- Almgren, A. S., Beckner, V. E., Bell, J. B., Day, M. S., Howell, L. H., Joggerst, C. C., Lijewski, M. J., Nonaka, A., Singer, M. and Zingale, M., CASTRO: a new compressible astrophysical solver. I. Hydrodynamics and self-gravity, ApJ 715, 1221–1238 (2010), arXiv:1005.0114.
+- Briggs, W. L., Henson, V. E. and McCormick, S. F., A Multigrid Tutorial, 2nd edition, SIAM (2000), doi:10.1137/1.9780898719505.
+- Colella, P., Multidimensional upwind methods for hyperbolic conservation laws, Journal of Computational Physics 87, 171–200 (1990), doi:10.1016/0021-9991(90)90233-Q.
+- Fryxell, B., Olson, K., Ricker, P., Timmes, F. X., Zingale, M., Lamb, D. Q., MacNeice, P., Rosner, R., Truran, J. W. and Tufo, H., FLASH: an adaptive mesh hydrodynamics code for modeling astrophysical thermonuclear flashes, ApJS 131, 273–334 (2000), doi:10.1086/317361.
+- LeVeque, R. J., Finite Volume Methods for Hyperbolic Problems, Cambridge University Press (2002), doi:10.1017/CBO9780511791253.
+- McCorquodale, P. and Colella, P., A high-order finite-volume method for conservation laws on locally refined grids, Communications in Applied Mathematics and Computational Science 6, 1–25 (2011), doi:10.2140/camcos.2011.6.1.
+- Nonaka, A., Almgren, A. S., Bell, J. B., Lijewski, M. J., Malone, C. M. and Zingale, M., MAESTRO: an adaptive low Mach number hydrodynamics algorithm for stellar flows, ApJS 188, 358–383 (2010), doi:10.1088/0067-0049/188/2/358.
+- Zingale, M., Introduction to Computational Astrophysical Hydrodynamics, the Open Astrophysics Bookshelf, digested in `computational-hydrodynamics-synthesis.md`.
+
+Web sources **[GK]**, consulted on 29 October 2026:
+
+- github.com/python-hydro/pyro2: the releases, the tag 4.5.1 and its tree, the branches, `.zenodo.json` at 4.5.1 and commit 3a17947.
+- github.com/zingale/pyro2, a fork of python-hydro/pyro2.
+- zenodo.org: the records of pyro under the concept DOI 10.5281/zenodo.2575564, among them 4.5.0 (doi:10.5281/zenodo.14748211) and 3.1 (doi:10.5281/zenodo.2575565).
+- pypi.org/project/pyro-hydro: the releases and files of pyro-hydro.

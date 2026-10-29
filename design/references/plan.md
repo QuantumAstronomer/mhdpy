@@ -127,7 +127,7 @@ Each step takes consecutive sections of one paper, at most about 4,000 words, cu
 | 2 | I §4 (introduction), §4.1: operator splitting into source and transport steps, the staggered mesh | 755–759 | 2,500 | 2.1, 2.2, 3 | done |
 | 3 | I §4.2, App. A, App. C: the covariant formalism, its operators and difference formulae | 759–761, 785–788, 789–790 | 2,800 | 2.2, 3 | done |
 | 4 | I §4.3, App. B: the source step, the tensor artificial viscosity | 761–763, 788–789 | 2,200 | 2.3 | done |
-| 5 | I §4.4: the transport step, its interpolation schemes and directional splitting | 763–766 | 2,700 | 2.4 | |
+| 5 | I §4.4: the transport step, its interpolation schemes and directional splitting | 763–766 | 2,700 | 2.4 | done |
 | 6 | I §4.5–§4.8: boundary conditions, stability and accuracy, the Poisson equation, program control | 766–772 | 3,200 | 2.5, 2.6, 3 | |
 | 7 | I §5.1–§5.4: advection tests, pressure-free collapse, the Sod shock tube | 772–776 | 2,300 | 2.7 | |
 | 8 | I §5.5–§6: tests with strong shocks, tests of the Poisson solver, summary | 776–785 | 3,500 | 2.7, 1 | |

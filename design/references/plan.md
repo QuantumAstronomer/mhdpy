@@ -135,7 +135,7 @@ Each step takes consecutive sections of one paper, at most about 4,000 words, cu
 | 10 | II §3.2–§3.2.2: the poloidal field by constrained transport, the EMFs by the method of characteristics | 793–797 | 3,200 | 2.8 | done |
 | 11 | II §3.2.3–§3.5: the Lorentz force, the toroidal field, boundary conditions, incorporation into ZEUS-2D | 797–801 | 2,900 | 2.8, 3 | done |
 | 12 | II §4.1–§4.3: advection tests, an MHD Riemann problem, the Weber–Davis wind | 801–811 | 4,300 | 2.9 | done |
-| 13 | II §4.4–§5: the coronal transient models of Low, magnetic braking of an aligned rotator, shear Alfvén waves, summary | 811–818 | 4,100 | 2.9, 1 | |
+| 13 | II §4.4–§5: the coronal transient models of Low, magnetic braking of an aligned rotator, shear Alfvén waves, summary | 811–818 | 4,100 | 2.9, 1 | done |
 | 14 | III §1–§2: the equations of radiation hydrodynamics, the comoving moment equations, their coupling to the hydrodynamics | 819–823 | 3,900 | 1, 2.10 | |
 | 15 | III §3, App. A: solving the moment equations in the source and transport steps | 823–828, 843–845 | 3,700 | 2.10 | |
 | 16 | III §4–§4.2: the transfer equation, the radiation grid, the method of short characteristics | 828–834 | 3,400 | 2.11 | |

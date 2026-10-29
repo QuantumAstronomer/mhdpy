@@ -84,7 +84,7 @@ Step 1 takes the README, licence, citation notes and change log, the introductor
 | 6 | The five advection solvers | §3.1 | 1,420 | 2.2 | done |
 | 7 | `burgers`, `burgers_viscous` | – | 970 | 2.3 | done |
 | 8 | `compressible`: interface states, unsplit fluxes, sources, boundaries, equation of state | §3.2 (method) | 1,920 | 2.4 | done |
-| 9 | `compressible`: Riemann solvers | §3.2 (Riemann solvers) | 1,180 | 2.4 | |
+| 9 | `compressible`: Riemann solvers | §3.2 (Riemann solvers) | 1,180 | 2.4 | done |
 | 10 | `compressible`: 18 problem setups, comparisons with Sod and Sedov | §3.2.1–3.2.3 | 1,810 | 2.4 | |
 | 11 | `compressible_rk`, `compressible_fv4`, `compressible_sdc`, `compressible_react` | – | 1,030 | 2.4 | |
 | 12 | `swe` | – | 1,950 | 2.5 | |

@@ -96,6 +96,52 @@ Step 1 takes the README, licence, citation notes and change log, the introductor
 
 Two checks concern the synthesis of Zingale's text. Step 18 of that synthesis left one attribution unchecked. Zingale's text says in §14.3.5 that Chorin found the lagged pressure gradient $Gp^{n-1/2}$ in the provisional velocity necessary for second-order accuracy when viscosity is modelled, and cites only Chorin (1968, doi:10.1090/S0025-5718-1968-0242392-2). This is doubtful, as the scheme of that paper is generally described as computing the provisional velocity without a pressure gradient. The paper could not be reached, so 2.10.4 of the synthesis of Zingale's text keeps the claim as the text's. pyro's own material does not settle it. The pyro paper cites Chorin (1968) only for projection methods in general (§3.5), and the code offers the provisional update both with and without the lagged gradient (`proj_type` 1 and 2) without attributing either. Step 15 settles it from Chorin (1968) itself or from a review of projection methods. Step 4 checks 3.5 of the synthesis of Zingale's text, which describes pyro from the text, against the code. Each outcome is recorded where the claim is made, as a note marked **[GK]** in 2.10.4 or 3.5 of that synthesis, written in the step that settles it, and in this paragraph.
 
+## ZEUS
+
+The synthesis is kept in `zeus-synthesis.md`. Its sources are the three papers on ZEUS-2D in `References/Zeus/Docs`, which describe its hydrodynamic, magnetohydrodynamic and radiation hydrodynamic algorithms and tests in ApJS 80 of June 1992: Stone and Norman (1992a, doi:10.1086/191680, `1992ApJS80753S.pdf`), Stone and Norman (1992b, doi:10.1086/191681, `1992ApJS80791S.pdf`), and Stone, Mihalas and Norman (1992, doi:10.1086/191682, `1992ApJS80819S.pdf`). The papers call one another Paper I, II and III, and this section names them I, II and III. The local copies are scans from the ADS. Their text layer, made by optical character recognition, garbles the equations, which are therefore read from the page images. The code of ZEUS-2D is not among the sources.
+
+Each paper is cited by author and year, with the numbers of its sections, equations, figures and tables, as in Stone and Norman (1992b, §3.2.2, eq. 22). Its DOI is given at its first citation and in the list of sources. The rules of the synthesis of Pyro carry over. A **[GK]** mark covers the rest of its paragraph or list item, and a disagreement with a web source is reported for a decision. Slips that a derivation exposes are noted as **[GK]** without asking. Slips in wording without consequence are paraphrased correctly without a note, and gap fills go in without asking. The review of each step lists all three. A gap fill or correction that can be neither derived nor checked against an accessible source, the other folders of `References/` included, is left out and reported in the review. A disagreement between the three papers is reported for a decision in the review of its step, before it enters the synthesis. The rules on code, exercises and companion codes lapse. A later paper on the methods of ZEUS enters only as a **[GK]** note where it corrects or qualifies a claim of the papers. Each test problem is digested with its initial data, boundary conditions, grid, parameters and stopping time, and with the outcome that the paper reports and the numbers that state it. Its variants, such as other resolutions or algorithms, take a line, and the content of a table is restated in prose.
+
+The numerical methods are grouped into twelve subjects by component. The software architecture draws on the solution procedure of I §4 and §4.8, and on how II §3.5 and III §5 add the modules for magnetohydrodynamics and radiation.
+
+| Subsection | Subject | Sections |
+|---|---|---|
+| 2.1 | The equations and the split solution procedure | I §2, §4 (introduction) |
+| 2.2 | The staggered mesh and the covariant formalism | I §4.1, §4.2, App. A, App. C |
+| 2.3 | The source step and artificial viscosity | I §4.3, App. B |
+| 2.4 | The transport step | I §4.4 |
+| 2.5 | Boundary conditions and the time step | I §4.5, §4.6 |
+| 2.6 | Self-gravity | I §4.7 |
+| 2.7 | Hydrodynamic tests | I §5 |
+| 2.8 | Magnetohydrodynamics | II §2, §3 |
+| 2.9 | Magnetohydrodynamic tests | II §4 |
+| 2.10 | The radiation moment equations | III §2, §3, App. A |
+| 2.11 | The transfer equation and the Eddington factors | III §4 |
+| 2.12 | Radiation hydrodynamic tests | III §6, §7 |
+
+Each step takes consecutive sections of one paper, at most about 4,000 words, cut at section boundaries. An appendix joins the step on the section that it serves. The introduction of each paper opens its first step and its summary closes its last, and both feed the overview. Paper I takes eight steps, II and III five each. Once a step is committed with the author's approval, the next step begins without a further request, while every commit, merge and push still needs an approval of its own. A review of the whole synthesis follows the last step. The pages are those printed in ApJS 80, and the page of the PDF is the printed page minus 752 for I, 790 for II and 818 for III. Sizes are words of the text layer, rounded to hundreds.
+
+| Step | Part of the reference | Pages | Size | Feeds | Status |
+|---:|---|---|---|---|---|
+| 1 | I §1–§3: introduction to the series, the equations of hydrodynamics, the origin of ZEUS | 753–755 | 1,900 | 1, 2.1 | |
+| 2 | I §4 (introduction), §4.1: operator splitting into source and transport steps, the staggered mesh | 755–759 | 2,500 | 2.1, 2.2, 3 | |
+| 3 | I §4.2, App. A, App. C: the covariant formalism, its operators and difference formulae | 759–761, 785–788, 789–790 | 2,800 | 2.2 | |
+| 4 | I §4.3, App. B: the source step, the tensor artificial viscosity | 761–763, 788–789 | 2,200 | 2.3 | |
+| 5 | I §4.4: the transport step, its interpolation schemes and directional splitting | 763–766 | 2,700 | 2.4 | |
+| 6 | I §4.5–§4.8: boundary conditions, stability and accuracy, the Poisson equation, program control | 766–772 | 3,200 | 2.5, 2.6, 3 | |
+| 7 | I §5.1–§5.4: advection tests, pressure-free collapse, the Sod shock tube | 772–776 | 2,300 | 2.7 | |
+| 8 | I §5.5–§6: tests with strong shocks, tests of the Poisson solver, summary | 776–785 | 3,500 | 2.7, 1 | |
+| 9 | II §1–§3.1: the equations of magnetohydrodynamics, the divergence constraint and the wave families, the centring of variables | 791–793 | 2,700 | 1, 2.8 | |
+| 10 | II §3.2–§3.2.2: the poloidal field by constrained transport, the EMFs by the method of characteristics | 793–797 | 3,200 | 2.8 | |
+| 11 | II §3.2.3–§3.5: the Lorentz force, the toroidal field, boundary conditions, incorporation into ZEUS-2D | 797–801 | 2,900 | 2.8, 3 | |
+| 12 | II §4.1–§4.3: advection tests, an MHD Riemann problem, the Weber–Davis wind | 801–811 | 4,300 | 2.9 | |
+| 13 | II §4.4–§5: the coronal transient models of Low, magnetic braking of an aligned rotator, shear Alfvén waves, summary | 811–818 | 4,100 | 2.9, 1 | |
+| 14 | III §1–§2: the equations of radiation hydrodynamics, the comoving moment equations, their coupling to the hydrodynamics | 819–823 | 3,900 | 1, 2.10 | |
+| 15 | III §3, App. A: solving the moment equations in the source and transport steps | 823–828, 843–845 | 3,700 | 2.10 | |
+| 16 | III §4–§4.2: the transfer equation, the radiation grid, the method of short characteristics | 828–834 | 3,400 | 2.11 | |
+| 17 | III §4.3–§6: the Eddington factors, incorporation of the radiation module, tests of the moment solver | 834–838 | 2,700 | 2.11, 3, 2.12 | |
+| 18 | III §7–§8: tests of the transfer solver, summary | 838–843 | 2,200 | 2.12, 1 | |
+
 ## Athena and Athena++
 
 The steps of this synthesis are set when its work begins. In step 10 of the synthesis of Zingale's text, the edge values of the piecewise parabolic method and their limiter were left to this synthesis. Stone et al. (2008, arXiv:0804.0402, §4.2.3) state them, but both lines of their eq. 46 put a plus sign between the slope terms, as in $(\delta w^m_i + \delta w^m_{i-1})/6$, where a minus is right. With the plus sign, the edge value of a linear profile is wrong, and the interpolation of smooth data is first-order instead of fourth-order accurate. Athena++ uses the minus sign, in `src/reconstruct/reconstruction.cpp`.

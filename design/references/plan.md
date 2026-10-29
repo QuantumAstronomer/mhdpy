@@ -138,7 +138,7 @@ Each step takes consecutive sections of one paper, at most about 4,000 words, cu
 | 13 | II §4.4–§5: the coronal transient models of Low, magnetic braking of an aligned rotator, shear Alfvén waves, summary | 811–818 | 4,100 | 2.9, 1 | done |
 | 14 | III §1–§2: the equations of radiation hydrodynamics, the comoving moment equations, their coupling to the hydrodynamics | 819–823 | 3,900 | 1, 2.10 | done |
 | 15 | III §3, App. A: solving the moment equations in the source and transport steps | 823–828, 843–845 | 3,700 | 2.10 | done |
-| 16 | III §4–§4.2: the transfer equation, the radiation grid, the method of short characteristics | 828–834 | 3,400 | 2.11 | |
+| 16 | III §4–§4.2: the transfer equation, the radiation grid, the method of short characteristics | 828–834 | 3,400 | 2.11 | done |
 | 17 | III §4.3–§6: the Eddington factors, incorporation of the radiation module, tests of the moment solver | 834–838 | 2,700 | 2.11, 3, 2.12 | |
 | 18 | III §7–§8: tests of the transfer solver, summary | 838–843 | 2,200 | 2.12, 1 | |
 

@@ -142,6 +142,42 @@ Each step takes consecutive sections of one paper, at most about 4,000 words, cu
 | 17 | III §4.3–§6: the Eddington factors, incorporation of the radiation module, tests of the moment solver | 834–838 | 2,700 | 2.11, 3, 2.12 | done |
 | 18 | III §7–§8: tests of the transfer solver, summary | 838–843 | 2,200 | 2.12, 1 | done |
 
+## Ulula
+
+The synthesis is kept in `ulula-synthesis.md`. Its sources are the `ulula` package with its `pyproject.toml`, README and documentation, in `reference-works/Ulula/Code`, and the Ulula paper in `reference-works/Ulula/Docs`, Diemer (2025, `2505.20399v1.pdf`). arXiv holds only this first version of the paper. The copy of the code has no git metadata. `pyproject.toml` takes the version from `ulula/utils/version.py`, so the code is cited at version 1.0.2, which is also the latest entry of the version history in the documentation. The paper appeared on the day of release 1.0.1, and by that history 1.0.2 changed only the build system. The text layer of the PDF renders the prose well but scrambles the displayed equations, which are therefore read from the page images.
+
+Code is cited by its path in the repository and the name of a function or class, as in (`ulula/core/simulation.py`, `Simulation.riemannSolverHLLC`), and the documentation by the path of its page. The paper is cited by arXiv identifier, with the numbers of its sections, equations, figures and tables. A section sign without a named source refers to the paper. The rules of the synthesis of Pyro carry over unchanged. A **[GK]** mark covers the rest of its paragraph or list item, and a disagreement with a web source is reported for a decision. Slips that a derivation exposes are noted as **[GK]** without asking. Slips in wording without consequence are paraphrased correctly without a note, and gap fills go in without asking. The review of each step lists all three. A gap fill or correction that can be neither derived nor checked against an accessible source, the other folders of `reference-works/` included, is left out and reported in the review. A disagreement between the paper, the documentation and the code is reported for a decision in the review of its step, before it enters the synthesis. A wording slip that misstates the code without bearing on what Ulula does, such as a wrong list of parameters in a docstring, is paraphrased correctly without a note and listed in the review. Explorations and extensions that the paper and the documentation suggest are left out, such as the open questions that close §4.1 and the developments that §5 proposes. The limits of Ulula's scope that §5 names enter the overview. Each problem setup is digested with its initial data, boundary conditions, equation of state and gravity, its default parameters, and the resolution, final time and scheme of its example in `examples.py`. With them come its known solution and how the code computes it, and the outcome that the paper and the documentation report, with the numbers that state it. Its variants take a line.
+
+The numerical methods are grouped into eight subjects by component, following §2 to §4 of the paper and its Table 1. The software architecture draws on steps 1 to 3 and 8 to 10, and takes up §4.3 on performance as a property of the implementation in NumPy.
+
+| Subsection | Subject | Sections |
+|---|---|---|
+| 2.1 | The equations and equations of state | §2 |
+| 2.2 | The grid and boundary conditions | §3.6 (boundary conditions) |
+| 2.3 | The time step and source terms | §3 (introduction), §3.1 |
+| 2.4 | Riemann solvers | §3.2 |
+| 2.5 | Reconstruction and slope limiting | §3.3 |
+| 2.6 | Time interpolation | §3.4 |
+| 2.7 | Gravity | §3.5 |
+| 2.8 | Problem setups and tests | §4.1, §4.2 |
+
+Each step takes one part of the code with the sections of the paper and the pages of the documentation on it. `simulation.py`, which holds the whole numerical method, is cut at the boundaries of its functions into six steps, one per component: the equations and the domain first, then the components in the order of §3. The driver, input and output, plotting and units take one step. The setups take two, first the base class with the six setups in one dimension, then the nine in two, each setup with its example from `examples.py` and its image from the documentation. Step 1 takes the README, the licence, `pyproject.toml` and the pages `index`, `installation` and `versions` of the documentation, and the abstract, §1, §5 and the acknowledgements of the paper. The page `simulation` joins step 2, except its section on input and output, which joins step 8 with the pages `run` and `plots`. Table 1 joins step 2, as the class `HydroScheme` holds the choices it lists. The pages `setups`, `setups_base` and `setups_1d` join step 9, and `setups_2d` joins step 10. Figs. 1 and 2 join step 6, Fig. 6 step 9, and the other figures step 10, with their setups and with §4.2 and §4.3. Left out are the build files of the documentation, `conf.py` and `Makefile`, and its logo and icon. Once a step is committed with the author's approval, the next step begins without a further request, while every commit and every push still needs an approval of its own. A review of the whole synthesis follows the last step. Sizes are lines of Python, except in step 1.
+
+| Step | Part of the reference | Ulula paper | Size | Feeds | Status |
+|---:|---|---|---|---|---|
+| 1 | Front matter: README, licence, packaging, introductory pages and version history | Abstract, §1, §5 | 1,500 words | 1, 3 | |
+| 2 | `simulation.py`: the hydro scheme, the fields of a simulation, equations of state, conversion between primitive and conserved variables, the flux vector, the sound speed | §2, Table 1 | 500 | 2.1, 3 | |
+| 3 | `simulation.py`: the domain, its ghost cells and indexing, standard and user-defined boundary conditions, user-defined updates | §3.6 (boundary conditions) | 390 | 2.2, 3 | |
+| 4 | `simulation.py`: the time step, the order of the sweeps, the CFL condition and its violations, the half-steps of the source terms | §3 (introduction), §3.1 | 200 | 2.3 | |
+| 5 | `simulation.py`: the HLL and HLLC Riemann solvers | §3.2 | 160 | 2.4 | |
+| 6 | `simulation.py`: piecewise-constant and piecewise-linear reconstruction, slope limiters, the Hancock step in conserved and in primitive variables | §3.3, §3.4 | 270 | 2.5, 2.6 | |
+| 7 | `simulation.py`: the modes of gravity, the Poisson solver by fast Fourier transform, the gravitational source terms | §3.5 | 200 | 2.7 | |
+| 8 | Saving and loading, the runtime function, plotting, code units and the units of plots, physical constants, utilities | §3.6 | 1,680 | 3 | |
+| 9 | The base class of setups and the six setups in one dimension, with their examples | §4 (introduction), §4.1 (setups in one dimension) | 1,620 | 2.8, 3 | |
+| 10 | The nine setups in two dimensions, with their examples | §4.1 (setups in two dimensions), §4.2, §4.3 | 1,710 | 2.8, 3 | |
+
+Two claims of the sources concern other references. §1 describes pyro as many times larger than Ulula and as speeding up certain routines by just-in-time compilation, and step 1 checks this against the synthesis of Pyro. The docstring of `Simulation.solveGravity` refers to §9.2 of Zingale's text for the derivation of the Green's function of the discrete Laplacian, and step 7 checks this against 2.6.2 of the synthesis of Zingale's text. Each outcome is recorded in the synthesis of Ulula, as a note marked **[GK]** where a claim does not hold.
+
 ## Athena and Athena++
 
 The steps of this synthesis are set when its work begins. In step 10 of the synthesis of Zingale's text, the edge values of the piecewise parabolic method and their limiter were left to this synthesis. Stone et al. (2008, arXiv:0804.0402, §4.2.3) state them, but both lines of their eq. 46 put a plus sign between the slope terms, as in $(\delta w^m_i + \delta w^m_{i-1})/6$, where a minus is right. With the plus sign, the edge value of a linear profile is wrong, and the interpolation of smooth data is first-order instead of fourth-order accurate. Athena++ uses the minus sign, in `src/reconstruct/reconstruction.cpp`.

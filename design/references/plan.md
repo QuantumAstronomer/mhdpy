@@ -240,7 +240,7 @@ Each step takes one component, with the sections of the papers on it and the cod
 | 12 | The CTU integrator in three dimensions | GS08 abstract, §1, §3, §5, §7; S08 §6 | – | 7,500 words | 2.6 | done |
 | 13 | The van Leer and Runge–Kutta integrators, the fluxes and the time step | S20 §3.2.3; BS11 §3.5; WSG16 §3.7 | `task_list/time_integrator.cpp` (integrators), `mesh/weighted_ave.cpp`, `hydro/calculate_fluxes.cpp`, `hydro/add_flux_divergence.cpp`, `hydro/new_blockdt.cpp`, `Mesh::NewTimeStep` | 1,900 words, 2,630 lines | 2.6 | done |
 | 14 | The fourth-order method for hydrodynamics | FS18 abstract, §1–§3 | `eos/eos_high_order.cpp`, the fourth-order initial conditions in `mesh/mesh.cpp`, tests `hydro4/` | 5,800 words, 600 lines | 2.7 | done |
-| 15 | Upwind CT of fourth order, not part of the copy | FS18 §4, App. A | – | 7,700 words | 2.7 | – |
+| 15 | Upwind CT of fourth order, not part of the copy | FS18 §4, App. A | – | 7,700 words | 2.7 | done |
 | 16 | Tests of the fourth-order method for MHD | FS18 §5, §6 | – | 6,000 words | 2.7 | – |
 | 17 | Curvilinear coordinates: geometry, finite volumes and CT | SO10 abstract, §1–§3, §7–§9; S20 §2.3, §3.2.4 | `coordinates/` without the relativistic files | 6,100 words, 2,670 lines | 2.8 | – |
 | 18 | Reconstruction and characteristic evolution on curvilinear and nonuniform grids | SO10 §4–§6; WSG16 §3.2 | the curvilinear weights in `reconstruct/reconstruction.cpp`, `dc_simple.cpp`, `plm_simple.cpp`, `ppm_simple.cpp`, `ppm_simple_fast.cpp`, the tests after Mignone | 5,800 words, 4,440 lines | 2.4, 2.8 | – |

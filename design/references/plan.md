@@ -234,7 +234,7 @@ Each step takes one component, with the sections of the papers on it and the cod
 | 6 | Reconstruction of first and second order, characteristic variables | S08 §4.2–§4.2.2, App. A; S20 §3.2 (introduction), §3.2.1 | `reconstruct/reconstruction.*` (options), `dc.cpp`, `plm.cpp`, `characteristic.cpp` | 3,000 words, 1,630 lines | 2.4 | done |
 | 7 | The piecewise parabolic method and WENO | S08 §4.2.3 | `reconstruct/ppm.cpp`, `ppm_fast.cpp`, `weno.cpp` | 700 words, 2,060 lines | 2.4 | done |
 | 8 | Riemann solvers, the carbuncle and its cures | S08 §4.3–§4.3.2, App. B, App. C; S20 §3.2.2; C20 §3.3, App. A | `hydro/rsolvers/` without the relativistic solvers, `hydro/calculate_velocity_differences.cpp`, `pgen/quirk.cpp`, tests of the carbuncle | 5,200 words, 3,360 lines | 2.5 | done |
-| 9 | Tests of general equations of state | C20 §4–§6, App. C | `pgen/eos_test.cpp`, tests `eos/`, `tst/regression/scripts/utils/EquationOfState/` | 6,700 words, 1,290 lines | 2.2 | – |
+| 9 | Tests of general equations of state | C20 §4–§6, App. C | `pgen/eos_test.cpp`, tests `eos/`, `tst/regression/scripts/utils/EquationOfState/` | 6,700 words, 1,290 lines | 2.2 | done |
 | 10 | The one-dimensional algorithm of Athena and its first-order unsplit scheme with CT | S08 §4 (introduction), §4.1; GS05 §3 (introduction), §3.1 | – | 2,400 words | 2.6 | – |
 | 11 | The CTU integrator in two dimensions | GS05 §4; S08 §5–§5.2 | – | 3,700 words | 2.6 | – |
 | 12 | The CTU integrator in three dimensions | GS08 abstract, §1, §3, §5, §7; S08 §6 | – | 7,500 words | 2.6 | – |

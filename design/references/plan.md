@@ -173,7 +173,7 @@ Each step takes one part of the code with the sections of the paper and the page
 | 6 | `simulation.py`: piecewise-constant and piecewise-linear reconstruction, slope limiters, the Hancock step in conserved and in primitive variables | §3.3, §3.4 | 270 | 2.5, 2.6 | done |
 | 7 | `simulation.py`: the modes of gravity, the Poisson solver by fast Fourier transform, the gravitational source terms | §3.5 | 200 | 2.7 | done |
 | 8 | Saving and loading, the runtime function, plotting, code units and the units of plots, physical constants, utilities | §3.6 | 1,680 | 3 | done |
-| 9 | The base class of setups and the six setups in one dimension, with their examples | §4 (introduction), §4.1 (setups in one dimension) | 1,620 | 2.8, 3 | |
+| 9 | The base class of setups and the six setups in one dimension, with their examples | §4 (introduction), §4.1 (setups in one dimension) | 1,620 | 2.8, 3 | done |
 | 10 | The nine setups in two dimensions, with their examples | §4.1 (setups in two dimensions), §4.2, §4.3 | 1,710 | 2.8, 3 | |
 
 Two claims of the sources concern other references. §1 describes pyro as many times larger than Ulula and as speeding up certain routines by just-in-time compilation, and step 1 checks this against the synthesis of Pyro. The docstring of `Simulation.solveGravity` refers to §9.2 of Zingale's text for the derivation of the Green's function of the discrete Laplacian, and step 7 checks this against 2.6.2 of the synthesis of Zingale's text. Each outcome is recorded in the synthesis of Ulula, as a note marked **[GK]** where a claim does not hold.

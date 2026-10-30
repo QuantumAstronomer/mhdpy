@@ -168,7 +168,7 @@ Each step takes one part of the code with the sections of the paper and the page
 | 1 | Front matter: README, licence, packaging, introductory pages and version history | Abstract, §1, §5 | 1,500 words | 1, 3 | done |
 | 2 | `simulation.py`: the hydro scheme, the fields of a simulation, equations of state, conversion between primitive and conserved variables, the flux vector, the sound speed | §2, Table 1 | 500 | 2.1, 3 | done |
 | 3 | `simulation.py`: the domain, its ghost cells and indexing, standard and user-defined boundary conditions, user-defined updates | §3.6 (boundary conditions) | 390 | 2.2, 3 | done |
-| 4 | `simulation.py`: the time step, the order of the sweeps, the CFL condition and its violations, the half-steps of the source terms | §3 (introduction), §3.1 | 200 | 2.3 | |
+| 4 | `simulation.py`: the time step, the order of the sweeps, the CFL condition and its violations, the half-steps of the source terms | §3 (introduction), §3.1 | 200 | 2.3 | done |
 | 5 | `simulation.py`: the HLL and HLLC Riemann solvers | §3.2 | 160 | 2.4 | |
 | 6 | `simulation.py`: piecewise-constant and piecewise-linear reconstruction, slope limiters, the Hancock step in conserved and in primitive variables | §3.3, §3.4 | 270 | 2.5, 2.6 | |
 | 7 | `simulation.py`: the modes of gravity, the Poisson solver by fast Fourier transform, the gravitational source terms | §3.5 | 200 | 2.7 | |

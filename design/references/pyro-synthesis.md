@@ -1,6 +1,6 @@
 # Synthesis of pyro
 
-This synthesis digests pyro, a two-dimensional hydrodynamics code written in Python, in its release 4.5.1, kept with its documentation as `References/Pyro/Code`. Two papers on the code complete the sources, kept in `References/Pyro/Docs`: the [pyro paper](#zingale-2014) ([Zingale](#zingale-2014) 2014, [arXiv:1306.6883v3](https://arxiv.org/abs/1306.6883v3)) and the paper in the Journal of Open Source Software ([Harpole et al.](#harpole-et-al-2019) 2019, [arXiv:1902.08702v1](https://arxiv.org/abs/1902.08702v1)), the [JOSS paper](#harpole-et-al-2019). Additions found by web search, which fill gaps in these sources or check their claims, are marked **[GK]** and cited. A **[GK]** mark covers the rest of its paragraph or list item. Code is cited by its path in the repository and the name of a function or class, as in (`pyro/compressible/riemann.py`, `riemann_hllc`), and a page of the documentation by its path. A section sign without a named source refers to the [pyro paper](#zingale-2014).
+This synthesis digests pyro, a two-dimensional hydrodynamics code written in Python, in its release 4.5.1, kept with its documentation as `reference-works/Pyro/Code`. Two papers on the code complete the sources, kept in `reference-works/Pyro/Docs`: the [pyro paper](#zingale-2014) ([Zingale](#zingale-2014) 2014, [arXiv:1306.6883v3](https://arxiv.org/abs/1306.6883v3)) and the paper in the Journal of Open Source Software ([Harpole et al.](#harpole-et-al-2019) 2019, [arXiv:1902.08702v1](https://arxiv.org/abs/1902.08702v1)), the [JOSS paper](#harpole-et-al-2019). Additions found by web search, which fill gaps in these sources or check their claims, are marked **[GK]** and cited. A **[GK]** mark covers the rest of its paragraph or list item. Code is cited by its path in the repository and the name of a function or class, as in (`pyro/compressible/riemann.py`, `riemann_hllc`), and a page of the documentation by its path. A section sign without a named source refers to the [pyro paper](#zingale-2014).
 
 ## 1. Overview
 
@@ -496,12 +496,12 @@ The paper also names the lessons in software engineering that pyro offers studen
 
 ## 4. Sources
 
-The code: pyro2, release 4.5.1, the latest entry of `CHANGES.md`, at [github.com/python-hydro/pyro2](https://github.com/python-hydro/pyro2), under the three-clause BSD licence, installed from PyPI as pyro-hydro. Its documentation is in `docs/source/`, published at [python-hydro.github.io/pyro2](https://python-hydro.github.io/pyro2). The local copy is `References/Pyro/Code`.
+The code: pyro2, release 4.5.1, the latest entry of `CHANGES.md`, at [github.com/python-hydro/pyro2](https://github.com/python-hydro/pyro2), under the three-clause BSD licence, installed from PyPI as pyro-hydro. Its documentation is in `docs/source/`, published at [python-hydro.github.io/pyro2](https://python-hydro.github.io/pyro2). The local copy is `reference-works/Pyro/Code`.
 
 The papers:
 
-- <a id="zingale-2014"></a>Zingale, M., pyro: a teaching code for computational astrophysical hydrodynamics, Astronomy and Computing 6, 52–62 (2014), [arXiv:1306.6883v3](https://arxiv.org/abs/1306.6883v3), [doi:10.1016/j.ascom.2014.07.003](https://doi.org/10.1016/j.ascom.2014.07.003). The local copy is `References/Pyro/Docs/1306.6883v3.pdf`.
-- <a id="harpole-et-al-2019"></a>Harpole, A., Zingale, M., Hawke, I. and Chegini, T., pyro: a framework for hydrodynamics explorations and prototyping, Journal of Open Source Software 4(34), 1265 (2019), [arXiv:1902.08702v1](https://arxiv.org/abs/1902.08702v1), [doi:10.21105/joss.01265](https://doi.org/10.21105/joss.01265). The local copy is `References/Pyro/Docs/1902.08702v1.pdf`, and its source is `paper/paper.md` of the code.
+- <a id="zingale-2014"></a>Zingale, M., pyro: a teaching code for computational astrophysical hydrodynamics, Astronomy and Computing 6, 52–62 (2014), [arXiv:1306.6883v3](https://arxiv.org/abs/1306.6883v3), [doi:10.1016/j.ascom.2014.07.003](https://doi.org/10.1016/j.ascom.2014.07.003). The local copy is `reference-works/Pyro/Docs/1306.6883v3.pdf`.
+- <a id="harpole-et-al-2019"></a>Harpole, A., Zingale, M., Hawke, I. and Chegini, T., pyro: a framework for hydrodynamics explorations and prototyping, Journal of Open Source Software 4(34), 1265 (2019), [arXiv:1902.08702v1](https://arxiv.org/abs/1902.08702v1), [doi:10.21105/joss.01265](https://doi.org/10.21105/joss.01265). The local copy is `reference-works/Pyro/Docs/1902.08702v1.pdf`, and its source is `paper/paper.md` of the code.
 
 Works cited by the sources:
 

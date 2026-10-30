@@ -172,7 +172,7 @@ Each step takes one part of the code with the sections of the paper and the page
 | 5 | `simulation.py`: the HLL and HLLC Riemann solvers | §3.2 | 160 | 2.4 | done |
 | 6 | `simulation.py`: piecewise-constant and piecewise-linear reconstruction, slope limiters, the Hancock step in conserved and in primitive variables | §3.3, §3.4 | 270 | 2.5, 2.6 | done |
 | 7 | `simulation.py`: the modes of gravity, the Poisson solver by fast Fourier transform, the gravitational source terms | §3.5 | 200 | 2.7 | done |
-| 8 | Saving and loading, the runtime function, plotting, code units and the units of plots, physical constants, utilities | §3.6 | 1,680 | 3 | |
+| 8 | Saving and loading, the runtime function, plotting, code units and the units of plots, physical constants, utilities | §3.6 | 1,680 | 3 | done |
 | 9 | The base class of setups and the six setups in one dimension, with their examples | §4 (introduction), §4.1 (setups in one dimension) | 1,620 | 2.8, 3 | |
 | 10 | The nine setups in two dimensions, with their examples | §4.1 (setups in two dimensions), §4.2, §4.3 | 1,710 | 2.8, 3 | |
 

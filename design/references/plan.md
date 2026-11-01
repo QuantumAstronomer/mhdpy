@@ -262,7 +262,7 @@ Each step takes one component, with the sections of the papers on it and the cod
 | 34 | Tests of the particle method, convergence of the streaming instability | BS10 §4–§6, App. A | – | 6,800 words | 2.13 | done |
 | 35 | Relativistic MHD: equations, primitive variables and corrections, the code in outline | BS11 abstract, §1–§3.2, §3.4; S20 §4–§4.2.1, §4.2.3; WSG16 §3.1 | the relativistic files of `eos/` | 6,800 words, 2,340 lines | 2.14 | done |
 | 36 | Relativistic Riemann solvers, the code in outline | BS11 §3.3; S20 §4.2.2; WSG16 §3.3, §3.4, App. | the relativistic solvers of `hydro/rsolvers/` | 3,900 words, 4,610 lines | 2.14 | done |
-| 37 | General relativity, the code in outline | WSG16 abstract, §1, §2, §3 (introduction), §3.6, §3.8 | the relativistic files of `coordinates/` | 2,500 words, 5,460 lines | 2.14 | – |
+| 37 | General relativity, the code in outline | WSG16 abstract, §1, §2, §3 (introduction), §3.6, §3.8 | the relativistic files of `coordinates/` | 2,500 words, 5,460 lines | 2.14 | done |
 | 38 | Tests of special relativistic MHD, the code in outline | BS11 §4; S20 §4.3–§4.3.3 | `pgen/gr_blast.cpp`, `gr_linear_wave.cpp`, `gr_shock_tube.cpp`, tests `sr/` | 7,500 words, 2,590 lines | 2.14 | – |
 | 39 | Tests of general relativistic MHD, the code in outline | WSG16 §4 | `pgen/gr_bondi.cpp`, `gr_geodesic_infall.cpp`, `gr_mhd_inflow.cpp`, tests `gr/` | 3,300 words, 1,620 lines | 2.14 | – |
 | 40 | Applications of relativistic MHD, the code in outline | BS11 §5, §6; S20 §4.3.4; WSG16 §5, §7 | `pgen/gr_torus.cpp` | 6,400 words, 1,480 lines | 2.14 | – |

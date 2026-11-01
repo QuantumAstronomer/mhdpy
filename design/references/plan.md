@@ -272,7 +272,7 @@ Each step takes one component, with the sections of the papers on it and the cod
 | 44 | The driving of turbulence, in outline | – | `fft/turbulence.*`, `pgen/turb.cpp`, tests `turb/` | 780 lines | 2.15, 3.5 | done |
 | 45 | The mesh, its blocks and the tree of blocks | S20 §2 (introduction), §2.1–§2.1.2 | `mesh/mesh.*`, `mesh/meshblock.cpp`, `mesh/meshblock_tree.*` | 1,700 words, 3,660 lines | 3.2 | done |
 | 46 | Communication of boundary values between blocks | – | the framework of `bvals/` with its cell- and face-centred variables, `utils/buffer_utils.*` | 6,360 lines | 3.3 | done |
-| 47 | Physical boundary conditions | – | the outflow, reflecting and polar boundaries in `bvals/`, `bvals/utils/` | 1,480 lines | 3.3 | – |
+| 47 | Physical boundary conditions | – | the outflow, reflecting and polar boundaries in `bvals/`, `bvals/utils/` | 1,480 lines | 3.3 | done |
 | 48 | Mesh refinement: communication between levels, restriction, prolongation, correction of fluxes and electric fields | S20 §2.1.3–§2.1.5; BS11 §3.6 | `mesh/mesh_refinement.*`, `bvals/bvals_refine.cpp`, the flux corrections in `bvals/` | 2,700 words, 4,540 lines | 3.4 | – |
 | 49 | Adaptive mesh refinement, load balancing and their tests | S20 §2.1.6, §2.1.7, §2.2, §3.4 | `mesh/amr_loadbalance.cpp`, tests `amr/` | 3,800 words, 1,550 lines | 3.4 | – |
 | 50 | Task lists and parallelisation | S20 §2.4, §2.5 | `task_list/task_list.*`, `task_list/task_id.cpp`, the tasks in `time_integrator.cpp`, tests `mpi/`, `omp/`, `hybrid/` | 1,500 words, 2,990 lines | 3.5 | – |

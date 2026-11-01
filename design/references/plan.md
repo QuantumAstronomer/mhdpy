@@ -266,7 +266,7 @@ Each step takes one component, with the sections of the papers on it and the cod
 | 38 | Tests of special relativistic MHD, the code in outline | BS11 §4; S20 §4.3–§4.3.3 | `pgen/gr_blast.cpp`, `gr_linear_wave.cpp`, `gr_shock_tube.cpp`, tests `sr/` | 7,500 words, 2,590 lines | 2.14 | done |
 | 39 | Tests of general relativistic MHD, the code in outline | WSG16 §4 | `pgen/gr_bondi.cpp`, `gr_geodesic_infall.cpp`, `gr_mhd_inflow.cpp`, tests `gr/` | 3,300 words, 1,620 lines | 2.14 | done |
 | 40 | Applications of relativistic MHD, the code in outline | BS11 §5, §6; S20 §4.3.4; WSG16 §5, §7 | `pgen/gr_torus.cpp` | 6,400 words, 1,480 lines | 2.14 | done |
-| 41 | Radiation transport, in outline | – | `nr_radiation/` with its boundaries, task lists, utilities, problems and tests | 12,710 lines | 2.15, 3.5 | – |
+| 41 | Radiation transport, in outline | – | `nr_radiation/` with its boundaries, task lists, utilities, problems and tests | 12,710 lines | 2.15, 3.5 | done |
 | 42 | Cosmic rays, in outline | – | `cr/`, `crdiffusion/` with their task list, problems and tests | 3,270 lines | 2.15, 3.5 | – |
 | 43 | Chemistry, in outline | – | `chemistry/`, `chem_rad/`, `bvals/sixray/` with their task list, utilities, problems and tests | 12,970 lines | 2.15, 3.5 | – |
 | 44 | The driving of turbulence, in outline | – | `fft/turbulence.*`, `pgen/turb.cpp`, tests `turb/` | 780 lines | 2.15, 3.5 | – |

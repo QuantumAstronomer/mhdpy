@@ -284,7 +284,7 @@ Each step takes one component, with the sections of the papers on it and the cod
 | 56 | Performance and scaling | S20 §3.6; WSG16 §6 | – | 4,100 words | 3.9 | done |
 | 57 | Linear waves | GS05 §5 (introduction), §5.4, App. A; GS08 §6 (introduction), §6.2, App. A; S08 §8 (introduction and linear waves); S20 §3.3 (introduction), §3.3.1 | `pgen/linear_wave.cpp`, its tests | 4,000 words, 1,620 lines | 2.16 | done |
 | 58 | Circularly polarised Alfvén waves | GS05 §3.3 (introduction), §3.3.2, §5.2; GS08 §6.3; S08 §8.4 (Alfvén waves) | `pgen/cpaw.cpp`, its test | 3,200 words, 480 lines | 2.16 | done |
-| 59 | Advection of a field loop | GS05 §3.3.1, §5.1; GS08 §6.1; S08 §8.4, §8.6 (field loops) | `pgen/field_loop.cpp` | 2,700 words, 280 lines | 2.16 | – |
+| 59 | Advection of a field loop | GS05 §3.3.1, §5.1; GS08 §6.1; S08 §8.4, §8.6 (field loops) | `pgen/field_loop.cpp` | 2,700 words, 280 lines | 2.16 | done |
 | 60 | Shock tubes | S08 §8.1, §8.2, §8.6 (shock tubes); GS05 §5.3; GS08 §6.4; S20 §3.3.3 | `pgen/shock_tube.cpp`, `shu_osher.cpp`, `twoibw.cpp`, their tests | 4,400 words, 940 lines | 2.16 | – |
 | 61 | Hydrodynamics in two and three dimensions | S08 §8.3, §8.5; S20 §3.3.5, §3.3.6 | `pgen/dmr.cpp`, `lw_implode.cpp`, `kh.cpp`, `noh.cpp`, `rt.cpp`, `blast.cpp`, `shk_cloud.cpp`, `jet.cpp` | 2,600 words, 2,610 lines | 2.16 | – |
 | 62 | MHD in two and three dimensions | S08 §8.4, §8.6 (the others); GS05 §5.5; GS08 §6.5 | `pgen/orszag_tang.cpp`, `rotor.cpp`, `magnoh.cpp` | 2,800 words, 450 lines | 2.16 | – |

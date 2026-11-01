@@ -243,7 +243,7 @@ Each step takes one component, with the sections of the papers on it and the cod
 | 15 | Upwind CT of fourth order, not part of the copy | FS18 §4, App. A | – | 7,700 words | 2.7 | done |
 | 16 | Tests of the fourth-order method for MHD | FS18 §5, §6 | – | 6,000 words | 2.7 | done |
 | 17 | Curvilinear coordinates: geometry, finite volumes and CT | SO10 abstract, §1–§3, §7–§9; S20 §2.3, §3.2.4 | `coordinates/` without the relativistic files | 6,100 words, 2,670 lines | 2.8 | done |
-| 18 | Reconstruction and characteristic evolution on curvilinear and nonuniform grids | SO10 §4–§6; WSG16 §3.2 | the curvilinear weights in `reconstruct/reconstruction.cpp`, `dc_simple.cpp`, `plm_simple.cpp`, `ppm_simple.cpp`, `ppm_simple_fast.cpp`, the tests after Mignone | 5,800 words, 4,440 lines | 2.4, 2.8 | – |
+| 18 | Reconstruction and characteristic evolution on curvilinear and nonuniform grids | SO10 §4–§6; WSG16 §3.2 | the curvilinear weights in `reconstruct/reconstruction.cpp`, `dc_simple.cpp`, `plm_simple.cpp`, `ppm_simple.cpp`, `ppm_simple_fast.cpp`, the tests after Mignone | 5,800 words, 4,440 lines | 2.4, 2.8 | done |
 | 19 | Tests in curvilinear coordinates | SO10 §10, §11; S20 §3.5 | `pgen/mignone_advection.cpp`, `slotted_cylinder.cpp`, `field_loop_poles.cpp`, `disk.cpp`, `utils/gl_quadrature.*`, tests `curvilinear/` | 5,600 words, 3,350 lines | 2.8 | – |
 | 20 | Source terms: constant acceleration, point mass, rotating frame | – | `hydro/srcterms/hydro_srcterms.*`, `constant_acc.cpp`, `pointmass.cpp`, `rotating_system_srcterms.cpp` | 460 lines | 2.9 | – |
 | 21 | The shearing box: equations and source terms | SG10 abstract, §1–§3; S20 §3.2.6 | `hydro/srcterms/shearing_box.cpp`, `pgen/ssheet.cpp` | 5,800 words, 770 lines | 2.9 | – |

@@ -256,7 +256,7 @@ Each step takes one component, with the sections of the papers on it and the cod
 | 28 | Tests of multigrid | TS23 §4, §5 | `pgen/poisson.cpp`, `collapse.cpp`, `binary_gravity.cpp`, its test | 6,100 words, 1,070 lines | 2.10 | done |
 | 29 | Conservative source terms of self-gravity | MHG21 | `hydro/srcterms/self_gravity.cpp` | 8,700 words, 90 lines | 2.10 | done |
 | 30 | Viscosity, thermal conduction and non-ideal MHD | S20 §3.2.5, §3.3.2, §3.3.4 | `hydro/hydro_diffusion/`, `field/field_diffusion/`, `pgen/visc.cpp`, `resist.cpp`, tests `diffusion/` | 1,000 words, 2,760 lines | 2.11 | done |
-| 31 | Super time-stepping | – | `task_list/sts_task_list.cpp`, its tests | 1,390 lines | 2.11, 3.5 | – |
+| 31 | Super time-stepping | – | `task_list/sts_task_list.cpp`, its tests | 1,390 lines | 2.11, 3.5 | done |
 | 32 | Passive scalars | – | `scalars/`, `eos/eos_scalars.cpp`, `pgen/scalar_diff.cpp` | 1,630 lines | 2.12 | – |
 | 33 | Particles and their coupling to the gas | BS10 abstract, §1–§3 | – | 5,400 words | 2.13 | – |
 | 34 | Tests of the particle method, convergence of the streaming instability | BS10 §4–§6, App. A | – | 6,800 words | 2.13 | – |

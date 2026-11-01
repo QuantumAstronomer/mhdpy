@@ -278,7 +278,7 @@ Each step takes one component, with the sections of the papers on it and the cod
 | 50 | Task lists and parallelisation | S20 §2.4, §2.5 | `task_list/task_list.*`, `task_list/task_id.cpp`, the tasks in `time_integrator.cpp`, tests `mpi/`, `omp/`, `hybrid/` | 1,500 words, 2,990 lines | 3.5 | done |
 | 51 | Configuration, build, the main loop, the input file and units | S08 §7; S20 §2.6 | `configure.py`, `Makefile.in`, `defs.hpp.in`, `main.cpp`, `parameter_input.*`, `units/` | 2,200 words, 3,700 lines | 3.1 | done |
 | 52 | Problem generators and user functions | – | `pgen/default_pgen.cpp`, `pgen/from_array.cpp`, the enrolment functions in `mesh/mesh.cpp`, tests `pgen/` | 1,010 lines | 3.6 | done |
-| 53 | Output and restarts | – | `outputs/`, `inputs/`, tests `outputs/` | 5,100 lines | 3.7 | – |
+| 53 | Output and restarts | – | `outputs/`, `inputs/`, tests `outputs/` | 5,100 lines | 3.7 | done |
 | 54 | Visualisation and analysis | – | `vis/` | 4,180 lines | 3.7 | – |
 | 55 | Regression tests | – | `tst/regression/run_tests.py`, `tst/regression/scripts/utils/` | 2,030 lines | 3.8 | – |
 | 56 | Performance and scaling | S20 §3.6; WSG16 §6 | – | 4,100 words | 3.9 | – |

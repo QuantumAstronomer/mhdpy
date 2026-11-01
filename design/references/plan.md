@@ -280,7 +280,7 @@ Each step takes one component, with the sections of the papers on it and the cod
 | 52 | Problem generators and user functions | – | `pgen/default_pgen.cpp`, `pgen/from_array.cpp`, the enrolment functions in `mesh/mesh.cpp`, tests `pgen/` | 1,010 lines | 3.6 | done |
 | 53 | Output and restarts | – | `outputs/`, `inputs/`, tests `outputs/` | 5,100 lines | 3.7 | done |
 | 54 | Visualisation and analysis | – | `vis/` | 4,180 lines | 3.7 | done |
-| 55 | Regression tests | – | `tst/regression/run_tests.py`, `tst/regression/scripts/utils/` | 2,030 lines | 3.8 | – |
+| 55 | Regression tests | – | `tst/regression/run_tests.py`, `tst/regression/scripts/utils/` | 2,030 lines | 3.8 | done |
 | 56 | Performance and scaling | S20 §3.6; WSG16 §6 | – | 4,100 words | 3.9 | – |
 | 57 | Linear waves | GS05 §5 (introduction), §5.4, App. A; GS08 §6 (introduction), §6.2, App. A; S08 §8 (introduction and linear waves); S20 §3.3 (introduction), §3.3.1 | `pgen/linear_wave.cpp`, its tests | 4,000 words, 1,620 lines | 2.16 | – |
 | 58 | Circularly polarised Alfvén waves | GS05 §3.3 (introduction), §3.3.2, §5.2; GS08 §6.3; S08 §8.4 (Alfvén waves) | `pgen/cpaw.cpp`, its test | 3,200 words, 480 lines | 2.16 | – |

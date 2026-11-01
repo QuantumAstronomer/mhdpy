@@ -264,7 +264,7 @@ Each step takes one component, with the sections of the papers on it and the cod
 | 36 | Relativistic Riemann solvers, the code in outline | BS11 §3.3; S20 §4.2.2; WSG16 §3.3, §3.4, App. | the relativistic solvers of `hydro/rsolvers/` | 3,900 words, 4,610 lines | 2.14 | done |
 | 37 | General relativity, the code in outline | WSG16 abstract, §1, §2, §3 (introduction), §3.6, §3.8 | the relativistic files of `coordinates/` | 2,500 words, 5,460 lines | 2.14 | done |
 | 38 | Tests of special relativistic MHD, the code in outline | BS11 §4; S20 §4.3–§4.3.3 | `pgen/gr_blast.cpp`, `gr_linear_wave.cpp`, `gr_shock_tube.cpp`, tests `sr/` | 7,500 words, 2,590 lines | 2.14 | done |
-| 39 | Tests of general relativistic MHD, the code in outline | WSG16 §4 | `pgen/gr_bondi.cpp`, `gr_geodesic_infall.cpp`, `gr_mhd_inflow.cpp`, tests `gr/` | 3,300 words, 1,620 lines | 2.14 | – |
+| 39 | Tests of general relativistic MHD, the code in outline | WSG16 §4 | `pgen/gr_bondi.cpp`, `gr_geodesic_infall.cpp`, `gr_mhd_inflow.cpp`, tests `gr/` | 3,300 words, 1,620 lines | 2.14 | done |
 | 40 | Applications of relativistic MHD, the code in outline | BS11 §5, §6; S20 §4.3.4; WSG16 §5, §7 | `pgen/gr_torus.cpp` | 6,400 words, 1,480 lines | 2.14 | – |
 | 41 | Radiation transport, in outline | – | `nr_radiation/` with its boundaries, task lists, utilities, problems and tests | 12,710 lines | 2.15, 3.5 | – |
 | 42 | Cosmic rays, in outline | – | `cr/`, `crdiffusion/` with their task list, problems and tests | 3,270 lines | 2.15, 3.5 | – |

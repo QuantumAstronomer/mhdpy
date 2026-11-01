@@ -267,7 +267,7 @@ Each step takes one component, with the sections of the papers on it and the cod
 | 39 | Tests of general relativistic MHD, the code in outline | WSG16 §4 | `pgen/gr_bondi.cpp`, `gr_geodesic_infall.cpp`, `gr_mhd_inflow.cpp`, tests `gr/` | 3,300 words, 1,620 lines | 2.14 | done |
 | 40 | Applications of relativistic MHD, the code in outline | BS11 §5, §6; S20 §4.3.4; WSG16 §5, §7 | `pgen/gr_torus.cpp` | 6,400 words, 1,480 lines | 2.14 | done |
 | 41 | Radiation transport, in outline | – | `nr_radiation/` with its boundaries, task lists, utilities, problems and tests | 12,710 lines | 2.15, 3.5 | done |
-| 42 | Cosmic rays, in outline | – | `cr/`, `crdiffusion/` with their task list, problems and tests | 3,270 lines | 2.15, 3.5 | – |
+| 42 | Cosmic rays, in outline | – | `cr/`, `crdiffusion/` with their task list, problems and tests | 3,270 lines | 2.15, 3.5 | done |
 | 43 | Chemistry, in outline | – | `chemistry/`, `chem_rad/`, `bvals/sixray/` with their task list, utilities, problems and tests | 12,970 lines | 2.15, 3.5 | – |
 | 44 | The driving of turbulence, in outline | – | `fft/turbulence.*`, `pgen/turb.cpp`, tests `turb/` | 780 lines | 2.15, 3.5 | – |
 | 45 | The mesh, its blocks and the tree of blocks | S20 §2 (introduction), §2.1–§2.1.2 | `mesh/mesh.*`, `mesh/meshblock.cpp`, `mesh/meshblock_tree.*` | 1,700 words, 3,660 lines | 3.2 | – |

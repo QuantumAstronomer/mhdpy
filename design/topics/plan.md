@@ -38,7 +38,7 @@ Each step is put to the author with its review and is committed once the author 
 
 | Step | Topic | File | Drawn from | Size | Status |
 |---:|---|---|---|---:|---|
-| 0 | Notation | `notation.md` | The notations of the five syntheses | — | open |
+| 0 | Notation | `notation.md` | The notations of the five syntheses | — | done |
 | 1 | The equations and their variables | `equations-and-their-variables.md` | Zingale 2.1.9, 2.4.1, 2.5.1–2.5.3, 2.5.9; pyro 2.4.1; Ulula 2.1.1, 2.1.3, 2.1.4; ZEUS 2.1.1, 2.3.3, 2.8.1, 2.8.2; Athena 2.1.1, 2.1.4 | 5,400 | open |
 | 2 | Equations of state | `equations-of-state.md` | Zingale 2.1.5, 2.5.21, 2.5.22; pyro 2.4.1; Ulula 2.1.2; ZEUS 2.1.1; Athena 2.2 | 6,100 | open |
 | 3 | Grids and the finite-volume discretisation | `grids-and-finite-volume-discretisation.md` | Zingale 2.1.3, 2.2.1–2.2.4, 2.2.6, 2.3.5, 2.3.7, 2.3.13; pyro 2.1.1; Ulula 2.2.1, 2.3.1; ZEUS 2.2.1, 2.2.2, 2.4.3; Athena 2.1.3 | 4,300 | open |

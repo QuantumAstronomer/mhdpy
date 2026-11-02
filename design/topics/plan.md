@@ -22,7 +22,7 @@ A summary sets out, conceptually and in formulas, the mathematical framework of 
 
 In topics 26 to 30, part 2 holds the problems of the family, each in one paragraph as in part 3, part 3 is left out, and part 4 assesses how well the problems tell the methods apart. In the topics of the software architecture, part 2 describes the designs conceptually, with numbered steps where a design has an algorithm, such as the main loop, and part 4 weighs the designs by performance, readability and extensibility (§1.4). Part 3 is left out wherever the references test nothing of a topic. The parts are numbered in the order in which they appear, as in the syntheses, so that a part left out leaves no gap, and the methods are numbered within part 2.
 
-All summaries share one notation. The notation page, `notation.md`, fixes it in step 0 and is agreed with the author before the first summary is written. The page is short, and sets the symbols for the variables, the indices of cells, faces and time levels, the states on either side of a face and the fluxes. A symbol that the page does not fix is defined in the summary where it first appears, and later summaries keep it. Key formulas may be displayed as `$$...$$`, an exception that §3.1 makes for the summaries alone, while other formulas stay inline.
+All summaries share one notation. The notation page, `00-notation.md`, fixes it in step 0 and is agreed with the author before the first summary is written. The page is short, and sets the symbols for the variables, the indices of cells, faces and time levels, the states on either side of a face and the fluxes. A symbol that the page does not fix is defined in the summary where it first appears, and later summaries keep it. Key formulas may be displayed as `$$...$$`, an exception that §3.1 makes for the summaries alone, while other formulas stay inline.
 
 Codes are named only, as in "HLLC is used by pyro, Ulula and Athena++", without paths, functions, options or versions. A summary cites only its key sources. Each method or test cites the paper or text that it comes from, as its synthesis records it, with the numbers of its key equations, and links to the subsections of the syntheses that hold the detail and the further citations. Papers are cited by author and year, and Zingale's text by title and date. The authors of each citation link to an anchored entry in the list of sources, where the arXiv identifier, DOI or ADS bibcode of each paper is a link to its target. A summary cites an earlier summary by its file and section.
 
@@ -32,47 +32,47 @@ A summary takes its content from the syntheses, not from the sources. Where a sy
 
 ## Steps
 
-The notation page is written in step 0 and topic $n$ in step $n$, one summary per step. Each file is kept in `design/topics/` and named after its topic in lower case, with hyphens and without articles or commas. Sizes are the words of the subsections of the syntheses that a topic draws on, with links stripped, rounded to hundreds. Where a topic takes part of a subsection, a parenthesis names the part, and the size counts only its paragraphs. A subsection or paragraph that serves two topics counts in both.
+The notation page is written in step 0 and topic $n$ in step $n$, one summary per step. Each file is kept in `design/topics/` and named by the number of its step in two digits and a hyphen, followed by its topic in lower case, with hyphens and without articles or commas, so that the files sort in the order of reading. Sizes are the words of the subsections of the syntheses that a topic draws on, with links stripped, rounded to hundreds. Where a topic takes part of a subsection, a parenthesis names the part, and the size counts only its paragraphs. A subsection or paragraph that serves two topics counts in both.
 
 Each step is put to the author with its review and is committed once the author approves. The review lists what the step found in the syntheses and how it was settled, the gaps it named and the notes it marked **[GK]**. Once a step is committed, the next step begins without a further request, while every commit and every push needs an approval of its own. A review of the whole layer follows the last step. It is done in parts and checks the claims of each summary against the syntheses, its citations and the consistency of the notation between the topics.
 
 | Step | Topic | File | Drawn from | Size | Status |
 |---:|---|---|---|---:|---|
-| 0 | Notation | `notation.md` | The notations of the five syntheses | — | done |
-| 1 | The equations and their variables | `equations-and-their-variables.md` | Zingale 2.1.9, 2.4.1, 2.5.1–2.5.3, 2.5.9; pyro 2.4.1; Ulula 2.1.1, 2.1.3, 2.1.4; ZEUS 2.1.1, 2.3.3, 2.8.1, 2.8.2; Athena 2.1.1, 2.1.4 | 5,400 | done |
-| 2 | Equations of state | `equations-of-state.md` | Zingale 2.1.5, 2.5.21, 2.5.22; pyro 2.4.1; Ulula 2.1.2; ZEUS 2.1.1; Athena 2.2 | 6,100 | done |
-| 3 | Grids and the finite-volume discretisation | `grids-and-finite-volume-discretisation.md` | Zingale 2.1.3, 2.2.1–2.2.4, 2.2.6, 2.3.5, 2.3.7, 2.3.13; pyro 2.1.1; Ulula 2.2.1, 2.3.1; ZEUS 2.2.1, 2.2.2, 2.4.3; Athena 2.1.3 | 4,300 | open |
-| 4 | Boundary conditions and ghost cells | `boundary-conditions-and-ghost-cells.md` | Zingale 2.2.5, 2.5.15; pyro 2.1.3, 2.4.6 (boundaries); Ulula 2.2.2, 2.2.3; ZEUS 2.5.1, 2.8.8 (boundaries); Athena 3.3 | 3,700 | open |
-| 5 | Reconstruction and limiting | `reconstruction-and-limiting.md` | Zingale 2.3.9–2.3.11, 2.3.19, 2.3.21, 2.5.11 (reconstruction), 2.5.12, 2.5.13; pyro 2.1.5–2.1.7; Ulula 2.5; ZEUS 2.4.2, 2.7.1 (advection); Athena 2.4 | 8,700 | open |
-| 6 | Riemann solvers | `riemann-solvers.md` | Zingale 2.1.5, 2.4.2, 2.5.4–2.5.8, 2.5.14; pyro 2.4.7; Ulula 2.4; Athena 2.5 | 7,100 | open |
-| 7 | Time integration | `time-integration.md` | Zingale 2.1.7, 2.3.1–2.3.4, 2.3.8, 2.3.12–2.3.17, 2.3.21, 2.4.3, 2.4.5, 2.5.10, 2.5.11 (tracing), 2.5.16, 2.5.20; pyro 2.1.10, 2.2.1, 2.2.2 (advection_rk), 2.2.4, 2.3.1, 2.4.2, 2.4.3, 2.4.6 (time step), 2.4.8, 2.4.10; Ulula 2.3.1–2.3.3, 2.6; ZEUS 2.1.2 (directional splitting), 2.4.1, 2.5.2, 2.8.8 (time step); Athena 2.6.1, 2.6.3, 2.6.4 (hydrodynamics), 2.6.5 | 13,600 | open |
-| 8 | Methods of higher order | `methods-of-higher-order.md` | Zingale 2.1.4, 2.3.18, 2.3.20, 2.4.6, 2.4.7, 2.5.23; pyro 2.1.8, 2.1.9, 2.2.2 (advection_weno), 2.2.3, 2.4.9; Athena 2.7 | 9,000 | open |
-| 9 | Artificial viscosity | `artificial-viscosity.md` | Zingale 2.5.13 (artificial viscosity); pyro 2.4.4; ZEUS 2.1.2 (the source step), 2.3.2, 2.3.4 | 2,100 | open |
-| 10 | Constrained transport | `constrained-transport.md` | ZEUS 2.8.2–2.8.8, 2.9.1; Athena 2.3, 2.6.2, 2.6.3, 2.6.4 (MHD), 2.16.3 | 14,200 | open |
-| 11 | Curvilinear coordinates | `curvilinear-coordinates.md` | Zingale 2.2.6, 2.5.18; pyro 2.1.2; ZEUS 2.2.3, 2.2.4, 2.7.1 (curvilinear advection); Athena 2.8 | 10,800 | open |
-| 12 | Source terms | `source-terms.md` | Zingale 2.5.17; pyro 2.4.3 (sources), 2.4.5, 2.4.12 (hse, heating); Ulula 2.3.4, 2.7.1, 2.7.2, 2.7.4, 2.8.5, 2.8.6, 2.8.14, 2.8.15; ZEUS 2.3.1; Athena 2.9.1 | 3,200 | open |
-| 13 | Elliptic solvers | `elliptic-solvers.md` | Zingale 2.1.8, 2.6.1–2.6.8, 2.10.8; pyro 2.1.4, 2.6; Ulula 2.7.3; ZEUS 2.6, 2.7.5; Athena 2.10.1 (FFT), 2.10.2, 2.10.3, 2.10.4 (refined meshes), 2.10.5 | 13,900 | open |
-| 14 | Self-gravity | `self-gravity.md` | Zingale 2.6.9 (self-gravity); Ulula 2.7.1, 2.7.3, 2.7.4, 2.8.7, 2.8.16; ZEUS 2.6, 2.7.2, 2.7.5; Athena 2.10.1, 2.10.4 (self-gravity), 2.10.6 | 5,500 | open |
-| 15 | Diffusion | `diffusion.md` | Zingale 2.4.8, 2.7; pyro 2.3.2, 2.7; Athena 2.1.2, 2.11, 2.12.2 (diffusion) | 4,300 | open |
-| 16 | Operator splitting and the coupling of processes | `operator-splitting-and-coupling-of-processes.md` | Zingale 2.8.1–2.8.3, 2.8.6; pyro 2.4.10, 2.4.11; Ulula 2.3.4; ZEUS 2.1.2; Athena 2.11.2, 3.5 (the integrator) | 3,100 | open |
-| 17 | Reactions, chemistry and cooling | `reactions-chemistry-and-cooling.md` | Zingale 2.1.7, 2.8.4, 2.8.5, 2.8.7; pyro 2.4.11; Athena 2.15.3 | 2,300 | open |
-| 18 | Passive scalars | `passive-scalars.md` | Zingale 2.8.4 (species); pyro 2.4.1 (scalars); Athena 2.12 | 1,800 | open |
-| 19 | Particles | `particles.md` | pyro 2.10; Athena 2.13 | 5,400 | open |
-| 20 | Radiation transport | `radiation-transport.md` | Zingale 2.6.9 (radiation); ZEUS 2.10–2.12; Athena 2.15.1 | 10,800 | open |
-| 21 | The shearing box and orbital advection | `shearing-box-and-orbital-advection.md` | Athena 2.9.1 (rotating frame), 2.9.2–2.9.4 | 6,700 | open |
-| 22 | Relativistic MHD | `relativistic-mhd.md` | Athena 2.14 | 12,700 | open |
-| 23 | Cosmic rays | `cosmic-rays.md` | Athena 2.15.2 | 500 | open |
-| 24 | The driving of turbulence | `driving-of-turbulence.md` | Athena 2.15.4 | 800 | open |
-| 25 | Verification and testing | `verification-and-testing.md` | Zingale 2.1.1, 2.1.2, 2.1.6, 2.3.6, 2.9.1, 2.9.2; pyro 2.4.12 (test), 3.4 (convergence, testing); Ulula 2.8.17; ZEUS 2.7.1 (approach), 2.7.6, 2.9.1 (approach), 2.9.8, 2.12.1 (approach), 2.12.4; Athena 3.1 (reproducibility), 3.8 | 3,900 | open |
-| 26 | Advection and linear waves | `advection-and-linear-waves.md` | Zingale 2.5.19 (advection); pyro 2.2.5, 2.4.12 (advect, acoustic_pulse); Ulula 2.8.1–2.8.3, 2.8.8; ZEUS 2.9.4, 2.9.7; Athena 2.16.1, 2.16.2 | 5,300 | open |
-| 27 | Shock tubes and interacting blast waves | `shock-tubes-and-interacting-blast-waves.md` | Zingale 2.4.4, 2.5.19 (shock tubes); pyro 2.3.3, 2.4.12 (sod); Ulula 2.8.4; ZEUS 2.7.3, 2.7.4 (blast waves), 2.9.2; Athena 2.16.4 | 5,400 | open |
-| 28 | Shocks in several dimensions | `shocks-in-several-dimensions.md` | Zingale 2.5.19 (Sedov); pyro 2.4.12 (sedov, quad, ramp, logo); Ulula 2.8.10, 2.8.11; ZEUS 2.7.4 (wind tunnel, double Mach reflection); Athena 2.16.5 (shocks) | 3,900 | open |
-| 29 | Instabilities, vortices and convection | `instabilities-vortices-and-convection.md` | pyro 2.4.12 (gresho, kh, rt, rt2, rt_multimode, bubble, convection, plume); Ulula 2.8.9, 2.8.12, 2.8.13; Athena 2.16.5 (instabilities) | 2,600 | open |
-| 30 | Multidimensional and astrophysical MHD | `multidimensional-and-astrophysical-mhd.md` | ZEUS 2.9.3, 2.9.5, 2.9.6; Athena 2.16.6 | 4,700 | open |
-| 31 | Packaging, configuration and build | `packaging-configuration-and-build.md` | Zingale 3.4, 3.5; pyro 3.1; Ulula 3.1; Athena 3.1 (versions, releases, configuration) | 1,900 | open |
-| 32 | Data structures | `data-structures.md` | Zingale 3.1, 3.6; pyro 3.2; Ulula 3.2; ZEUS 3.1; Athena 2.1.4, 3.2 | 5,000 | open |
-| 33 | The driver and the control of a time step | `driver-and-control-of-time-step.md` | pyro 3.3 (driver, parameters); Ulula 3.3, 3.5; ZEUS 3.2; Athena 3.1 (main loop, input, units), 3.5 (task lists) | 3,800 | open |
-| 34 | Problem setups and user functions | `problem-setups-and-user-functions.md` | pyro 3.3 (problems); Ulula 2.2.3, 2.8.1, 3.6; Athena 3.6 | 1,200 | open |
-| 35 | Output, restarts and analysis | `output-restarts-and-analysis.md` | Zingale 3.3; pyro 3.4 (output, plotting); Ulula 3.4; Athena 3.7 | 2,600 | open |
-| 36 | Mesh refinement | `mesh-refinement.md` | Zingale 2.2.6, 2.6.5; pyro 2.1.4; Athena 3.4 | 4,500 | open |
-| 37 | Parallelisation and performance | `parallelisation-and-performance.md` | Zingale 2.9.1, 3.2; Ulula 3.7; Athena 3.1 (optimisation), 3.5 (parallelisation), 3.9 | 2,500 | open |
+| 0 | Notation | `00-notation.md` | The notations of the five syntheses | — | done |
+| 1 | The equations and their variables | `01-equations-and-their-variables.md` | Zingale 2.1.9, 2.4.1, 2.5.1–2.5.3, 2.5.9; pyro 2.4.1; Ulula 2.1.1, 2.1.3, 2.1.4; ZEUS 2.1.1, 2.3.3, 2.8.1, 2.8.2; Athena 2.1.1, 2.1.4 | 5,400 | done |
+| 2 | Equations of state | `02-equations-of-state.md` | Zingale 2.1.5, 2.5.21, 2.5.22; pyro 2.4.1; Ulula 2.1.2; ZEUS 2.1.1; Athena 2.2 | 6,100 | done |
+| 3 | Grids and the finite-volume discretisation | `03-grids-and-finite-volume-discretisation.md` | Zingale 2.1.3, 2.2.1–2.2.4, 2.2.6, 2.3.5, 2.3.7, 2.3.13; pyro 2.1.1; Ulula 2.2.1, 2.3.1; ZEUS 2.2.1, 2.2.2, 2.4.3; Athena 2.1.3 | 4,300 | open |
+| 4 | Boundary conditions and ghost cells | `04-boundary-conditions-and-ghost-cells.md` | Zingale 2.2.5, 2.5.15; pyro 2.1.3, 2.4.6 (boundaries); Ulula 2.2.2, 2.2.3; ZEUS 2.5.1, 2.8.8 (boundaries); Athena 3.3 | 3,700 | open |
+| 5 | Reconstruction and limiting | `05-reconstruction-and-limiting.md` | Zingale 2.3.9–2.3.11, 2.3.19, 2.3.21, 2.5.11 (reconstruction), 2.5.12, 2.5.13; pyro 2.1.5–2.1.7; Ulula 2.5; ZEUS 2.4.2, 2.7.1 (advection); Athena 2.4 | 8,700 | open |
+| 6 | Riemann solvers | `06-riemann-solvers.md` | Zingale 2.1.5, 2.4.2, 2.5.4–2.5.8, 2.5.14; pyro 2.4.7; Ulula 2.4; Athena 2.5 | 7,100 | open |
+| 7 | Time integration | `07-time-integration.md` | Zingale 2.1.7, 2.3.1–2.3.4, 2.3.8, 2.3.12–2.3.17, 2.3.21, 2.4.3, 2.4.5, 2.5.10, 2.5.11 (tracing), 2.5.16, 2.5.20; pyro 2.1.10, 2.2.1, 2.2.2 (advection_rk), 2.2.4, 2.3.1, 2.4.2, 2.4.3, 2.4.6 (time step), 2.4.8, 2.4.10; Ulula 2.3.1–2.3.3, 2.6; ZEUS 2.1.2 (directional splitting), 2.4.1, 2.5.2, 2.8.8 (time step); Athena 2.6.1, 2.6.3, 2.6.4 (hydrodynamics), 2.6.5 | 13,600 | open |
+| 8 | Methods of higher order | `08-methods-of-higher-order.md` | Zingale 2.1.4, 2.3.18, 2.3.20, 2.4.6, 2.4.7, 2.5.23; pyro 2.1.8, 2.1.9, 2.2.2 (advection_weno), 2.2.3, 2.4.9; Athena 2.7 | 9,000 | open |
+| 9 | Artificial viscosity | `09-artificial-viscosity.md` | Zingale 2.5.13 (artificial viscosity); pyro 2.4.4; ZEUS 2.1.2 (the source step), 2.3.2, 2.3.4 | 2,100 | open |
+| 10 | Constrained transport | `10-constrained-transport.md` | ZEUS 2.8.2–2.8.8, 2.9.1; Athena 2.3, 2.6.2, 2.6.3, 2.6.4 (MHD), 2.16.3 | 14,200 | open |
+| 11 | Curvilinear coordinates | `11-curvilinear-coordinates.md` | Zingale 2.2.6, 2.5.18; pyro 2.1.2; ZEUS 2.2.3, 2.2.4, 2.7.1 (curvilinear advection); Athena 2.8 | 10,800 | open |
+| 12 | Source terms | `12-source-terms.md` | Zingale 2.5.17; pyro 2.4.3 (sources), 2.4.5, 2.4.12 (hse, heating); Ulula 2.3.4, 2.7.1, 2.7.2, 2.7.4, 2.8.5, 2.8.6, 2.8.14, 2.8.15; ZEUS 2.3.1; Athena 2.9.1 | 3,200 | open |
+| 13 | Elliptic solvers | `13-elliptic-solvers.md` | Zingale 2.1.8, 2.6.1–2.6.8, 2.10.8; pyro 2.1.4, 2.6; Ulula 2.7.3; ZEUS 2.6, 2.7.5; Athena 2.10.1 (FFT), 2.10.2, 2.10.3, 2.10.4 (refined meshes), 2.10.5 | 13,900 | open |
+| 14 | Self-gravity | `14-self-gravity.md` | Zingale 2.6.9 (self-gravity); Ulula 2.7.1, 2.7.3, 2.7.4, 2.8.7, 2.8.16; ZEUS 2.6, 2.7.2, 2.7.5; Athena 2.10.1, 2.10.4 (self-gravity), 2.10.6 | 5,500 | open |
+| 15 | Diffusion | `15-diffusion.md` | Zingale 2.4.8, 2.7; pyro 2.3.2, 2.7; Athena 2.1.2, 2.11, 2.12.2 (diffusion) | 4,300 | open |
+| 16 | Operator splitting and the coupling of processes | `16-operator-splitting-and-coupling-of-processes.md` | Zingale 2.8.1–2.8.3, 2.8.6; pyro 2.4.10, 2.4.11; Ulula 2.3.4; ZEUS 2.1.2; Athena 2.11.2, 3.5 (the integrator) | 3,100 | open |
+| 17 | Reactions, chemistry and cooling | `17-reactions-chemistry-and-cooling.md` | Zingale 2.1.7, 2.8.4, 2.8.5, 2.8.7; pyro 2.4.11; Athena 2.15.3 | 2,300 | open |
+| 18 | Passive scalars | `18-passive-scalars.md` | Zingale 2.8.4 (species); pyro 2.4.1 (scalars); Athena 2.12 | 1,800 | open |
+| 19 | Particles | `19-particles.md` | pyro 2.10; Athena 2.13 | 5,400 | open |
+| 20 | Radiation transport | `20-radiation-transport.md` | Zingale 2.6.9 (radiation); ZEUS 2.10–2.12; Athena 2.15.1 | 10,800 | open |
+| 21 | The shearing box and orbital advection | `21-shearing-box-and-orbital-advection.md` | Athena 2.9.1 (rotating frame), 2.9.2–2.9.4 | 6,700 | open |
+| 22 | Relativistic MHD | `22-relativistic-mhd.md` | Athena 2.14 | 12,700 | open |
+| 23 | Cosmic rays | `23-cosmic-rays.md` | Athena 2.15.2 | 500 | open |
+| 24 | The driving of turbulence | `24-driving-of-turbulence.md` | Athena 2.15.4 | 800 | open |
+| 25 | Verification and testing | `25-verification-and-testing.md` | Zingale 2.1.1, 2.1.2, 2.1.6, 2.3.6, 2.9.1, 2.9.2; pyro 2.4.12 (test), 3.4 (convergence, testing); Ulula 2.8.17; ZEUS 2.7.1 (approach), 2.7.6, 2.9.1 (approach), 2.9.8, 2.12.1 (approach), 2.12.4; Athena 3.1 (reproducibility), 3.8 | 3,900 | open |
+| 26 | Advection and linear waves | `26-advection-and-linear-waves.md` | Zingale 2.5.19 (advection); pyro 2.2.5, 2.4.12 (advect, acoustic_pulse); Ulula 2.8.1–2.8.3, 2.8.8; ZEUS 2.9.4, 2.9.7; Athena 2.16.1, 2.16.2 | 5,300 | open |
+| 27 | Shock tubes and interacting blast waves | `27-shock-tubes-and-interacting-blast-waves.md` | Zingale 2.4.4, 2.5.19 (shock tubes); pyro 2.3.3, 2.4.12 (sod); Ulula 2.8.4; ZEUS 2.7.3, 2.7.4 (blast waves), 2.9.2; Athena 2.16.4 | 5,400 | open |
+| 28 | Shocks in several dimensions | `28-shocks-in-several-dimensions.md` | Zingale 2.5.19 (Sedov); pyro 2.4.12 (sedov, quad, ramp, logo); Ulula 2.8.10, 2.8.11; ZEUS 2.7.4 (wind tunnel, double Mach reflection); Athena 2.16.5 (shocks) | 3,900 | open |
+| 29 | Instabilities, vortices and convection | `29-instabilities-vortices-and-convection.md` | pyro 2.4.12 (gresho, kh, rt, rt2, rt_multimode, bubble, convection, plume); Ulula 2.8.9, 2.8.12, 2.8.13; Athena 2.16.5 (instabilities) | 2,600 | open |
+| 30 | Multidimensional and astrophysical MHD | `30-multidimensional-and-astrophysical-mhd.md` | ZEUS 2.9.3, 2.9.5, 2.9.6; Athena 2.16.6 | 4,700 | open |
+| 31 | Packaging, configuration and build | `31-packaging-configuration-and-build.md` | Zingale 3.4, 3.5; pyro 3.1; Ulula 3.1; Athena 3.1 (versions, releases, configuration) | 1,900 | open |
+| 32 | Data structures | `32-data-structures.md` | Zingale 3.1, 3.6; pyro 3.2; Ulula 3.2; ZEUS 3.1; Athena 2.1.4, 3.2 | 5,000 | open |
+| 33 | The driver and the control of a time step | `33-driver-and-control-of-time-step.md` | pyro 3.3 (driver, parameters); Ulula 3.3, 3.5; ZEUS 3.2; Athena 3.1 (main loop, input, units), 3.5 (task lists) | 3,800 | open |
+| 34 | Problem setups and user functions | `34-problem-setups-and-user-functions.md` | pyro 3.3 (problems); Ulula 2.2.3, 2.8.1, 3.6; Athena 3.6 | 1,200 | open |
+| 35 | Output, restarts and analysis | `35-output-restarts-and-analysis.md` | Zingale 3.3; pyro 3.4 (output, plotting); Ulula 3.4; Athena 3.7 | 2,600 | open |
+| 36 | Mesh refinement | `36-mesh-refinement.md` | Zingale 2.2.6, 2.6.5; pyro 2.1.4; Athena 3.4 | 4,500 | open |
+| 37 | Parallelisation and performance | `37-parallelisation-and-performance.md` | Zingale 2.9.1, 3.2; Ulula 3.7; Athena 3.1 (optimisation), 3.5 (parallelisation), 3.9 | 2,500 | open |

@@ -41,7 +41,7 @@ Each step is put to the author with its review and is committed once the author 
 | 0 | Notation | `00-notation.md` | The notations of the five syntheses | — | done |
 | 1 | The equations and their variables | `01-equations-and-their-variables.md` | Zingale 2.1.9, 2.4.1, 2.5.1–2.5.3, 2.5.9; pyro 2.4.1; Ulula 2.1.1, 2.1.3, 2.1.4; ZEUS 2.1.1, 2.3.3, 2.8.1, 2.8.2; Athena 2.1.1, 2.1.4 | 5,400 | done |
 | 2 | Equations of state | `02-equations-of-state.md` | Zingale 2.1.5, 2.5.21, 2.5.22; pyro 2.4.1; Ulula 2.1.2; ZEUS 2.1.1; Athena 2.2 | 6,100 | done |
-| 3 | Grids and the finite-volume discretisation | `03-grids-and-finite-volume-discretisation.md` | Zingale 2.1.3, 2.2.1–2.2.4, 2.2.6, 2.3.5, 2.3.7, 2.3.13; pyro 2.1.1; Ulula 2.2.1, 2.3.1; ZEUS 2.2.1, 2.2.2, 2.4.3; Athena 2.1.3 | 4,300 | open |
+| 3 | Grids and the finite-volume discretisation | `03-grids-and-finite-volume-discretisation.md` | Zingale 2.1.3, 2.2.1–2.2.4, 2.2.6, 2.3.5, 2.3.7, 2.3.13; pyro 2.1.1; Ulula 2.2.1, 2.3.1; ZEUS 2.2.1, 2.2.2, 2.4.3; Athena 2.1.3 | 4,300 | done |
 | 4 | Boundary conditions and ghost cells | `04-boundary-conditions-and-ghost-cells.md` | Zingale 2.2.5, 2.5.15; pyro 2.1.3, 2.4.6 (boundaries); Ulula 2.2.2, 2.2.3; ZEUS 2.5.1, 2.8.8 (boundaries); Athena 3.3 | 3,700 | open |
 | 5 | Reconstruction and limiting | `05-reconstruction-and-limiting.md` | Zingale 2.3.9–2.3.11, 2.3.19, 2.3.21, 2.5.11 (reconstruction), 2.5.12, 2.5.13; pyro 2.1.5–2.1.7; Ulula 2.5; ZEUS 2.4.2, 2.7.1 (advection); Athena 2.4 | 8,700 | open |
 | 6 | Riemann solvers | `06-riemann-solvers.md` | Zingale 2.1.5, 2.4.2, 2.5.4–2.5.8, 2.5.14; pyro 2.4.7; Ulula 2.4; Athena 2.5 | 7,100 | open |

@@ -52,7 +52,7 @@ Each step is put to the author with its review and is committed once the author 
 | 11 | Curvilinear coordinates | `11-curvilinear-coordinates.md` | Zingale 2.2.6, 2.5.18; pyro 2.1.2; ZEUS 2.2.3, 2.2.4, 2.7.1 (curvilinear advection); Athena 2.8 | 10,800 | done |
 | 12 | Source terms | `12-source-terms.md` | Zingale 2.5.17; pyro 2.4.3 (sources), 2.4.5, 2.4.12 (hse, heating); Ulula 2.3.4, 2.7.1, 2.7.2, 2.7.4, 2.8.5, 2.8.6, 2.8.14, 2.8.15; ZEUS 2.3.1; Athena 2.9.1 | 3,200 | done |
 | 13 | Elliptic solvers | `13-elliptic-solvers.md` | Zingale 2.1.8, 2.6.1–2.6.8, 2.10.8; pyro 2.1.4, 2.6; Ulula 2.7.3; ZEUS 2.6, 2.7.5; Athena 2.10.1 (FFT), 2.10.2, 2.10.3, 2.10.4 (refined meshes), 2.10.5 | 13,900 | done |
-| 14 | Self-gravity | `14-self-gravity.md` | Zingale 2.6.9 (self-gravity); Ulula 2.7.1, 2.7.3, 2.7.4, 2.8.7, 2.8.16; ZEUS 2.6, 2.7.2, 2.7.5; Athena 2.10.1, 2.10.4 (self-gravity), 2.10.6 | 5,500 | open |
+| 14 | Self-gravity | `14-self-gravity.md` | Zingale 2.6.9 (self-gravity); Ulula 2.7.1, 2.7.3, 2.7.4, 2.8.7, 2.8.16; ZEUS 2.6, 2.7.2, 2.7.5; Athena 2.10.1, 2.10.4 (self-gravity), 2.10.6 | 5,500 | done |
 | 15 | Diffusion | `15-diffusion.md` | Zingale 2.4.8, 2.7; pyro 2.3.2, 2.7; Athena 2.1.2, 2.11, 2.12.2 (diffusion) | 4,300 | open |
 | 16 | Operator splitting and the coupling of processes | `16-operator-splitting-and-coupling-of-processes.md` | Zingale 2.8.1–2.8.3, 2.8.6; pyro 2.4.10, 2.4.11; Ulula 2.3.4; ZEUS 2.1.2; Athena 2.11.2, 3.5 (the integrator) | 3,100 | open |
 | 17 | Reactions, chemistry and cooling | `17-reactions-chemistry-and-cooling.md` | Zingale 2.1.7, 2.8.4, 2.8.5, 2.8.7; pyro 2.4.11; Athena 2.15.3 | 2,300 | open |

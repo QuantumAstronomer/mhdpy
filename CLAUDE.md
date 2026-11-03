@@ -12,7 +12,7 @@ mhdpy is a framework for astrophysical (magneto)hydrodynamical simulations in Py
 
 The main goal is **learning**. This means learning to write scientifically applicable code, whose physics is demonstrably correct and extensible. It also means learning to build a large, multi-layered software project robustly, in a form that others can pick up easily.
 
-The second goal is **production-scale runs**. The project grew out of earlier work with production-grade MHD software, on simulations of the scale of [Armillotta, Fraternali and Marinacci (2016)](https://ui.adsabs.harvard.edu/abs/2016MNRAS.462.4157A/abstract). Those follow Galactic fountain clouds that lead to coronal condensation, which feeds star formation, on a grid of roughly $4096 \times 1024$ cells without mesh refinement.
+The second goal is **production-scale runs**. The project grew out of earlier work with production-grade MHD software, on simulations of the scale of [Armillotta, Fraternali and Marinacci (2016)](https://ui.adsabs.harvard.edu/abs/2016MNRAS.462.4157A/abstract). Those follow Galactic fountain clouds that lead to coronal condensation, which feeds star formation, on a grid with cells of 2 pc, without mesh refinement.
 
 ### 1.2 Scope
 

@@ -342,7 +342,7 @@ The techniques fall into seven subjects: 2.1 the interpreter and vectorisation i
 |---:|---|---|---|
 | 1 | Bard and Dorelli (2026, arXiv:2503.20899): AGATE, its design, its modes of acceleration and its timings against Athena++ and Cholla | 1, 2.2, 2.3, 2.7, 3 | done |
 | 2 | van der Walt, Colbert and Varoquaux (2011, arXiv:1102.1523): the NumPy array, vectorised computation, and the avoidance of copies and of operations | 2.1, 3 | done |
-| 3 | Alted (2010, doi:10.1109/MCSE.2010.51): the gap between the speeds of processors and memory, and how a processor is kept fed with data | 2.1 | open |
+| 3 | Alted (2010, doi:10.1109/MCSE.2010.51): the gap between the speeds of processors and memory, and how a processor is kept fed with data | 2.1 | done |
 | 4 | Behnel et al. (2011, doi:10.1109/MCSE.2010.118): Cython, Python with declared types compiled to C | 2.2, 3 | open |
 | 5 | Lam, Pitrou and Seibert (2015, doi:10.1145/2833157.2833162): Numba, a just-in-time compiler of numerical Python built on LLVM | 2.2 | open |
 | 6 | Guelton et al. (2015, doi:10.1088/1749-4680/8/1/014001): Pythran, an ahead-of-time compiler of numerical Python to C++ | 2.2 | open |

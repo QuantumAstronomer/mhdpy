@@ -341,7 +341,7 @@ The methods fall into seven subjects: 2.1 clouds in hot winds without cooling, 2
 | Step | Source | Feeds | Status |
 |---:|---|---|---|
 | 1 | Gronke and Schneider (2026, arXiv:2601.16566), §1 and §2.1: where multiphase gas lies, the computational challenges, the key quantities, and turbulent mixing layers | 1, 2.2, 2.5, 2.6 | done |
-| 2 | Gronke and Schneider (2026), §2.2: clouds in winds, the effect of cooling, and the resolution required | 2.1, 2.3, 2.6 | open |
+| 2 | Gronke and Schneider (2026), §2.2: clouds in winds, the effect of cooling, and the resolution required | 2.1, 2.3, 2.6, 3 | done |
 | 3 | Gronke and Schneider (2026), §2.3, §2.4 and §3: streams and jets, thermal instability and shattering, and the outlook | 2.2, 2.3, 2.4, 2.7 | open |
 | 4 | Klein, McKee and Colella (1994, doi:10.1086/173554): the crushing of clouds by shocks, and its resolution | 2.1, 2.6 | open |
 | 5 | Begelman and Fabian (1990, 1990MNRAS.244P..26B): turbulent mixing layers | 2.2 | open |

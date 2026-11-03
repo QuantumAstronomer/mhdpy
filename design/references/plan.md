@@ -345,7 +345,7 @@ The methods fall into seven subjects: 2.1 clouds in hot winds without cooling, 2
 | 3 | Gronke and Schneider (2026), §2.3, §2.4 and §3: streams and jets, thermal instability and shattering, and the outlook | 1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 3 | done |
 | 4 | Klein, McKee and Colella (1994, doi:10.1086/173554): the crushing of clouds by shocks, and its resolution | 2.1, 2.5, 2.6, 3 | done |
 | 5 | Begelman and Fabian (1990, 1990MNRAS.244P..26B): turbulent mixing layers | 2.2 | done |
-| 6 | Ji, Oh and Masterson (2019, arXiv:1809.09101): simulations of radiative turbulent mixing layers | 2.2 | open |
+| 6 | Ji, Oh and Masterson (2019, arXiv:1809.09101): simulations of radiative turbulent mixing layers | 2.2, 2.6, 3 | done |
 | 7 | Fielding, Ostriker, Bryan and Jermyn (2020, arXiv:2003.08390): the fractal nature of radiative mixing layers | 2.2, 2.6 | open |
 | 8 | Tan, Oh and Gronke (2021, arXiv:2008.12302): radiative mixing layers seen through turbulent combustion | 2.2 | open |
 | 9 | McCourt, Oh, O'Leary and Madigan (2018, arXiv:1610.01164): a characteristic scale for cold gas | 2.4 | open |

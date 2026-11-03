@@ -300,3 +300,34 @@ In step 4 of the topic summaries, the second input of the field loop across the 
 In step 6 of the topic summaries, the carbuncle test of Stone et al. (2008, arXiv:0804.0402, App. C) proved to give a flow towards $+x$ an inflow on the right boundary, which contradicts the reflected shock that moves to the left. A sentence in 2.5.5, marked **[GK]**, records that the inflow must lie on the left, and the paragraph is split after it.
 
 In steps 20 and 30 of the topic summaries, the anchors `stone-et-al-1992a` and `stone-et-al-1992b` proved to name the radiation paper of Stone, Mihalas and Norman and the test suite of Stone, Hawley, Evans and Norman in the opposite order to the synthesis of ZEUS and the topic summaries. The synthesis now follows them, and cites the test suite as Stone et al. (1992), without a letter, as the paper of 2008 does.
+
+## Conduction and cooling
+
+The synthesis is kept in `conduction-and-cooling-synthesis.md`. Its sources lie in `reference-works/Conduction and Cooling/Docs/`. They are gathered around [Armillotta, Fraternali and Marinacci](https://arxiv.org/abs/1608.06290) (2016, arXiv:1608.06290), the study of fountain clouds at the disc–corona interface that §1.1 of CLAUDE.md takes as the model of the production runs. The collection follows the works that this paper cites on conduction and cooling, newer studies that build on it, and the methods that it leaves out: anisotropic conduction and the forms of radiative cooling beyond its tables. Papers are cited by arXiv identifier, DOI or ADS bibcode, and by their sections, equations, figures and tables. They are downloaded with the author's approval, the older ones from the scans of ADS, and kept in the folder.
+
+The methods fall into eight subjects: 2.1 isotropic conduction and its suppression by magnetic fields, 2.2 saturated conduction, 2.3 anisotropic conduction, 2.4 the numerical integration of conduction, 2.5 radiative cooling in collisional ionisation equilibrium, 2.6 cooling out of equilibrium and under radiation, 2.7 the time integration of cooling, and 2.8 fountain clouds and coronal condensation. The software architecture records how the papers change their codes, chiefly the modules of conduction and cooling of Athena. Each step reads one paper, or one part of the paper of 2016, and its claims are checked, and its gaps filled, by web search, marked **[GK]**.
+
+| Step | Source | Feeds | Status |
+|---:|---|---|---|
+| 1 | Armillotta et al. (2016), §1 and §3: aims, set-up, Tables 1 and 2 | 1, 2.8 | open |
+| 2 | Armillotta et al. (2016), §2: Spitzer conduction, suppression, saturation, cooling in the energy equation | 2.1, 2.2, 2.5 | open |
+| 3 | Armillotta et al. (2016), App. A: the semi-implicit ADI scheme and the conduction front | 2.4 | open |
+| 4 | Armillotta et al. (2016), §4 to §6: condensation and evaporation, resolution, efficiency of conduction, 2D against 3D | 2.8 | open |
+| 5 | Cowie and McKee (1977, 1977ApJ...211..135C): evaporation of clouds and the saturated heat flux | 2.2 | open |
+| 6 | Dalton and Balbus (1993, 1993ApJ...404..625D): the transition from classical to saturated conduction | 2.2 | open |
+| 7 | Vieser and Hensler (2007, arXiv:0704.3592): clouds in a streaming hot plasma with conduction, and the semi-implicit scheme | 2.2, 2.4 | open |
+| 8 | Sander and Hensler (2022, arXiv:2211.15284): time-dependent saturated conduction in clouds | 2.2 | open |
+| 9 | Sharma and Hammett (2007, arXiv:0707.2616): monotonic schemes for anisotropic diffusion | 2.3, 2.4 | open |
+| 10 | Kooij, Grønnow and Fraternali (2021, arXiv:2101.04684): conduction in a magnetised circumgalactic medium | 2.3, 2.8 | open |
+| 11 | Brüggen, Scannapieco and Grete (2023, arXiv:2304.09881): isotropic against anisotropic conduction for clouds in outflows | 2.3, 2.8 | open |
+| 12 | Sutherland and Dopita (1993, 1993ApJS...88..253S): cooling functions in and out of ionisation equilibrium | 2.5, 2.6 | open |
+| 13 | Schure et al. (2009, arXiv:0909.5204): an updated equilibrium cooling curve | 2.5 | open |
+| 14 | Gnat and Sternberg (2007, 2007ApJS..168..213G): time-dependent ionisation in radiatively cooling gas | 2.6 | open |
+| 15 | Wiersma, Schaye and Smith (2009, arXiv:0807.3748): photoionisation and cooling element by element | 2.6 | open |
+| 16 | Ploeckinger and Schaye (2020, arXiv:2006.14322): cooling tables with radiation fields and self-shielding | 2.6 | open |
+| 17 | Townsend (2009, arXiv:0901.3146): exact integration of radiative cooling | 2.7 | open |
+| 18 | Armillotta et al. (2017, arXiv:1608.05416): survival of clouds in the circumgalactic medium | 2.8 | open |
+| 19 | Barbani et al. (2023, arXiv:2306.11791): galactic coronae and stellar feedback in Milky Way-like galaxies | 2.8 | open |
+| 20 | The list of sources, and a review of the whole synthesis against the sources | – | open |
+
+Step 7 confirms the journal reference of its paper, since the letters a and b of the two papers of Vieser and Hensler of 2007 differ between the works that cite them. Once the synthesis is done, topics 15 and 17 are completed with it, and their rows in `design/topics/plan.md` name it, as do those of topics 28 and 29 where their clouds and instabilities gain conduction and cooling.

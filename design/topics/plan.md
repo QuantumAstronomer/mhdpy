@@ -59,7 +59,7 @@ Each step is put to the author with its review and is committed once the author 
 | 18 | Passive scalars | `18-passive-scalars.md` | Zingale 2.8.4 (species); pyro 2.4.1 (scalars); Athena 2.12 | 1,800 | done |
 | 19 | Particles | `19-particles.md` | pyro 2.10; Athena 2.13 | 5,400 | done |
 | 20 | Radiation transport | `20-radiation-transport.md` | Zingale 2.6.9 (radiation); ZEUS 2.10–2.12; Athena 2.15.1 | 10,800 | done |
-| 21 | The shearing box and orbital advection | `21-shearing-box-and-orbital-advection.md` | Athena 2.9.1 (rotating frame), 2.9.2–2.9.4 | 6,700 | open |
+| 21 | The shearing box and orbital advection | `21-shearing-box-and-orbital-advection.md` | Athena 2.9.1 (rotating frame), 2.9.2–2.9.4 | 6,700 | done |
 | 22 | Relativistic MHD | `22-relativistic-mhd.md` | Athena 2.14 | 12,700 | open |
 | 23 | Cosmic rays | `23-cosmic-rays.md` | Athena 2.15.2 | 500 | open |
 | 24 | The driving of turbulence | `24-driving-of-turbulence.md` | Athena 2.15.4 | 800 | open |

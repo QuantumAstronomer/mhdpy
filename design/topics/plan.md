@@ -63,7 +63,7 @@ Each step is put to the author with its review and is committed once the author 
 | 22 | Relativistic MHD | `22-relativistic-mhd.md` | Athena 2.14 | 12,700 | done |
 | 23 | Cosmic rays | `23-cosmic-rays.md` | Athena 2.15.2 | 500 | done |
 | 24 | The driving of turbulence | `24-driving-of-turbulence.md` | Athena 2.15.4 | 800 | done |
-| 25 | Verification and testing | `25-verification-and-testing.md` | Zingale 2.1.1, 2.1.2, 2.1.6, 2.3.6, 2.9.1, 2.9.2; pyro 2.4.12 (test), 3.4 (convergence, testing); Ulula 2.8.17; ZEUS 2.7.1 (approach), 2.7.6, 2.9.1 (approach), 2.9.8, 2.12.1 (approach), 2.12.4; Athena 3.1 (reproducibility), 3.8 | 3,900 | open |
+| 25 | Verification and testing | `25-verification-and-testing.md` | Zingale 2.1.1, 2.1.2, 2.1.6, 2.3.6, 2.9.1, 2.9.2; pyro 2.4.12 (test), 3.4 (convergence, testing); Ulula 2.8.17; ZEUS 2.7.1 (approach), 2.7.6, 2.9.1 (approach), 2.9.8, 2.12.1 (approach), 2.12.4; Athena 3.1 (reproducibility), 3.8 | 3,900 | done |
 | 26 | Advection and linear waves | `26-advection-and-linear-waves.md` | Zingale 2.5.19 (advection); pyro 2.2.5, 2.4.12 (advect, acoustic_pulse); Ulula 2.8.1–2.8.3, 2.8.8; ZEUS 2.9.4, 2.9.7; Athena 2.16.1, 2.16.2 | 5,300 | open |
 | 27 | Shock tubes and interacting blast waves | `27-shock-tubes-and-interacting-blast-waves.md` | Zingale 2.4.4, 2.5.19 (shock tubes); pyro 2.3.3, 2.4.12 (sod); Ulula 2.8.4; ZEUS 2.7.3, 2.7.4 (blast waves), 2.9.2; Athena 2.16.4 | 5,400 | open |
 | 28 | Shocks in several dimensions | `28-shocks-in-several-dimensions.md` | Zingale 2.5.19 (Sedov); pyro 2.4.12 (sedov, quad, ramp, logo); Ulula 2.8.10, 2.8.11; ZEUS 2.7.4 (wind tunnel, double Mach reflection); Athena 2.16.5 (shocks) | 3,900 | open |

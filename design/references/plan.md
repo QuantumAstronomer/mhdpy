@@ -349,7 +349,7 @@ The techniques fall into seven subjects: 2.1 the interpreter and vectorisation i
 | 7 | Kailasa, Wang, Barba and Betcke (2022, arXiv:2303.08394): a multithreaded code designed with Numba, its pitfalls and its data-oriented design | 2.2, 2.4, 3 | done |
 | 8 | Ziogas et al. (2021, arXiv:2107.00555): data-centric Python, with NumPy, Numba, Pythran and compiled C measured on several dozen kernels, among them stencils, and scaling with MPI | 2.2, 2.3, 2.5, 2.6 | done |
 | 9 | Augier, Bolz-Tereick, Guelton and Mohanan (2021, doi:10.1038/s41550-021-01342-y): Python compilers for an astrophysical N-body problem, in reply to Portegies Zwart (2020) | 1, 2.3 | done |
-| 10 | Gross (2023, PEP 703): making the global interpreter lock optional in CPython | 2.4, 2.5 | open |
+| 10 | Gross (2023, PEP 703): making the global interpreter lock optional in CPython | 2.4, 2.5 | done |
 | 11 | Montoya Salazar (2026, arXiv:2603.04782): the free-threaded Python 3.14 against the default build on a laptop of six cores | 2.4 | open |
 | 12 | Piñeiro and Pichel (2026, arXiv:2411.14887): OpenMP in pure Python on the free-threaded build, with a compiled kernel and with mpi4py | 2.4, 2.5 | open |
 | 13 | Diehl et al. (2024, arXiv:2307.01117): a stencil on segments that exchange ghost zones, run by threads on ten platforms, Python with NumPy among them | 2.4, 2.6 | open |

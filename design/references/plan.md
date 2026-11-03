@@ -355,7 +355,7 @@ The techniques fall into seven subjects: 2.1 the interpreter and vectorisation i
 | 13 | Diehl et al. (2024, arXiv:2307.01117): a stencil on segments that exchange ghost zones, run by threads on ten platforms, Python with NumPy among them | 2.4, 2.6 | done |
 | 14 | Dalcin and Fang (2021, doi:10.1109/MCSE.2021.3083216): mpi4py after twelve years, and its communication of arrays and of Python objects | 2.5 | done |
 | 15 | Ketcheson et al. (2012, arXiv:1111.6583): PyClaw, Python with wrapped Fortran kernels for hyperbolic problems, parallel through PETSc | 2.2, 2.6, 2.7, 3 | done |
-| 16 | Kissami and Ratnani (2022, arXiv:2203.00925): Manapy, finite volumes on unstructured grids in Python with compiled kernels, partitioned for MPI | 2.5, 2.6, 2.7, 3 | open |
+| 16 | Kissami and Ratnani (2022, arXiv:2203.00925): Manapy, finite volumes on unstructured grids in Python with compiled kernels, partitioned for MPI | 2.5, 2.6, 3 | done |
 | 17 | Dahm et al. (2023, doi:10.5194/gmd-16-2719-2023): Pace, the finite-volume dynamical core FV3 in Python with generated stencils, against Fortran on CPU and GPU | 2.6, 2.7, 3 | open |
 | 18 | Häfner, Nuterman and Jochum (2021, doi:10.1029/2021MS002717): Veros, an ocean model in Python compiled by JAX, against Fortran on CPU and GPU | 2.3, 2.6, 2.7, 3 | open |
 | 19 | The list of sources, and a review of the whole synthesis against the sources | – | open |

@@ -333,3 +333,33 @@ The rules of the synthesis of Athena carry over, without those on code. A **[GK]
 | 20 | The list of sources, and a review of the whole synthesis against the sources | – | done |
 
 In step 1, the paper first planned for step 7, arXiv:0704.3592, proved to be Paper II of Vieser and Hensler, on clouds in a streaming hot plasma, which refers to Paper I for its scheme of conduction. The semi-implicit scheme that the paper of 2016 adopts lies in App. A of Paper I, and the author chose to read Paper I in step 7 instead. Once the synthesis is done, topics 15 and 17 are completed with it, and their rows in `design/topics/plan.md` name it, as do those of topics 28 and 29 where their clouds and instabilities gain conduction and cooling.
+
+## Mixing and resolution
+
+The synthesis is kept in `mixing-and-resolution-synthesis.md`. Its sources lie in `reference-works/Mixing and Resolution/Docs/`. They are gathered around the review of [Gronke and Schneider](https://arxiv.org/abs/2601.16566) (2026, arXiv:2601.16566) on simulations of multiphase gas in and around galaxies, and follow the physics that decides the fate of a fountain cloud in the corona: its mixing with the hot gas in turbulent radiative layers, the criteria for its survival and growth, the characteristic scale of cooling, and the numerical resolution that these processes demand. The collection complements that on conduction and cooling, whose subject 2.8 holds the studies of fountain clouds with conduction, and it serves topics 28 and 29 and the choice of grid for the production runs. Papers are cited by arXiv identifier, DOI or ADS bibcode, and by their sections, equations, figures and tables. They are downloaded with the author's approval, the older ones from the scans of ADS, and kept in the folder.
+
+The methods fall into seven subjects: 2.1 clouds in hot winds without cooling, 2.2 turbulent radiative mixing layers, 2.3 the survival and growth of cold gas, 2.4 the characteristic scale of cooling, 2.5 measures of mixing, 2.6 numerical resolution and convergence, and 2.7 fountain clouds and the condensation of the corona. The software architecture records the codes and set-ups of the simulations, as far as the papers describe them. Each step reads one paper, or one part of the review, and its claims are checked, and its gaps filled, by web search, marked **[GK]**.
+
+| Step | Source | Feeds | Status |
+|---:|---|---|---|
+| 1 | Gronke and Schneider (2026, arXiv:2601.16566), §1 and §2.1: where multiphase gas lies, the computational challenges, the key quantities, and turbulent mixing layers | 1, 2.2, 2.5, 2.6 | done |
+| 2 | Gronke and Schneider (2026), §2.2: clouds in winds, the effect of cooling, and the resolution required | 2.1, 2.3, 2.6, 3 | done |
+| 3 | Gronke and Schneider (2026), §2.3, §2.4 and §3: streams and jets, thermal instability and shattering, and the outlook | 1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 3 | done |
+| 4 | Klein, McKee and Colella (1994, doi:10.1086/173554): the crushing of clouds by shocks, and its resolution | 2.1, 2.5, 2.6, 3 | done |
+| 5 | Begelman and Fabian (1990, 1990MNRAS.244P..26B): turbulent mixing layers | 2.2 | done |
+| 6 | Ji, Oh and Masterson (2019, arXiv:1809.09101): simulations of radiative turbulent mixing layers | 2.2, 2.6, 3 | done |
+| 7 | Fielding, Ostriker, Bryan and Jermyn (2020, arXiv:2003.08390): the fractal nature of radiative mixing layers | 2.2, 2.6, 3 | done |
+| 8 | Tan, Oh and Gronke (2021, arXiv:2008.12302): radiative mixing layers seen through turbulent combustion | 2.2, 2.6, 3 | done |
+| 9 | McCourt, Oh, O'Leary and Madigan (2018, arXiv:1610.01164): a characteristic scale for cold gas | 2.4, 2.6, 3 | done |
+| 10 | Gronke and Oh (2018, arXiv:1806.02728): the growth and entrainment of cold gas in a hot wind | 2.3, 2.6, 3 | done |
+| 11 | Abruzzo, Bryan and Fielding (2022, arXiv:2101.10344): a simple model of mixing and cooling | 2.3, 2.5, 2.6, 3 | done |
+| 12 | Abruzzo, Fielding and Bryan (2023, arXiv:2307.03228): a unified criterion of survival | 2.3, 2.6, 3 | done |
+| 13 | Gronke, Oh, Ji and Norman (2022, arXiv:2107.13012): survival and growth of cold gas in a turbulent medium | 2.3, 2.4, 2.6, 3 | done |
+| 14 | Leary, Schneider and Richie (2024, arXiv:2501.13186): the dependence of cloud–wind simulations on resolution | 2.6, 3 | done |
+| 15 | Leary, Richie and Schneider (2026, arXiv:2602.10082): the effects of numerical resolution on cloud–wind interactions | 2.6, 3 | done |
+| 16 | Lancaster, Mohapatra, Fielding and Bryan (2026, arXiv:2606.04087): what a resolved mixing layer means | 2.2, 2.6, 3 | done |
+| 17 | Marinacci et al. (2010, arXiv:1001.2446): fountain clouds and the accretion of the corona | 2.6, 2.7, 3 | done |
+| 18 | Marinacci et al. (2011, arXiv:1103.5358): galactic fountains and the rotation of coronae | 2.7, 3 | done |
+| 19 | The list of sources, and a review of the whole synthesis against the sources | 1, 3, 4 | done |
+
+Step 5 confirms the bibcode of Begelman and Fabian (1990) from the scan. Sections 2.5 to 2.8 of the review, on bubbles, stratified discs, galaxies and haloes, lie outside the collection. Once the synthesis is done, topics 28 and 29 are completed with it, and the resolution that it finds informs the brief on the grid of the production runs. The author ranks the further collections as this one, then non-reflecting boundaries, and last the performance of Python codes.

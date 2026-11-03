@@ -307,15 +307,17 @@ The synthesis is kept in `conduction-and-cooling-synthesis.md`. Its sources lie 
 
 The methods fall into eight subjects: 2.1 isotropic conduction and its suppression by magnetic fields, 2.2 saturated conduction, 2.3 anisotropic conduction, 2.4 the numerical integration of conduction, 2.5 radiative cooling in collisional ionisation equilibrium, 2.6 cooling out of equilibrium and under radiation, 2.7 the time integration of cooling, and 2.8 fountain clouds and coronal condensation. The software architecture records how the papers change their codes, chiefly the modules of conduction and cooling of Athena. Each step reads one paper, or one part of the paper of 2016, and its claims are checked, and its gaps filled, by web search, marked **[GK]**.
 
+The rules of the synthesis of Athena carry over, without those on code. A **[GK]** mark covers the rest of its paragraph or list item, and a disagreement with a web source is reported for a decision. Slips that a derivation exposes are noted as **[GK]** without asking. Slips in wording without consequence are paraphrased correctly without a note, and gap fills go in without asking. The review of each step lists all three. A gap fill or correction that can be neither derived nor checked against an accessible source, the other folders of `reference-works/` included, is left out and reported in the review. Explorations and extensions that the papers suggest are left out. Each simulation or test is digested with its initial data, boundary conditions, grid, parameters and stopping time, and with the outcome that the paper reports and the numbers that state it. Its variants take a line, and the content of a table is restated in prose. After step 1 the author decided that the four citations of the paper of 2016 that misstate the works they name are corrected in the text, each with a note marked **[GK]** that says what the paper wrote. The two papers of Vieser and Hensler of 2007 take the letters of the paper of 2016, which follow their own numbering as Paper I and Paper II: 2007a is A&A 475, 251 (arXiv:0709.0623) and 2007b is A&A 472, 141 (arXiv:0704.3592). Paper II appeared first, and other works, such as Sander and Hensler (2022), swap the letters.
+
 | Step | Source | Feeds | Status |
 |---:|---|---|---|
-| 1 | Armillotta et al. (2016), §1 and §3: aims, set-up, Tables 1 and 2 | 1, 2.8 | open |
+| 1 | Armillotta et al. (2016), §1 and §3: aims, set-up, Tables 1 and 2 | 1, 2.8 | done |
 | 2 | Armillotta et al. (2016), §2: Spitzer conduction, suppression, saturation, cooling in the energy equation | 2.1, 2.2, 2.5 | open |
 | 3 | Armillotta et al. (2016), App. A: the semi-implicit ADI scheme and the conduction front | 2.4 | open |
 | 4 | Armillotta et al. (2016), §4 to §6: condensation and evaporation, resolution, efficiency of conduction, 2D against 3D | 2.8 | open |
 | 5 | Cowie and McKee (1977, 1977ApJ...211..135C): evaporation of clouds and the saturated heat flux | 2.2 | open |
 | 6 | Dalton and Balbus (1993, 1993ApJ...404..625D): the transition from classical to saturated conduction | 2.2 | open |
-| 7 | Vieser and Hensler (2007, arXiv:0704.3592): clouds in a streaming hot plasma with conduction, and the semi-implicit scheme | 2.2, 2.4 | open |
+| 7 | Vieser and Hensler (2007a, arXiv:0709.0623): evaporation and condensation of spherical clouds with saturated conduction and cooling, and the semi-implicit scheme | 2.2, 2.4 | open |
 | 8 | Sander and Hensler (2022, arXiv:2211.15284): time-dependent saturated conduction in clouds | 2.2 | open |
 | 9 | Sharma and Hammett (2007, arXiv:0707.2616): monotonic schemes for anisotropic diffusion | 2.3, 2.4 | open |
 | 10 | Kooij, Grønnow and Fraternali (2021, arXiv:2101.04684): conduction in a magnetised circumgalactic medium | 2.3, 2.8 | open |
@@ -330,4 +332,4 @@ The methods fall into eight subjects: 2.1 isotropic conduction and its suppressi
 | 19 | Barbani et al. (2023, arXiv:2306.11791): galactic coronae and stellar feedback in Milky Way-like galaxies | 2.8 | open |
 | 20 | The list of sources, and a review of the whole synthesis against the sources | – | open |
 
-Step 7 confirms the journal reference of its paper, since the letters a and b of the two papers of Vieser and Hensler of 2007 differ between the works that cite them. Once the synthesis is done, topics 15 and 17 are completed with it, and their rows in `design/topics/plan.md` name it, as do those of topics 28 and 29 where their clouds and instabilities gain conduction and cooling.
+In step 1, the paper first planned for step 7, arXiv:0704.3592, proved to be Paper II of Vieser and Hensler, on clouds in a streaming hot plasma, which refers to Paper I for its scheme of conduction. The semi-implicit scheme that the paper of 2016 adopts lies in App. A of Paper I, and the author chose to read Paper I in step 7 instead. Once the synthesis is done, topics 15 and 17 are completed with it, and their rows in `design/topics/plan.md` name it, as do those of topics 28 and 29 where their clouds and instabilities gain conduction and cooling.

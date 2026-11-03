@@ -351,7 +351,7 @@ The methods fall into eight subjects: 2.1 characteristics and the number of boun
 | 9 | Motheau, Almgren and Bell (2017, doi:10.2514/1.J055885): characteristic conditions through ghost cells, against simple extrapolation | 2.6 | open |
 | 10 | Tarr et al. (2024, arXiv:2311.02281), §2 and §3: magnetohydrodynamics in characteristic form, and the characteristics that cross a boundary | 2.1, 2.3, 2.7 | done |
 | 11 | Tarr et al. (2024), §5, §6 and App. D and E: a finite-volume scheme in characteristic form, its coupling through ghost cells, and the finite-difference ghost cells that failed in several dimensions | 2.6, 2.7 | done |
-| 12 | Kee et al. (2025, arXiv:2501.17995): non-reflecting boundaries in magnetohydrodynamics against a larger domain | 2.7 | open |
+| 12 | Kee et al. (2025, arXiv:2501.17995): non-reflecting boundaries in magnetohydrodynamics against a larger domain | 2.7 | done |
 | 13 | Mandal et al. (2024, arXiv:2405.10005), §2.6 and App. A: a subsonic wind through an inflow boundary, outflow without inflow, and a characteristic inflow | 2.4, 2.6, 2.8 | open |
 | 14 | The list of sources, and a review of the whole synthesis against the sources | – | open |
 

@@ -351,7 +351,7 @@ The methods fall into seven subjects: 2.1 clouds in hot winds without cooling, 2
 | 9 | McCourt, Oh, O'Leary and Madigan (2018, arXiv:1610.01164): a characteristic scale for cold gas | 2.4, 2.6, 3 | done |
 | 10 | Gronke and Oh (2018, arXiv:1806.02728): the growth and entrainment of cold gas in a hot wind | 2.3, 2.6, 3 | done |
 | 11 | Abruzzo, Bryan and Fielding (2022, arXiv:2101.10344): a simple model of mixing and cooling | 2.3, 2.5, 2.6, 3 | done |
-| 12 | Abruzzo, Fielding and Bryan (2023, arXiv:2307.03228): a unified criterion of survival | 2.3 | open |
+| 12 | Abruzzo, Fielding and Bryan (2023, arXiv:2307.03228): a unified criterion of survival | 2.3, 2.6, 3 | done |
 | 13 | Gronke, Oh, Ji and Norman (2022, arXiv:2107.13012): survival and growth of cold gas in a turbulent medium | 2.3 | open |
 | 14 | Leary, Schneider and Richie (2024, arXiv:2501.13186): the dependence of cloud–wind simulations on resolution | 2.6 | open |
 | 15 | Leary, Richie and Schneider (2026, arXiv:2602.10082): the effects of numerical resolution on cloud–wind interactions | 2.6 | open |

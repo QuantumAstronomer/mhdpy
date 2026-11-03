@@ -346,7 +346,7 @@ The techniques fall into seven subjects: 2.1 the interpreter and vectorisation i
 | 4 | Behnel et al. (2011, doi:10.1109/MCSE.2010.118): Cython, Python with declared types compiled to C | 2.2, 3 | done |
 | 5 | Lam, Pitrou and Seibert (2015, doi:10.1145/2833157.2833162): Numba, a just-in-time compiler of numerical Python built on LLVM | 2.2 | open |
 | 6 | Guelton et al. (2015, doi:10.1088/1749-4680/8/1/014001): Pythran, an ahead-of-time compiler of numerical Python to C++ | 2.2 | done |
-| 7 | Kailasa, Wang, Barba and Betcke (2022, arXiv:2303.08394): a multithreaded code designed with Numba, its pitfalls and its data-oriented design | 2.2, 2.4, 3 | open |
+| 7 | Kailasa, Wang, Barba and Betcke (2022, arXiv:2303.08394): a multithreaded code designed with Numba, its pitfalls and its data-oriented design | 2.2, 2.4, 3 | done |
 | 8 | Ziogas et al. (2021, arXiv:2107.00555): data-centric Python, with NumPy, Numba, Pythran and compiled C measured on several dozen kernels, among them stencils, and scaling with MPI | 2.3, 2.5 | open |
 | 9 | Augier, Bolz-Tereick, Guelton and Mohanan (2021, doi:10.1038/s41550-021-01342-y): Python compilers for an astrophysical N-body problem, in reply to Portegies Zwart (2020) | 1, 2.3 | open |
 | 10 | Gross (2023, PEP 703): making the global interpreter lock optional in CPython | 2.4, 2.5 | open |

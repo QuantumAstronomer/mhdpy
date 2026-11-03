@@ -314,7 +314,7 @@ The rules of the synthesis of Athena carry over, without those on code. A **[GK]
 | 1 | Armillotta et al. (2016), §1 and §3: aims, set-up, Tables 1 and 2 | 1, 2.8 | done |
 | 2 | Armillotta et al. (2016), §2: Spitzer conduction, suppression, saturation, cooling in the energy equation | 2.1, 2.2, 2.5, 2.7, 3 | done |
 | 3 | Armillotta et al. (2016), App. A: the semi-implicit ADI scheme and the conduction front | 2.4, 3 | done |
-| 4 | Armillotta et al. (2016), §4 to §6: condensation and evaporation, resolution, efficiency of conduction, 2D against 3D | 2.8 | open |
+| 4 | Armillotta et al. (2016), §4 to §6: condensation and evaporation, resolution, efficiency of conduction, 2D against 3D | 2.8 | done |
 | 5 | Cowie and McKee (1977, 1977ApJ...211..135C): evaporation of clouds and the saturated heat flux | 2.2 | open |
 | 6 | Dalton and Balbus (1993, 1993ApJ...404..625D): the transition from classical to saturated conduction | 2.2 | open |
 | 7 | Vieser and Hensler (2007a, arXiv:0709.0623): evaporation and condensation of spherical clouds with saturated conduction and cooling, and the semi-implicit scheme | 2.2, 2.4 | open |

@@ -322,7 +322,7 @@ The rules of the synthesis of Athena carry over, without those on code. A **[GK]
 | 9 | Sharma and Hammett (2007, arXiv:0707.2616): monotonic schemes for anisotropic diffusion | 2.3, 2.4 | done |
 | 10 | Kooij, Grønnow and Fraternali (2021, arXiv:2101.04684): conduction in a magnetised circumgalactic medium | 2.3, 2.8 | done |
 | 11 | Brüggen, Scannapieco and Grete (2023, arXiv:2304.09881): isotropic against anisotropic conduction for clouds in outflows | 2.3, 2.4, 2.8, 3 | done |
-| 12 | Sutherland and Dopita (1993, 1993ApJS...88..253S): cooling functions in and out of ionisation equilibrium | 2.5, 2.6 | open |
+| 12 | Sutherland and Dopita (1993, 1993ApJS...88..253S): cooling functions in and out of ionisation equilibrium | 2.5, 2.6 | done |
 | 13 | Schure et al. (2009, arXiv:0909.5204): an updated equilibrium cooling curve | 2.5 | open |
 | 14 | Gnat and Sternberg (2007, 2007ApJS..168..213G): time-dependent ionisation in radiatively cooling gas | 2.6 | open |
 | 15 | Wiersma, Schaye and Smith (2009, arXiv:0807.3748): photoionisation and cooling element by element | 2.6 | open |

@@ -56,7 +56,7 @@ Each step is put to the author with its review and is committed once the author 
 | 15 | Diffusion | `15-diffusion.md` | Zingale 2.4.8, 2.7; pyro 2.3.2, 2.7; Athena 2.1.2, 2.11, 2.12.2 (diffusion) | 4,300 | done |
 | 16 | Operator splitting and the coupling of processes | `16-operator-splitting-and-coupling-of-processes.md` | Zingale 2.8.1–2.8.3, 2.8.6; pyro 2.4.10, 2.4.11; Ulula 2.3.4; ZEUS 2.1.2; Athena 2.11.2, 3.5 (the integrator) | 3,100 | done |
 | 17 | Reactions, chemistry and cooling | `17-reactions-chemistry-and-cooling.md` | Zingale 2.1.7, 2.8.4, 2.8.5, 2.8.7; pyro 2.4.11; Athena 2.15.3 | 2,300 | done |
-| 18 | Passive scalars | `18-passive-scalars.md` | Zingale 2.8.4 (species); pyro 2.4.1 (scalars); Athena 2.12 | 1,800 | open |
+| 18 | Passive scalars | `18-passive-scalars.md` | Zingale 2.8.4 (species); pyro 2.4.1 (scalars); Athena 2.12 | 1,800 | done |
 | 19 | Particles | `19-particles.md` | pyro 2.10; Athena 2.13 | 5,400 | open |
 | 20 | Radiation transport | `20-radiation-transport.md` | Zingale 2.6.9 (radiation); ZEUS 2.10–2.12; Athena 2.15.1 | 10,800 | open |
 | 21 | The shearing box and orbital advection | `21-shearing-box-and-orbital-advection.md` | Athena 2.9.1 (rotating frame), 2.9.2–2.9.4 | 6,700 | open |

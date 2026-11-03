@@ -355,7 +355,7 @@ The methods fall into seven subjects: 2.1 clouds in hot winds without cooling, 2
 | 13 | Gronke, Oh, Ji and Norman (2022, arXiv:2107.13012): survival and growth of cold gas in a turbulent medium | 2.3, 2.4, 2.6, 3 | done |
 | 14 | Leary, Schneider and Richie (2024, arXiv:2501.13186): the dependence of cloud–wind simulations on resolution | 2.6, 3 | done |
 | 15 | Leary, Richie and Schneider (2026, arXiv:2602.10082): the effects of numerical resolution on cloud–wind interactions | 2.6, 3 | done |
-| 16 | Lancaster, Mohapatra, Fielding and Bryan (2026, arXiv:2606.04087): what a resolved mixing layer means | 2.2, 2.6 | open |
+| 16 | Lancaster, Mohapatra, Fielding and Bryan (2026, arXiv:2606.04087): what a resolved mixing layer means | 2.2, 2.6, 3 | done |
 | 17 | Marinacci et al. (2010, arXiv:1001.2446): fountain clouds and the accretion of the corona | 2.7 | open |
 | 18 | Marinacci et al. (2011, arXiv:1103.5358): galactic fountains and the rotation of coronae | 2.7 | open |
 | 19 | The list of sources, and a review of the whole synthesis against the sources | – | open |

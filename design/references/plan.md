@@ -317,7 +317,7 @@ The rules of the synthesis of Athena carry over, without those on code. A **[GK]
 | 4 | Armillotta et al. (2016), §4 to §6: condensation and evaporation, resolution, efficiency of conduction, 2D against 3D | 2.8 | done |
 | 5 | Cowie and McKee (1977, 1977ApJ...211..135C): evaporation of clouds and the saturated heat flux | 2.2 | done |
 | 6 | Dalton and Balbus (1993, 1993ApJ...404..625D): the transition from classical to saturated conduction | 2.2 | done |
-| 7 | Vieser and Hensler (2007a, arXiv:0709.0623): evaporation and condensation of spherical clouds with saturated conduction and cooling, and the semi-implicit scheme | 2.2, 2.4 | open |
+| 7 | Vieser and Hensler (2007a, arXiv:0709.0623): evaporation and condensation of spherical clouds with saturated conduction and cooling, and the semi-implicit scheme | 2.2, 2.4, 3 | done |
 | 8 | Sander and Hensler (2022, arXiv:2211.15284): time-dependent saturated conduction in clouds | 2.2 | open |
 | 9 | Sharma and Hammett (2007, arXiv:0707.2616): monotonic schemes for anisotropic diffusion | 2.3, 2.4 | open |
 | 10 | Kooij, Grønnow and Fraternali (2021, arXiv:2101.04684): conduction in a magnetised circumgalactic medium | 2.3, 2.8 | open |

@@ -347,7 +347,7 @@ The methods fall into eight subjects: 2.1 characteristics and the number of boun
 | 5 | Poinsot and Lele (1992, doi:10.1016/0021-9991(92)90046-2): characteristic conditions for the Navier–Stokes equations, and the partially reflecting outflow | 2.1, 2.3, 2.4 | open |
 | 6 | Poinsot and Lele (1992): the tests of a ducted shear layer, vortices through boundaries and Poiseuille flow | 2.3, 2.4 | open |
 | 7 | Selle, Nicoud and Poinsot (2004, doi:10.2514/1.1883): the reflection of a relaxed outflow as a function of frequency | 2.4 | open |
-| 8 | de Val-Borro et al. (2006, arXiv:astro-ph/0605237), §3.2: wave-damping zones in simulations of discs | 2.5, 2.8 | open |
+| 8 | de Val-Borro et al. (2006, arXiv:astro-ph/0605237), §3.2: wave-damping zones in simulations of discs | 2.5, 2.8 | done |
 | 9 | Motheau, Almgren and Bell (2017, doi:10.2514/1.J055885): characteristic conditions through ghost cells, against simple extrapolation | 2.6 | open |
 | 10 | Tarr et al. (2024, arXiv:2311.02281), §2 and §3: magnetohydrodynamics in characteristic form, and the characteristics that cross a boundary | 2.1, 2.3, 2.7 | open |
 | 11 | Tarr et al. (2024), §5, §6 and App. D and E: a finite-volume scheme in characteristic form, its coupling through ghost cells, and the finite-difference ghost cells that failed in several dimensions | 2.6, 2.7 | open |

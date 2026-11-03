@@ -70,7 +70,7 @@ Each step is put to the author with its review and is committed once the author 
 | 29 | Instabilities, vortices and convection | `29-instabilities-vortices-and-convection.md` | pyro 2.4.12 (gresho, kh, rt, rt2, rt_multimode, bubble, convection, plume); Ulula 2.8.9, 2.8.12, 2.8.13; Athena 2.16.5 (instabilities) | 2,600 | done |
 | 30 | Multidimensional and astrophysical MHD | `30-multidimensional-and-astrophysical-mhd.md` | ZEUS 2.9.3, 2.9.5, 2.9.6; Athena 2.16.6 | 4,700 | done |
 | 31 | Packaging, configuration and build | `31-packaging-configuration-and-build.md` | Zingale 3.4, 3.5; pyro 3.1; Ulula 3.1; Athena 3.1 (versions, releases, configuration) | 1,900 | done |
-| 32 | Data structures | `32-data-structures.md` | Zingale 3.1, 3.6; pyro 3.2; Ulula 3.2; ZEUS 3.1; Athena 2.1.4, 3.2 | 5,000 | open |
+| 32 | Data structures | `32-data-structures.md` | Zingale 3.1, 3.6; pyro 3.2; Ulula 3.2; ZEUS 3.1; Athena 2.1.4, 3.2 | 5,000 | done |
 | 33 | The driver and the control of a time step | `33-driver-and-control-of-time-step.md` | pyro 3.3 (driver, parameters); Ulula 3.3, 3.5; ZEUS 3.2; Athena 3.1 (main loop, input, units), 3.5 (task lists) | 3,800 | open |
 | 34 | Problem setups and user functions | `34-problem-setups-and-user-functions.md` | pyro 3.3 (problems); Ulula 2.2.3, 2.8.1, 3.6; Athena 3.6 | 1,200 | open |
 | 35 | Output, restarts and analysis | `35-output-restarts-and-analysis.md` | Zingale 3.3; pyro 3.4 (output, plotting); Ulula 3.4; Athena 3.7 | 2,600 | open |

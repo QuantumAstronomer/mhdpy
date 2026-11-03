@@ -75,4 +75,4 @@ Each step is put to the author with its review and is committed once the author 
 | 34 | Problem setups and user functions | `34-problem-setups-and-user-functions.md` | pyro 3.3 (problems); Ulula 2.2.3, 2.8.1, 3.6; Athena 3.6 | 1,200 | done |
 | 35 | Output, restarts and analysis | `35-output-restarts-and-analysis.md` | Zingale 3.3; pyro 3.4 (output, plotting); Ulula 3.4; Athena 3.7 | 2,600 | done |
 | 36 | Mesh refinement | `36-mesh-refinement.md` | Zingale 2.2.6, 2.6.5; pyro 2.1.4; Athena 3.4 | 4,500 | done |
-| 37 | Parallelisation and performance | `37-parallelisation-and-performance.md` | Zingale 2.9.1, 3.2; Ulula 3.7; Athena 3.1 (optimisation), 3.5 (parallelisation), 3.9 | 2,500 | open |
+| 37 | Parallelisation and performance | `37-parallelisation-and-performance.md` | Zingale 2.9.1, 3.2; Ulula 3.7; Athena 3.1 (optimisation), 3.5 (parallelisation), 3.9 | 2,500 | done |

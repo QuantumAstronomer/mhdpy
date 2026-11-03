@@ -60,7 +60,7 @@ Each step is put to the author with its review and is committed once the author 
 | 19 | Particles | `19-particles.md` | pyro 2.10; Athena 2.13 | 5,400 | done |
 | 20 | Radiation transport | `20-radiation-transport.md` | Zingale 2.6.9 (radiation); ZEUS 2.10–2.12; Athena 2.15.1 | 10,800 | done |
 | 21 | The shearing box and orbital advection | `21-shearing-box-and-orbital-advection.md` | Athena 2.9.1 (rotating frame), 2.9.2–2.9.4 | 6,700 | done |
-| 22 | Relativistic MHD | `22-relativistic-mhd.md` | Athena 2.14 | 12,700 | open |
+| 22 | Relativistic MHD | `22-relativistic-mhd.md` | Athena 2.14 | 12,700 | done |
 | 23 | Cosmic rays | `23-cosmic-rays.md` | Athena 2.15.2 | 500 | open |
 | 24 | The driving of turbulence | `24-driving-of-turbulence.md` | Athena 2.15.4 | 800 | open |
 | 25 | Verification and testing | `25-verification-and-testing.md` | Zingale 2.1.1, 2.1.2, 2.1.6, 2.3.6, 2.9.1, 2.9.2; pyro 2.4.12 (test), 3.4 (convergence, testing); Ulula 2.8.17; ZEUS 2.7.1 (approach), 2.7.6, 2.9.1 (approach), 2.9.8, 2.12.1 (approach), 2.12.4; Athena 3.1 (reproducibility), 3.8 | 3,900 | open |

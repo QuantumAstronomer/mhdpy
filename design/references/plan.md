@@ -342,7 +342,7 @@ The methods fall into eight subjects: 2.1 characteristics and the number of boun
 |---:|---|---|---|
 | 1 | Colonius (2004, doi:10.1146/annurev.fluid.36.050802.121930): the problem of artificial boundaries, and the local conditions | 1, 2.1, 2.2, 2.3, 2.4, 2.6 | done |
 | 2 | Colonius (2004): absorbing layers, and the assessment of the methods | 1, 2.5 | done |
-| 3 | Engquist and Majda (1977, doi:10.1090/S0025-5718-1977-0436612-4): absorbing conditions from one-way wave equations, and their reflection at oblique incidence | 2.2 | open |
+| 3 | Engquist and Majda (1977, doi:10.1090/S0025-5718-1977-0436612-4): absorbing conditions from one-way wave equations, and their reflection at oblique incidence | 2.2 | done |
 | 4 | Giles (1990, doi:10.2514/3.10521), read in the report of Giles (1988, MIT CFDL TR 88-1) that it summarises, since the free copy of the paper holds only its first page: non-reflecting conditions for the Euler equations from Fourier analysis, steady and unsteady | 2.2, 2.4 | done |
 | 5 | Poinsot and Lele (1992, doi:10.1016/0021-9991(92)90046-2): characteristic conditions for the Navier–Stokes equations, and the partially reflecting outflow | 2.1, 2.3, 2.4 | open |
 | 6 | Poinsot and Lele (1992): the tests of a ducted shear layer, vortices through boundaries and Poiseuille flow | 2.3, 2.4 | open |

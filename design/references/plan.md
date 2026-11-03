@@ -330,6 +330,6 @@ The rules of the synthesis of Athena carry over, without those on code. A **[GK]
 | 17 | Townsend (2009, arXiv:0901.3146): exact integration of radiative cooling | 2.7 | done |
 | 18 | Armillotta et al. (2017, arXiv:1608.05416): survival of clouds in the circumgalactic medium | 2.8 | done |
 | 19 | Barbani et al. (2023, arXiv:2306.11791): galactic coronae and stellar feedback in Milky Way-like galaxies | 2.8 | done |
-| 20 | The list of sources, and a review of the whole synthesis against the sources | – | open |
+| 20 | The list of sources, and a review of the whole synthesis against the sources | – | done |
 
 In step 1, the paper first planned for step 7, arXiv:0704.3592, proved to be Paper II of Vieser and Hensler, on clouds in a streaming hot plasma, which refers to Paper I for its scheme of conduction. The semi-implicit scheme that the paper of 2016 adopts lies in App. A of Paper I, and the author chose to read Paper I in step 7 instead. Once the synthesis is done, topics 15 and 17 are completed with it, and their rows in `design/topics/plan.md` name it, as do those of topics 28 and 29 where their clouds and instabilities gain conduction and cooling.

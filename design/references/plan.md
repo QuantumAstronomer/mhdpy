@@ -357,7 +357,7 @@ The methods fall into seven subjects: 2.1 clouds in hot winds without cooling, 2
 | 15 | Leary, Richie and Schneider (2026, arXiv:2602.10082): the effects of numerical resolution on cloud–wind interactions | 2.6, 3 | done |
 | 16 | Lancaster, Mohapatra, Fielding and Bryan (2026, arXiv:2606.04087): what a resolved mixing layer means | 2.2, 2.6, 3 | done |
 | 17 | Marinacci et al. (2010, arXiv:1001.2446): fountain clouds and the accretion of the corona | 2.6, 2.7, 3 | done |
-| 18 | Marinacci et al. (2011, arXiv:1103.5358): galactic fountains and the rotation of coronae | 2.7 | open |
+| 18 | Marinacci et al. (2011, arXiv:1103.5358): galactic fountains and the rotation of coronae | 2.7, 3 | done |
 | 19 | The list of sources, and a review of the whole synthesis against the sources | – | open |
 
 Step 5 confirms the bibcode of Begelman and Fabian (1990) from the scan. Sections 2.5 to 2.8 of the review, on bubbles, stratified discs, galaxies and haloes, lie outside the collection. Once the synthesis is done, topics 28 and 29 are completed with it, and the resolution that it finds informs the brief on the grid of the production runs. The author ranks the further collections as this one, then non-reflecting boundaries, and last the performance of Python codes.

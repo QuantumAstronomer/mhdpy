@@ -56,9 +56,9 @@ Each step is put to the author with its review and is committed once the author 
 | 13 | Source terms | `13-source-terms.md` | Zingale 2.5.17; pyro 2.4.3 (sources), 2.4.5, 2.4.12 (hse, heating); Ulula 2.3.4, 2.7.1, 2.7.2, 2.7.4, 2.8.5, 2.8.6, 2.8.14, 2.8.15; ZEUS 2.3.1; Athena 2.9.1 | 3,200 | done |
 | 14 | Elliptic solvers | `14-elliptic-solvers.md` | Zingale 2.1.8, 2.6.1–2.6.8, 2.10.8; pyro 2.1.4, 2.6; Ulula 2.7.3; ZEUS 2.6, 2.7.5; Athena 2.10.1 (FFT), 2.10.2, 2.10.3, 2.10.4 (refined meshes), 2.10.5 | 13,900 | done |
 | 15 | Self-gravity | `15-self-gravity.md` | Zingale 2.6.9 (self-gravity); Ulula 2.7.1, 2.7.3, 2.7.4, 2.8.7, 2.8.16; ZEUS 2.6, 2.7.2, 2.7.5; Athena 2.10.1, 2.10.4 (self-gravity), 2.10.6 | 5,500 | done |
-| 16 | Diffusion | `16-diffusion.md` | Zingale 2.4.8, 2.7; pyro 2.3.2, 2.7; Athena 2.1.2, 2.11, 2.12.2 (diffusion) | 4,300 | done |
+| 16 | Diffusion | `16-diffusion.md` | Zingale 2.4.8, 2.7; pyro 2.3.2, 2.7; Athena 2.1.2, 2.11, 2.12.2 (diffusion); Conduction and cooling 2.4.5 | 4,500 | done |
 | 17 | Thermal conduction | `17-thermal-conduction.md` | Conduction and cooling 2.1–2.4, 3.1 (conduction), 3.3, 3.4 | 17,100 | done |
-| 18 | Operator splitting and the coupling of processes | `18-operator-splitting-and-coupling-of-processes.md` | Zingale 2.8.1–2.8.3, 2.8.6; pyro 2.4.10, 2.4.11; Ulula 2.3.4; ZEUS 2.1.2; Athena 2.11.2, 3.5 (the integrator) | 3,100 | done |
+| 18 | Operator splitting and the coupling of processes | `18-operator-splitting-and-coupling-of-processes.md` | Zingale 2.8.1–2.8.3, 2.8.6; pyro 2.4.10, 2.4.11; Ulula 2.3.4; ZEUS 2.1.2; Athena 2.11.2, 3.5 (the integrator); Conduction and cooling 2.4.5, 2.7.1, 3.1 | 3,700 | done |
 | 19 | Reactions, chemistry and cooling | `19-reactions-chemistry-and-cooling.md` | Zingale 2.1.7, 2.8.4, 2.8.5, 2.8.7; pyro 2.4.11; Athena 2.15.3 | 2,300 | done |
 | 20 | Radiative cooling | `20-radiative-cooling.md` | Conduction and cooling 2.5–2.7, 3.1 (cooling), 3.4 (cooling) | 9,700 | done |
 | 21 | Passive scalars | `21-passive-scalars.md` | Zingale 2.8.4 (species); pyro 2.4.1 (scalars); Athena 2.12 | 1,800 | done |
@@ -77,7 +77,7 @@ Each step is put to the author with its review and is committed once the author 
 | 34 | Cold clouds and mixing layers | `34-cold-clouds-and-mixing-layers.md` | Conduction and cooling 2.8; Mixing and resolution 2.1–2.7, 3 | 49,400 | open |
 | 35 | Packaging, configuration and build | `35-packaging-configuration-and-build.md` | Zingale 3.4, 3.5; pyro 3.1; Ulula 3.1; Athena 3.1 (versions, releases, configuration) | 1,900 | done |
 | 36 | Data structures | `36-data-structures.md` | Zingale 3.1, 3.6; pyro 3.2; Ulula 3.2; ZEUS 3.1; Athena 2.1.4, 3.2 | 5,000 | done |
-| 37 | The driver and the control of a time step | `37-driver-and-control-of-time-step.md` | pyro 3.3 (driver, parameters); Ulula 3.3, 3.5; ZEUS 3.2; Athena 3.1 (main loop, input, units), 3.5 (task lists) | 3,800 | done |
+| 37 | The driver and the control of a time step | `37-driver-and-control-of-time-step.md` | pyro 3.3 (driver, parameters); Ulula 3.3, 3.5; ZEUS 3.2; Athena 3.1 (main loop, input, units), 3.5 (task lists); Conduction and cooling 2.4.2 (the weight), 2.4.5, 2.7.1, 2.7.2 (the limit of the step) | 4,700 | done |
 | 38 | Problem setups and user functions | `38-problem-setups-and-user-functions.md` | pyro 3.3 (problems); Ulula 2.2.3, 2.8.1, 3.6; Athena 3.6 | 1,200 | done |
 | 39 | Output, restarts and analysis | `39-output-restarts-and-analysis.md` | Zingale 3.3; pyro 3.4 (output, plotting); Ulula 3.4; Athena 3.7 | 2,600 | done |
 | 40 | Mesh refinement | `40-mesh-refinement.md` | Zingale 2.2.6, 2.6.5; pyro 2.1.4; Athena 3.4 | 4,500 | done |
@@ -88,7 +88,7 @@ Each collection ends with a step that extends the earlier topics it adds to, nam
 
 | Step | Extends | Drawn from | Status |
 |---|---|---|---|
-| 20a | Topics 16, 18, 19 and 37 | Conduction and cooling 2.4.5, 2.7.1, 3.1 | open |
+| 20a | Topics 16, 18, 19 and 37 | Conduction and cooling 2.4.2 (the weight), 2.4.5, 2.7.1, 2.7.2 (the limit of the step), 3.1 | done |
 | 34a | Topics 21, 28, 31 and 32 | Mixing and resolution 2.1.3, 2.2.1, 2.5, 2.6.1–2.6.4 | open |
 | 5a | Topics 4 and 13 | Non-reflecting boundaries 2.5.1, 2.8 | open |
 | 41a | Topics 35, 36 and 42 | Performance in Python 2.1.1, 2.4–2.6, 3.1–3.7 | open |

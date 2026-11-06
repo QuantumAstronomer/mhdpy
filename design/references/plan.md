@@ -144,6 +144,8 @@ Each step takes consecutive sections of one paper, at most about 4,000 words, cu
 | 17 | III §4.3–§6: the Eddington factors, incorporation of the radiation module, tests of the moment solver | 834–838 | 2,700 | 2.11, 3, 2.12 | done |
 | 18 | III §7–§8: tests of the transfer solver, summary | 838–843 | 2,200 | 2.12, 1 | done |
 
+In the review of the topic summaries, four passages were read against the papers. 2.8.5 took the coefficient $v_x \pm v_A$ of eq. 17 for the Alfvén speed, which reverses the pairing of the characteristics where $B_x < 0$. The text now keeps the signed field, with a note marked **[GK]**. 2.8.8 repeated that only the 3-component of the EMF is nonzero (Stone and Norman 1992b, §3.4), which their §3.2.1 contradicts, and now says that ZEUS-2D needs only that component. Notes marked **[GK]** record that the fall of the density in 2.7.1 is 5.2 orders of magnitude, not almost six, and how eqs. 39 to 42 in 2.3.3 read the levels of the substep.
+
 ## Ulula
 
 The synthesis is kept in `ulula-synthesis.md`. Its sources are the `ulula` package with its `pyproject.toml`, README and documentation, in `reference-works/Ulula/Code`, and the Ulula paper in `reference-works/Ulula/Docs`, Diemer (2025, `2505.20399v1.pdf`). arXiv holds only this first version of the paper. The copy of the code has no git metadata. `pyproject.toml` takes the version from `ulula/utils/version.py`, so the code is cited at version 1.0.2, which is also the latest entry of the version history in the documentation. The paper appeared on the day of release 1.0.1, and by that history 1.0.2 changed only the build system. The text layer of the PDF renders the prose well but scrambles the displayed equations, which are therefore read from the page images.

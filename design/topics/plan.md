@@ -60,7 +60,7 @@ Each step is put to the author with its review and is committed once the author 
 | 17 | Thermal conduction | `17-thermal-conduction.md` | Conduction and cooling 2.1–2.4, 3.1 (conduction), 3.3, 3.4 | 17,100 | done |
 | 18 | Operator splitting and the coupling of processes | `18-operator-splitting-and-coupling-of-processes.md` | Zingale 2.8.1–2.8.3, 2.8.6; pyro 2.4.10, 2.4.11; Ulula 2.3.4; ZEUS 2.1.2; Athena 2.11.2, 3.5 (the integrator) | 3,100 | done |
 | 19 | Reactions, chemistry and cooling | `19-reactions-chemistry-and-cooling.md` | Zingale 2.1.7, 2.8.4, 2.8.5, 2.8.7; pyro 2.4.11; Athena 2.15.3 | 2,300 | done |
-| 20 | Radiative cooling | `20-radiative-cooling.md` | Conduction and cooling 2.5–2.7, 3.1 (cooling) | 9,400 | open |
+| 20 | Radiative cooling | `20-radiative-cooling.md` | Conduction and cooling 2.5–2.7, 3.1 (cooling), 3.4 (cooling) | 9,700 | done |
 | 21 | Passive scalars | `21-passive-scalars.md` | Zingale 2.8.4 (species); pyro 2.4.1 (scalars); Athena 2.12 | 1,800 | done |
 | 22 | Particles | `22-particles.md` | pyro 2.10; Athena 2.13 | 5,400 | done |
 | 23 | Radiation transport | `23-radiation-transport.md` | Zingale 2.6.9 (radiation); ZEUS 2.10–2.12; Athena 2.15.1 | 10,800 | done |

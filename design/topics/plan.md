@@ -75,14 +75,14 @@ Each step is put to the author with its review and is committed once the author 
 | 32 | Instabilities, vortices and convection | `32-instabilities-vortices-and-convection.md` | pyro 2.4.12 (gresho, kh, rt, rt2, rt_multimode, bubble, convection, plume); Ulula 2.8.9, 2.8.12, 2.8.13; Athena 2.16.5 (instabilities); Mixing and resolution 2.2.1 | 3,100 | done |
 | 33 | Multidimensional and astrophysical MHD | `33-multidimensional-and-astrophysical-mhd.md` | ZEUS 2.9.3, 2.9.5, 2.9.6; Athena 2.16.6 | 4,700 | done |
 | 34 | Cold clouds and mixing layers | `34-cold-clouds-and-mixing-layers.md` | Conduction and cooling 2.8.2–2.8.6, 2.8.8–2.8.10, 3.4; Mixing and resolution 2.1.1, 2.1.3–2.1.5, 2.2.3, 2.2.6–2.2.9, 2.3.1–2.3.3, 2.3.7, 2.3.9, 2.3.10, 2.4.3, 2.4.4, 2.5.2, 2.5.3, 2.6.3–2.6.5, 2.6.7–2.6.14, 2.7.2, 3.1, 3.13 | 30,400 | done |
-| 35 | Packaging, configuration and build | `35-packaging-configuration-and-build.md` | Zingale 3.4, 3.5; pyro 3.1; Ulula 3.1; Athena 3.1 (versions, releases, configuration) | 1,900 | done |
-| 36 | Data structures | `36-data-structures.md` | Zingale 3.1, 3.6; pyro 3.2; Ulula 3.2; ZEUS 3.1; Athena 2.1.4, 3.2 | 5,000 | done |
+| 35 | Packaging, configuration and build | `35-packaging-configuration-and-build.md` | Zingale 3.4, 3.5; pyro 3.1; Ulula 3.1; Athena 3.1 (versions, releases, configuration); Performance in Python 2.3.1 (compilation), 3.3–3.5 | 2,800 | done |
+| 36 | Data structures | `36-data-structures.md` | Zingale 3.1, 3.6; pyro 3.2; Ulula 3.2; ZEUS 3.1; Athena 2.1.4, 3.2; Performance in Python 2.1.1, 3.1, 3.2, 3.6, 3.7 | 6,600 | done |
 | 37 | The driver and the control of a time step | `37-driver-and-control-of-time-step.md` | pyro 3.3 (driver, parameters); Ulula 3.3, 3.5; ZEUS 3.2; Athena 3.1 (main loop, input, units), 3.5 (task lists); Conduction and cooling 2.4.2 (the weight), 2.4.5, 2.7.1, 2.7.2 (the limit of the step) | 4,700 | done |
 | 38 | Problem setups and user functions | `38-problem-setups-and-user-functions.md` | pyro 3.3 (problems); Ulula 2.2.3, 2.8.1, 3.6; Athena 3.6 | 1,200 | done |
 | 39 | Output, restarts and analysis | `39-output-restarts-and-analysis.md` | Zingale 3.3; pyro 3.4 (output, plotting); Ulula 3.4; Athena 3.7 | 2,600 | done |
 | 40 | Mesh refinement | `40-mesh-refinement.md` | Zingale 2.2.6, 2.6.5; pyro 2.1.4; Athena 3.4 | 4,500 | done |
 | 41 | Vectorised and compiled kernels | `41-vectorised-and-compiled-kernels.md` | Performance in Python 2.1–2.3, 2.7, 3.1, 3.4, 3.10 | 10,900 | done |
-| 42 | Parallelisation and performance | `42-parallelisation-and-performance.md` | Zingale 2.9.1, 3.2; Ulula 3.7; Athena 3.1 (optimisation), 3.5 (parallelisation), 3.9 | 2,500 | done |
+| 42 | Parallelisation and performance | `42-parallelisation-and-performance.md` | Zingale 2.9.1, 3.2; Ulula 3.7; Athena 3.1 (optimisation), 3.5 (parallelisation), 3.9; Performance in Python 2.4.1–2.4.3, 2.4.5, 2.5.2, 2.5.4, 2.5.5, 2.6.2, 2.6.3 | 5,900 | done |
 
 Each collection ends with a step that extends the earlier topics it adds to, named by its last step and a letter, such as 20a. An extension keeps each topic within its limit of words, and adds the subsections that it draws on to the row of the topic in the first table.
 
@@ -91,4 +91,4 @@ Each collection ends with a step that extends the earlier topics it adds to, nam
 | 20a | Topics 16, 18, 19 and 37 | Conduction and cooling 2.4.2 (the weight), 2.4.5, 2.7.1, 2.7.2 (the limit of the step), 3.1 | done |
 | 34a | Topics 21, 28, 31 and 32 | Mixing and resolution 2.2.1, 2.5.2, 2.6.2, 2.6.4, 2.6.7, 2.6.11, 3.13; Conduction and cooling 2.2.7 (tracer), 3.2, 3.4 (tracer) | done |
 | 5a | Topics 4 and 13 | Non-reflecting boundaries 2.1.4, 2.5.1, 2.5.6 | done |
-| 41a | Topics 35, 36 and 42 | Performance in Python 2.1.1, 2.4–2.6, 3.1–3.7 | open |
+| 41a | Topics 35, 36 and 42 | Performance in Python 2.1.1, 2.3.1 (compilation), 2.4.1–2.4.3, 2.4.5, 2.5.2, 2.5.4, 2.5.5, 2.6.2, 2.6.3, 3.1–3.7 | done |

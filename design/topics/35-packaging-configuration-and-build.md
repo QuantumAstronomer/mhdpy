@@ -37,6 +37,12 @@ Athena++ depends on as little as possible: its default configuration needs only 
 
 Detail: [Athena 3.1](../references/athena-synthesis.md#31-configuration-build-and-the-main-loop), [pyro 3.1](../references/pyro-synthesis.md#31-packaging-installation-and-development), [Ulula 3.1](../references/ulula-synthesis.md#31-packaging-and-installation).
 
+### 2.5 Compiled kernels and their builds
+
+Compiled kernels add a step to the build or to the run. Cython generates C that a C compiler builds into extension modules, and projects ship the generated C or built packages, so that users need no Cython ([Behnel et al.](#behnel-et-al-2011) 2011). Pythran extends the build by an extension class, and since its input is Python, a build can fall back to the module in pure Python where Pythran is missing ([Guelton et al.](#guelton-et-al-2015) 2015, §8). Numba compiles at run time through LLVM, which its package llvmlite binds, so that users need no compiler, but each run spends some seconds compiling, 13 s for AGATE ([Lam, Pitrou and Seibert](#lam-et-al-2015) 2015; [Bard and Dorelli](#bard-dorelli-2026) 2026). **[GK]** The Package Index holds wheels of Numba and JAX for Linux, Windows and macOS on ARM, but none for Python 3.14 on macOS with Intel processors, while SciPy builds some of its modules with Pythran, which then costs its users nothing beyond a wheel (topic 41).
+
+Detail: [Performance in Python 2.3.1](../references/performance-in-python-synthesis.md#231-the-modes-of-agate-on-the-orszagtang-vortex), [Performance in Python 3.3](../references/performance-in-python-synthesis.md#33-cython-building-and-distributing-compiled-modules), [Performance in Python 3.4](../references/performance-in-python-synthesis.md#34-numba-a-compiler-built-on-llvm), [Performance in Python 3.5](../references/performance-in-python-synthesis.md#35-pythran-modules-that-stay-python).
+
 ## 3. Tests
 
 The references test their builds rather than their packages. pyro's installation is checked by a quick run of the advection solver, Athena++'s regression suite includes tests that only check that the code compiles for each metric of general relativity, and its continuous integration builds every change with several compilers, architectures and versions of libraries (topic 28). No reference tests the installation of its package on a clean system.
@@ -49,6 +55,10 @@ Athena's adherence to standards lets it compile on any machine, and the default 
 
 ## 5. Sources
 
+- <a id="bard-dorelli-2026"></a>Bard, C. and Dorelli, J., High-performance computational magnetohydrodynamics with Python, Computer Physics Communications 322, 110077 (2026), [arXiv:2503.20899](https://arxiv.org/abs/2503.20899), [doi:10.1016/j.cpc.2026.110077](https://doi.org/10.1016/j.cpc.2026.110077).
+- <a id="behnel-et-al-2011"></a>Behnel, S., Bradshaw, R., Citro, C., Dalcin, L., Seljebotn, D. S. and Smith, K., Cython: the best of both worlds, Computing in Science & Engineering 13(2), 31–39 (2011), [doi:10.1109/MCSE.2010.118](https://doi.org/10.1109/MCSE.2010.118).
+- <a id="guelton-et-al-2015"></a>Guelton, S., Brunet, P., Amini, M., Merlini, A., Corbillon, X. and Raynaud, A., Pythran: enabling static optimization of scientific Python programs, Computational Science & Discovery 8, 014001 (2015), [doi:10.1088/1749-4680/8/1/014001](https://doi.org/10.1088/1749-4680/8/1/014001). **[GK]** The article prints its DOI as doi:10.1088/1749-4699/8/1/014001, which does not resolve; the DOI registered at Crossref is the one given here.
+- <a id="lam-et-al-2015"></a>Lam, S. K., Pitrou, A. and Seibert, S., Numba: a LLVM-based Python JIT compiler, in Proceedings of the Second Workshop on the LLVM Compiler Infrastructure in HPC (LLVM-HPC 2015), pp. 1–6 (2015), [doi:10.1145/2833157.2833162](https://doi.org/10.1145/2833157.2833162).
 - <a id="stone-et-al-2008"></a>Stone, J. M., Gardiner, T. A., Teuben, P., Hawley, J. F. and Simon, J. B., Athena: a new code for astrophysical MHD, ApJS 178, 137–177 (2008), [arXiv:0804.0402](https://arxiv.org/abs/0804.0402), [doi:10.1086/588755](https://doi.org/10.1086/588755).
 - <a id="stone-et-al-2020"></a>Stone, J. M., Tomida, K., White, C. J. and Felker, K. G., The Athena++ adaptive mesh refinement framework: design and magnetohydrodynamic solvers, ApJS 249, 4 (2020), [arXiv:2005.06651](https://arxiv.org/abs/2005.06651), [doi:10.3847/1538-4365/ab929b](https://doi.org/10.3847/1538-4365/ab929b).
 - <a id="zingale-2025"></a>Zingale, M., *Introduction to Computational Astrophysical Hydrodynamics*, the Open Astrophysics Bookshelf, version of 26 January 2025, [PDF](https://open-astrophysics-bookshelf.github.io/numerical_exercises/CompHydroTutorial.pdf).

@@ -44,7 +44,7 @@ Each step is put to the author with its review and is committed once the author 
 | 1 | The equations and their variables | `01-equations-and-their-variables.md` | Zingale 2.1.9, 2.4.1, 2.5.1–2.5.3, 2.5.9; pyro 2.4.1; Ulula 2.1.1, 2.1.3, 2.1.4; ZEUS 2.1.1, 2.3.3, 2.8.1, 2.8.2; Athena 2.1.1, 2.1.4 | 5,400 | done |
 | 2 | Equations of state | `02-equations-of-state.md` | Zingale 2.1.5, 2.5.21, 2.5.22; pyro 2.4.1; Ulula 2.1.2; ZEUS 2.1.1; Athena 2.2 | 6,100 | done |
 | 3 | Grids and the finite-volume discretisation | `03-grids-and-finite-volume-discretisation.md` | Zingale 2.1.3, 2.2.1–2.2.4, 2.2.6, 2.3.5, 2.3.7, 2.3.13; pyro 2.1.1; Ulula 2.2.1, 2.3.1; ZEUS 2.2.1, 2.2.2, 2.4.3; Athena 2.1.3 | 4,300 | done |
-| 4 | Boundary conditions and ghost cells | `04-boundary-conditions-and-ghost-cells.md` | Zingale 2.2.5, 2.5.15; pyro 2.1.3, 2.4.6 (boundaries); Ulula 2.2.2, 2.2.3; ZEUS 2.5.1, 2.8.8 (boundaries); Athena 3.3 | 3,700 | done |
+| 4 | Boundary conditions and ghost cells | `04-boundary-conditions-and-ghost-cells.md` | Zingale 2.2.5, 2.5.15; pyro 2.1.3, 2.4.6 (boundaries); Ulula 2.2.2, 2.2.3; ZEUS 2.5.1, 2.8.8 (boundaries); Athena 3.3; Non-reflecting boundaries 2.1.4 | 3,900 | done |
 | 5 | Non-reflecting boundaries | `05-non-reflecting-boundaries.md` | Non-reflecting boundaries 2.1, 2.2.1, 2.2.2, 2.2.4–2.2.6, 2.3.1, 2.3.2, 2.3.4, 2.4.1, 2.4.3, 2.4.4, 2.4.6, 2.5, 2.6.2, 2.6.4, 2.6.5, 2.7.1–2.7.5, 2.8.2 | 16,400 | done |
 | 6 | Reconstruction and limiting | `06-reconstruction-and-limiting.md` | Zingale 2.3.9–2.3.11, 2.3.19, 2.3.21, 2.5.11 (reconstruction), 2.5.12, 2.5.13; pyro 2.1.5–2.1.7; Ulula 2.5; ZEUS 2.4.2, 2.7.1 (advection); Athena 2.4 | 8,700 | done |
 | 7 | Riemann solvers | `07-riemann-solvers.md` | Zingale 2.1.5, 2.4.2, 2.5.4–2.5.8, 2.5.14; pyro 2.4.7; Ulula 2.4; Athena 2.5 | 7,100 | done |
@@ -53,7 +53,7 @@ Each step is put to the author with its review and is committed once the author 
 | 10 | Artificial viscosity | `10-artificial-viscosity.md` | Zingale 2.5.14 (artificial viscosity); pyro 2.4.4; ZEUS 2.1.2 (the source step), 2.3.2, 2.3.4 | 2,100 | done |
 | 11 | Constrained transport | `11-constrained-transport.md` | ZEUS 2.8.2–2.8.8, 2.9.1; Athena 2.3, 2.6.2, 2.6.3, 2.6.4 (MHD), 2.16.3 | 14,200 | done |
 | 12 | Curvilinear coordinates | `12-curvilinear-coordinates.md` | Zingale 2.2.6, 2.5.18; pyro 2.1.2; ZEUS 2.2.3, 2.2.4, 2.7.1 (curvilinear advection); Athena 2.8 | 10,800 | done |
-| 13 | Source terms | `13-source-terms.md` | Zingale 2.5.17; pyro 2.4.3 (sources), 2.4.5, 2.4.12 (hse, heating); Ulula 2.3.4, 2.7.1, 2.7.2, 2.7.4, 2.8.5, 2.8.6, 2.8.14, 2.8.15; ZEUS 2.3.1; Athena 2.9.1 | 3,200 | done |
+| 13 | Source terms | `13-source-terms.md` | Zingale 2.5.17; pyro 2.4.3 (sources), 2.4.5, 2.4.12 (hse, heating); Ulula 2.3.4, 2.7.1, 2.7.2, 2.7.4, 2.8.5, 2.8.6, 2.8.14, 2.8.15; ZEUS 2.3.1; Athena 2.9.1; Non-reflecting boundaries 2.5.1, 2.5.6 | 3,800 | done |
 | 14 | Elliptic solvers | `14-elliptic-solvers.md` | Zingale 2.1.8, 2.6.1–2.6.8, 2.10.8; pyro 2.1.4, 2.6; Ulula 2.7.3; ZEUS 2.6, 2.7.5; Athena 2.10.1 (FFT), 2.10.2, 2.10.3, 2.10.4 (refined meshes), 2.10.5 | 13,900 | done |
 | 15 | Self-gravity | `15-self-gravity.md` | Zingale 2.6.9 (self-gravity); Ulula 2.7.1, 2.7.3, 2.7.4, 2.8.7, 2.8.16; ZEUS 2.6, 2.7.2, 2.7.5; Athena 2.10.1, 2.10.4 (self-gravity), 2.10.6 | 5,500 | done |
 | 16 | Diffusion | `16-diffusion.md` | Zingale 2.4.8, 2.7; pyro 2.3.2, 2.7; Athena 2.1.2, 2.11, 2.12.2 (diffusion); Conduction and cooling 2.4.5 | 4,500 | done |
@@ -90,5 +90,5 @@ Each collection ends with a step that extends the earlier topics it adds to, nam
 |---|---|---|---|
 | 20a | Topics 16, 18, 19 and 37 | Conduction and cooling 2.4.2 (the weight), 2.4.5, 2.7.1, 2.7.2 (the limit of the step), 3.1 | done |
 | 34a | Topics 21, 28, 31 and 32 | Mixing and resolution 2.2.1, 2.5.2, 2.6.2, 2.6.4, 2.6.7, 2.6.11, 3.13; Conduction and cooling 2.2.7 (tracer), 3.2, 3.4 (tracer) | done |
-| 5a | Topics 4 and 13 | Non-reflecting boundaries 2.5.1, 2.8 | open |
+| 5a | Topics 4 and 13 | Non-reflecting boundaries 2.1.4, 2.5.1, 2.5.6 | done |
 | 41a | Topics 35, 36 and 42 | Performance in Python 2.1.1, 2.4–2.6, 3.1–3.7 | open |

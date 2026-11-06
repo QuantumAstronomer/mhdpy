@@ -51,6 +51,8 @@ Each chapter is one step, and the two chapters longer than 25 pages are cut at s
 
 In steps 4 and 13 of the topic summaries, eqs. 9.47 and 9.48 proved to print the naive ghost values as $\phi_{\mathrm{lo}-1} = \phi_\mathrm{lo}$ and $\phi_{\mathrm{hi}+1} = \phi_\mathrm{hi}$, while their words, the boundary values of eqs. 9.29 to 9.32 and the first-order result of fig. 9.6 call for $\phi_l$ and $\phi_r$. Two sentences in 2.6.4, marked **[GK]**, record the slip, and the summary of step 13 follows the words.
 
+In the review of the topic summaries, eq. 8.51 proved to blend the right state at $x_{i+1/2}$, which zone $i + 1$ supplies, with $\mathbf{q}_i$, so that a fully flattened zone would leave the interface without a jump. A note in 2.5.13, marked **[GK]**, records the slip, and the paragraph is split after it.
+
 ## Pyro
 
 The synthesis is kept in `pyro-synthesis.md`. Its sources are the pyro2 code with its documentation, in `reference-works/Pyro/Code`, and two papers in `reference-works/Pyro/Docs`: the pyro paper, Zingale (2014, `1306.6883v3.pdf`), and the paper in the Journal of Open Source Software (JOSS), Harpole et al. (2019, `1902.08702v1.pdf`). The copy of the code has no git metadata, and `pyproject.toml` takes the version from git tags, so the code is cited at version 4.5.1, the latest entry of `CHANGES.md`.

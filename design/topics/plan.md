@@ -57,7 +57,7 @@ Each step is put to the author with its review and is committed once the author 
 | 14 | Elliptic solvers | `14-elliptic-solvers.md` | Zingale 2.1.8, 2.6.1–2.6.8, 2.10.8; pyro 2.1.4, 2.6; Ulula 2.7.3; ZEUS 2.6, 2.7.5; Athena 2.10.1 (FFT), 2.10.2, 2.10.3, 2.10.4 (refined meshes), 2.10.5 | 13,900 | done |
 | 15 | Self-gravity | `15-self-gravity.md` | Zingale 2.6.9 (self-gravity); Ulula 2.7.1, 2.7.3, 2.7.4, 2.8.7, 2.8.16; ZEUS 2.6, 2.7.2, 2.7.5; Athena 2.10.1, 2.10.4 (self-gravity), 2.10.6 | 5,500 | done |
 | 16 | Diffusion | `16-diffusion.md` | Zingale 2.4.8, 2.7; pyro 2.3.2, 2.7; Athena 2.1.2, 2.11, 2.12.2 (diffusion) | 4,300 | done |
-| 17 | Thermal conduction | `17-thermal-conduction.md` | Conduction and cooling 2.1–2.4, 3.1–3.4 (conduction) | 17,300 | open |
+| 17 | Thermal conduction | `17-thermal-conduction.md` | Conduction and cooling 2.1–2.4, 3.1 (conduction), 3.3, 3.4 | 17,100 | done |
 | 18 | Operator splitting and the coupling of processes | `18-operator-splitting-and-coupling-of-processes.md` | Zingale 2.8.1–2.8.3, 2.8.6; pyro 2.4.10, 2.4.11; Ulula 2.3.4; ZEUS 2.1.2; Athena 2.11.2, 3.5 (the integrator) | 3,100 | done |
 | 19 | Reactions, chemistry and cooling | `19-reactions-chemistry-and-cooling.md` | Zingale 2.1.7, 2.8.4, 2.8.5, 2.8.7; pyro 2.4.11; Athena 2.15.3 | 2,300 | done |
 | 20 | Radiative cooling | `20-radiative-cooling.md` | Conduction and cooling 2.5–2.7, 3.1 (cooling) | 9,400 | open |

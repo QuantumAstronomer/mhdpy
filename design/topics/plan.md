@@ -61,18 +61,18 @@ Each step is put to the author with its review and is committed once the author 
 | 18 | Operator splitting and the coupling of processes | `18-operator-splitting-and-coupling-of-processes.md` | Zingale 2.8.1–2.8.3, 2.8.6; pyro 2.4.10, 2.4.11; Ulula 2.3.4; ZEUS 2.1.2; Athena 2.11.2, 3.5 (the integrator); Conduction and cooling 2.4.5, 2.7.1, 3.1 | 3,700 | done |
 | 19 | Reactions, chemistry and cooling | `19-reactions-chemistry-and-cooling.md` | Zingale 2.1.7, 2.8.4, 2.8.5, 2.8.7; pyro 2.4.11; Athena 2.15.3 | 2,300 | done |
 | 20 | Radiative cooling | `20-radiative-cooling.md` | Conduction and cooling 2.5–2.7, 3.1 (cooling), 3.4 (cooling) | 9,700 | done |
-| 21 | Passive scalars | `21-passive-scalars.md` | Zingale 2.8.4 (species); pyro 2.4.1 (scalars); Athena 2.12 | 1,800 | done |
+| 21 | Passive scalars | `21-passive-scalars.md` | Zingale 2.8.4 (species); pyro 2.4.1 (scalars); Athena 2.12; Mixing and resolution 2.5.2, 3.13; Conduction and cooling 2.2.7 (tracer), 3.2, 3.4 (tracer) | 3,300 | done |
 | 22 | Particles | `22-particles.md` | pyro 2.10; Athena 2.13 | 5,400 | done |
 | 23 | Radiation transport | `23-radiation-transport.md` | Zingale 2.6.9 (radiation); ZEUS 2.10–2.12; Athena 2.15.1 | 10,800 | done |
 | 24 | The shearing box and orbital advection | `24-shearing-box-and-orbital-advection.md` | Athena 2.9.1 (rotating frame), 2.9.2–2.9.4 | 6,700 | done |
 | 25 | Relativistic MHD | `25-relativistic-mhd.md` | Athena 2.14 | 12,700 | done |
 | 26 | Cosmic rays | `26-cosmic-rays.md` | Athena 2.15.2 | 500 | done |
 | 27 | The driving of turbulence | `27-driving-of-turbulence.md` | Athena 2.15.4 | 800 | done |
-| 28 | Verification and testing | `28-verification-and-testing.md` | Zingale 2.1.1, 2.1.2, 2.1.6, 2.3.6, 2.9.1, 2.9.2; pyro 2.4.12 (test), 3.4 (convergence, testing); Ulula 2.8.17; ZEUS 2.7.1 (approach), 2.7.6, 2.9.1 (approach), 2.9.8, 2.12.1 (approach), 2.12.4; Athena 3.1 (reproducibility), 3.8 | 3,900 | done |
+| 28 | Verification and testing | `28-verification-and-testing.md` | Zingale 2.1.1, 2.1.2, 2.1.6, 2.3.6, 2.9.1, 2.9.2; pyro 2.4.12 (test), 3.4 (convergence, testing); Ulula 2.8.17; ZEUS 2.7.1 (approach), 2.7.6, 2.9.1 (approach), 2.9.8, 2.12.1 (approach), 2.12.4; Athena 3.1 (reproducibility), 3.8; Mixing and resolution 2.6.2, 2.6.4, 2.6.7, 2.6.11 | 5,000 | done |
 | 29 | Advection and linear waves | `29-advection-and-linear-waves.md` | Zingale 2.5.19 (advection); pyro 2.2.5, 2.4.12 (advect, acoustic_pulse); Ulula 2.8.1–2.8.3, 2.8.8; ZEUS 2.9.4, 2.9.7; Athena 2.16.1, 2.16.2 | 5,300 | done |
 | 30 | Shock tubes and interacting blast waves | `30-shock-tubes-and-interacting-blast-waves.md` | Zingale 2.4.4, 2.5.19 (shock tubes); pyro 2.3.3, 2.4.12 (sod); Ulula 2.8.4; ZEUS 2.7.3, 2.7.4 (blast waves), 2.9.2; Athena 2.16.4 | 5,400 | done |
 | 31 | Shocks in several dimensions | `31-shocks-in-several-dimensions.md` | Zingale 2.5.19 (Sedov); pyro 2.4.12 (sedov, quad, ramp, logo); Ulula 2.8.10, 2.8.11; ZEUS 2.7.4 (wind tunnel, double Mach reflection); Athena 2.16.5 (shocks) | 3,900 | done |
-| 32 | Instabilities, vortices and convection | `32-instabilities-vortices-and-convection.md` | pyro 2.4.12 (gresho, kh, rt, rt2, rt_multimode, bubble, convection, plume); Ulula 2.8.9, 2.8.12, 2.8.13; Athena 2.16.5 (instabilities) | 2,600 | done |
+| 32 | Instabilities, vortices and convection | `32-instabilities-vortices-and-convection.md` | pyro 2.4.12 (gresho, kh, rt, rt2, rt_multimode, bubble, convection, plume); Ulula 2.8.9, 2.8.12, 2.8.13; Athena 2.16.5 (instabilities); Mixing and resolution 2.2.1 | 3,100 | done |
 | 33 | Multidimensional and astrophysical MHD | `33-multidimensional-and-astrophysical-mhd.md` | ZEUS 2.9.3, 2.9.5, 2.9.6; Athena 2.16.6 | 4,700 | done |
 | 34 | Cold clouds and mixing layers | `34-cold-clouds-and-mixing-layers.md` | Conduction and cooling 2.8.2–2.8.6, 2.8.8–2.8.10, 3.4; Mixing and resolution 2.1.1, 2.1.3–2.1.5, 2.2.3, 2.2.6–2.2.9, 2.3.1–2.3.3, 2.3.7, 2.3.9, 2.3.10, 2.4.3, 2.4.4, 2.5.2, 2.5.3, 2.6.3–2.6.5, 2.6.7–2.6.14, 2.7.2, 3.1, 3.13 | 30,400 | done |
 | 35 | Packaging, configuration and build | `35-packaging-configuration-and-build.md` | Zingale 3.4, 3.5; pyro 3.1; Ulula 3.1; Athena 3.1 (versions, releases, configuration) | 1,900 | done |
@@ -89,6 +89,6 @@ Each collection ends with a step that extends the earlier topics it adds to, nam
 | Step | Extends | Drawn from | Status |
 |---|---|---|---|
 | 20a | Topics 16, 18, 19 and 37 | Conduction and cooling 2.4.2 (the weight), 2.4.5, 2.7.1, 2.7.2 (the limit of the step), 3.1 | done |
-| 34a | Topics 21, 28, 31 and 32 | Mixing and resolution 2.1.3, 2.2.1, 2.5, 2.6.1–2.6.4 | open |
+| 34a | Topics 21, 28, 31 and 32 | Mixing and resolution 2.2.1, 2.5.2, 2.6.2, 2.6.4, 2.6.7, 2.6.11, 3.13; Conduction and cooling 2.2.7 (tracer), 3.2, 3.4 (tracer) | done |
 | 5a | Topics 4 and 13 | Non-reflecting boundaries 2.5.1, 2.8 | open |
 | 41a | Topics 35, 36 and 42 | Performance in Python 2.1.1, 2.4–2.6, 3.1–3.7 | open |

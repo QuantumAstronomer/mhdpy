@@ -1,0 +1,78 @@
+# Curvilinear coordinates
+
+## 1. Overview
+
+Cylindrical and spherical-polar coordinates capture three-dimensional volumes in fewer dimensions where a flow has a symmetry, conserve the angular momentum of rotating flows aligned with the grid better than a Cartesian grid, and make many boundaries simpler to impose. They cost geometric factors in every operator, source terms that act as fictitious forces, corrections to the reconstruction, and care at the axis and the pole. [Zingale's text](#zingale-2025) treats spherical symmetry in one dimension and axisymmetry in two, pyro offers an axisymmetric spherical grid in $r$ and $\theta$, and ZEUS differences covariant equations in Cartesian, cylindrical and spherical-polar coordinates with the third coordinate ignorable. Athena added cylindrical coordinates ([Skinner and Ostriker](#skinner-ostriker-2010) 2010), and Athena++ offers cylindrical and spherical-polar coordinates on nonuniform grids, with the coordinates of general relativity (topic 25). The boundaries at the pole follow in topic 4 and the nonuniform spacings in topic 3. Mapped and non-orthogonal grids are only named.
+
+## 2. Methods
+
+### 2.1 Scale factors and the covariant formalism
+
+ZEUS writes every vector and tensor operator without reference to particular coordinates, through the scale factors $(h_1, h_2, h_3)$ of an orthogonal metric, and differences these covariant equations, so that only the scale factors depend on the coordinate system ([Stone and Norman](#stone-norman-1992a) 1992a, §4.2, app. A). For physical components,
+
+$$\nabla f = \left(\frac{1}{h_1}\frac{\partial f}{\partial x_1},\ \frac{1}{h_2}\frac{\partial f}{\partial x_2},\ \frac{1}{h_3}\frac{\partial f}{\partial x_3}\right), \qquad \nabla\cdot\mathbf{a} = \frac{1}{h_1h_2h_3}\left[\frac{\partial(h_2h_3a_1)}{\partial x_1} + \frac{\partial(h_1h_3a_2)}{\partial x_2} + \frac{\partial(h_1h_2a_3)}{\partial x_3}\right],$$
+
+with the curl and the divergence of a tensor alike. The scale factors are $(1, 1, 1)$ for $(x, y, z)$, $(1, 1, R)$ for cylindrical $(z, R, \phi)$ and $(1, r, r\sin\theta)$ for spherical-polar $(r, \theta, \phi)$. ZEUS stores them as $h_1 = 1$, $h_2 = g_2(x_1)$ and $h_3 = g_{31}(x_1)\,g_{32}(x_2)$, on both meshes of its staggered grid, which saves memory but excludes systems such as oblate spheroidal coordinates. The divergence theorem misses the terms that the gradient produces on the unit vectors, which act as inertial forces and enter the source step.
+
+Near a coordinate singularity a simple difference fails: in spherical coordinates, $r^{-2}\partial(r^2F)/\partial r$ differenced with the mean radius squared in the denominator does not reproduce the average over the shell. ZEUS therefore divides by volume differences, $\Delta(r^3/3)$ and $\Delta(-\cos\theta)$ in spherical-polar and $\Delta(R^2/2)$ in cylindrical coordinates, after the coordinate regularisation of [Evans](#evans-1986) (1986). **[GK]** The two denominators differ by $(\Delta r)^3/12$, which in the innermost zone, at $r_{i-1} = 0$, is a factor of $4/3$, and the volume difference is the exact average of the divergence over the shell.
+
+Detail: [ZEUS 2.2.3](../references/zeus-synthesis.md#223-the-covariant-formalism), [ZEUS 2.2.4](../references/zeus-synthesis.md#224-operators-in-orthogonal-coordinates), [ZEUS 2.1.2](../references/zeus-synthesis.md#212-operator-splitting).
+
+### 2.2 Finite volumes and geometric source terms
+
+A finite-volume update in any orthogonal coordinates weighs each flux by the area of its face and divides by the volume of the cell (Zingale's text, eqs. 8.91 to 8.107; Skinner and Ostriker 2010, eq. 72):
+
+$$\mathbf{U}^{n+1}_i = \mathbf{U}^n_i - \frac{\Delta t}{V_i}\left(A_{i+1/2}\mathbf{F}_{i+1/2} - A_{i-1/2}\mathbf{F}_{i-1/2}\right) - \ldots + \Delta t\,\mathbf{S}_{\mathrm{geom},i},$$
+
+with the exact volumes and areas: in cylindrical coordinates $(R, \phi, z)$, $V = \tfrac{1}{2}(R_{i+1/2}^2 - R_{i-1/2}^2)\Delta\phi\,\Delta z$ and $A_{i-1/2} = R_{i-1/2}\Delta\phi\,\Delta z$ for a radial face, and in spherical-polar coordinates $V = \tfrac{1}{3}(r_{i+1/2}^3 - r_{i-1/2}^3)\,|\cos\theta_{j-1/2} - \cos\theta_{j+1/2}|\,\Delta\phi$ and $A_{i-1/2} = r_{i-1/2}^2\,|\cos\theta_{j-1/2} - \cos\theta_{j+1/2}|\,\Delta\phi$. Mass and energy need no source term, but the momentum does, as the pressure and the stresses enter it as a tensor. Athena and Athena++ keep the total pressure in the fluxes and add the geometric source terms, in cylindrical coordinates $M_{\phi\phi}/R = (\rho v_\phi^2 - B_\phi^2 + p_\mathrm{T})/R$ in the radial momentum, with $\mathsf{M} = \rho\mathbf{v}\mathbf{v} - \mathbf{B}\mathbf{B} + p_\mathrm{T}\mathsf{I}$ the stress tensor, and in spherical-polar coordinates $(M_{\theta\theta} + M_{\phi\phi})/r$, with a term in $\cot\theta\,M_{\phi\phi}$ for the polar momentum. Zingale's text and pyro take the pressure out of the radial flux and difference it directly instead. The cell averages refer to the volume centres, in cylindrical coordinates $R_i + \Delta R^2/(12R_i)$. Athena evaluates $M_{\phi\phi}$ at the half step, with the total pressure from the Riemann solutions on the radial faces, and Athena++ from the volume-centred variables of each stage. Athena found centrifugal balance easier to hold with the analytic gravity at the volume centroid than with differences of the potential.
+
+Detail: [Zingale 2.5.18](../references/computational-hydrodynamics-synthesis.md#2518-simple-geometries), [pyro 2.1.2](../references/pyro-synthesis.md#212-cartesian-and-spherical-geometry), [Athena 2.8.1](../references/athena-synthesis.md#281-grids-and-geometry), [Athena 2.8.2](../references/athena-synthesis.md#282-the-equations-in-curvilinear-coordinates), [Athena 2.8.4](../references/athena-synthesis.md#284-finite-volumes-and-geometric-source-terms).
+
+### 2.3 The conservation of angular momentum
+
+Written for the angular momentum, the azimuthal momentum equation needs no source term, as the symmetry of $\mathsf{M}$ allows $\partial_t(R\rho v_\phi) + R^{-1}\partial_R(R^2M_{R\phi}) + \ldots = 0$ (Skinner and Ostriker 2010, eqs. 11 to 14). Athena evolves $\rho v_\phi$ with the radial flux $R^2M_{R\phi}$ and no source term. Athena++ keeps the usual form, with the source $-M_{R\phi}/R$, but discretises it from the momentum fluxes of the Riemann solver on the two radial faces ([Stone et al.](#stone-et-al-2020) 2020, eqs. 16 to 19):
+
+$$\frac{M_{R\phi}}{R} \approx \frac{(R_{i+1/2} - R_{i-1/2})\,(R_{i+1/2}M_{R\phi,i+1/2} + R_{i-1/2}M_{R\phi,i-1/2})}{(R_{i-1/2} + R_{i+1/2})\,V_R}, \qquad V_R = \tfrac{1}{2}(R_{i+1/2}^2 - R_{i-1/2}^2),$$
+
+which makes the discrete equation algebraically identical to the conservative difference of the angular momentum, so that it is conserved to machine precision. Spherical-polar coordinates take the same form in $r$, with $V_r = \tfrac{1}{3}(r_{i+1/2}^3 - r_{i-1/2}^3)$, and in $\theta$, with $\sin\theta$ in place of the radius. **[GK]** With the flux difference of the update, the discretised source gives the radial update $-[\Delta t/(R_iV_R)](R_{i+1/2}^2F_{i+1/2} - R_{i-1/2}^2F_{i-1/2})$, which is Athena's conservative form, as $V_R = R_i\Delta R$.
+
+Detail: [Athena 2.8.2](../references/athena-synthesis.md#282-the-equations-in-curvilinear-coordinates), [Athena 2.8.4](../references/athena-synthesis.md#284-finite-volumes-and-geometric-source-terms).
+
+### 2.4 Reconstruction on curvilinear grids
+
+A profile must reproduce the average over the volume of its cell, which along the radius differs from the Cartesian average (Skinner and Ostriker 2010, §5). A linear profile across a cylindrical cell, $a = a_{\mathrm{L},i} + s\,\delta a_i$ with $s$ from 0 to 1, then has the average $a_{\mathrm{L},i} + \tfrac{1}{2}\delta a_i(1 + \gamma_i)$ with the correction $\gamma_i = \Delta R/(6R_i)$, and the parabola of topic 6 and its resets carry the same factor. Athena++ follows [Mignone](#mignone-2014) (2014) instead: its PLM is the generalised harmonic mean of topic 6, with distances between centroids, which is TVD in all orthogonal coordinates, and the four weights of its PPM face values make the interpolation exact for the polynomials up to cubic, averaged over the cells with the Jacobian of the coordinate. Characteristic tracing in curvilinear coordinates adds the geometric sources to the primitive equations, in cylindrical coordinates
+
+$$\mathbf{s}_\mathrm{geom} = -\frac{1}{R}\left(\rho v_R,\ -v_\phi^2 + \frac{B_\phi^2}{\rho},\ v_\phi v_R - \frac{B_\phi B_R}{\rho},\ 0,\ \gamma p\,v_R,\ v_\phi B_R,\ v_R B_z\right)$$
+
+for $(\rho, v_R, v_\phi, v_z, p, B_\phi, B_z)$, which leaves the Cartesian eigensystem and Riemann solvers unchanged. Athena averages the profiles over domains of dependence corrected for the curvature, and integrates only over the characteristics that reach a face from inside the cell, as the full sum would extrapolate across discontinuities. pyro adds the geometric source $-\tfrac{1}{2}\Delta t\,\rho v_r\,\partial\ln A/\partial r$ to the density of its predicted states, and $c_\mathrm{s}^2$ times it to the pressure.
+
+Detail: [Athena 2.8.3](../references/athena-synthesis.md#283-reconstruction-and-characteristic-evolution), [pyro 2.4.2](../references/pyro-synthesis.md#242-interface-states).
+
+### 2.5 Constrained transport and the axis
+
+CT keeps its integral form, with the lengths of the edges and the areas of the faces (topic 11): in cylindrical coordinates $B_z$ changes by $-\Delta t/(R_i\Delta R)$ times the difference of $R\,\mathcal{E}_\phi$ between the radial edges, and $B_R$ by $-\Delta t/(R_{i\pm1/2}\Delta\phi)$ times that of $\mathcal{E}_z$ (Skinner and Ostriker 2010, §8). Athena evolves the azimuthal field through $B_\phi/R$, which keeps the induction equation free of source terms, and carries $\mathcal{E}_z$ to the corners with gradients along $\phi$ scaled by the radii of the cells. Athena++ carries the electric fields to the corners without geometric factors and interpolates the cell-centred field to the volume centre. At the pole of spherical-polar coordinates the faces have no area, so that their fluxes have no effect, and the electric fields on the radial edges that touch the pole are replaced by their average, as they must agree.
+
+Detail: [Athena 2.8.1](../references/athena-synthesis.md#281-grids-and-geometry), [Athena 2.8.5](../references/athena-synthesis.md#285-constrained-transport).
+
+## 3. Tests
+
+ZEUS tests its geometric terms by the relaxation of a uniform density with $v_r = v_0r$, which decays as $e^{-2v_0t}$ in cylindrical and as $e^{-3v_0t}$ in spherical geometry, by almost six orders of magnitude (Stone and Norman 1992a, §5.2).
+
+Skinner and Ostriker (2010, §10) test the balance of forces with magnetohydrostatic equilibria, an azimuthal field $B_\phi = B_0/R$ and a radial field balanced by a potential, and the conservation of angular momentum with discs rotating as $\Omega \propto R^{-q}$ near the stability limit $q = 2$ of the criterion of Rayleigh, perturbed by $10^{-4}$. A cylindrical wind through a sonic point, a cylindrical wind of Weber and Davis, blast waves against the Cartesian code and a field loop advected along $\phi$ complete the suite.
+
+Athena++ advects a passive scalar radially in cylindrical and spherical-polar coordinates and along the polar angle, after Mignone (2014), with exact averages from Gauss–Legendre quadrature, and its regression tests bound the errors at 0.5 per cent above his. Blast waves in cylindrical and spherical-polar coordinates, with refinement, check that the blast stays spherical, within one cell (Stone et al. 2020, §3.5).
+
+Detail: [ZEUS 2.7.1](../references/zeus-synthesis.md#271-approach-and-advection-tests), [Athena 2.8.7](../references/athena-synthesis.md#287-tests-in-curvilinear-coordinates), [Athena 2.8.3](../references/athena-synthesis.md#283-reconstruction-and-characteristic-evolution).
+
+## 4. Assessment
+
+ZEUS reaches $5.78 \times 10^{-6}$ and $5.60 \times 10^{-6}$ of the initial density in place of $6.14 \times 10^{-6}$, errors of 5.9 and 8.8 per cent after a fall of almost six orders of magnitude, with perfectly flat profiles. The equilibria, the winds and the Weber–Davis wind of Skinner and Ostriker converge at second order, the discs keep their perturbed flux of angular momentum at the level of the perturbation for $q < 2$ and grow it exponentially beyond, the blasts agree excellently with the Cartesian ones, and the field loop along $\phi$ dissipates less than the oblique Cartesian loop. Athena++ conserves angular momentum to machine precision, its advection converges at second order with PLM and fourth with PPM, but PPM clips smooth extrema, as the curvilinear limiter is a variant of the original, and the meridional problem reaches an unexplained floor of the error. **[GK]** Curvilinear coordinates repay their cost where a flow has the symmetry of the grid, above all in discs, winds and stars, but every operator, the reconstruction, the source terms and CT must carry the geometry consistently, and the conservation of angular momentum must be built in by the discretisation, not hoped for. Near the axis and the pole the cells shrink, which narrows the time step and needs special boundaries. Athena++ concentrates the geometry in one class of areas, lengths and volumes, which keeps the rest of the code Cartesian in form. Open are whether the production runs need curvilinear grids at all, and how cheaply the lower layers can keep areas, lengths and volumes general so that the geometry can be added later without redesign.
+
+## 5. Sources
+
+- <a id="evans-1986"></a>Evans, C. R., An approach for calculating axisymmetric gravitational collapse, in Centrella, J. M. (ed.), Dynamical Spacetimes and Numerical Relativity, Cambridge University Press, 3ff. (1986), [1986dsnr.work....3E](https://ui.adsabs.harvard.edu/abs/1986dsnr.work....3E/abstract).
+- <a id="mignone-2014"></a>Mignone, A., High-order conservative reconstruction schemes for finite volume methods in cylindrical and spherical coordinates, Journal of Computational Physics 270, 784–814 (2014), [doi:10.1016/j.jcp.2014.04.001](https://doi.org/10.1016/j.jcp.2014.04.001).
+- <a id="skinner-ostriker-2010"></a>Skinner, M. A. and Ostriker, E. C., The Athena astrophysical magnetohydrodynamics code in cylindrical geometry, ApJS 188, 290–311 (2010), [arXiv:1004.2487](https://arxiv.org/abs/1004.2487), [doi:10.1088/0067-0049/188/1/290](https://doi.org/10.1088/0067-0049/188/1/290).
+- <a id="stone-et-al-2020"></a>Stone, J. M., Tomida, K., White, C. J. and Felker, K. G., The Athena++ adaptive mesh refinement framework: design and magnetohydrodynamic solvers, ApJS 249, 4 (2020), [arXiv:2005.06651](https://arxiv.org/abs/2005.06651), [doi:10.3847/1538-4365/ab929b](https://doi.org/10.3847/1538-4365/ab929b).
+- <a id="stone-norman-1992a"></a>Stone, J. M. and Norman, M. L., ZEUS-2D: a radiation magnetohydrodynamics code for astrophysical flows in two space dimensions. I. The hydrodynamic algorithms and tests, ApJS 80, 753–790 (1992), [doi:10.1086/191680](https://doi.org/10.1086/191680).
+- <a id="zingale-2025"></a>Zingale, M., *Introduction to Computational Astrophysical Hydrodynamics*, the Open Astrophysics Bookshelf, version of 26 January 2025, [PDF](https://open-astrophysics-bookshelf.github.io/numerical_exercises/CompHydroTutorial.pdf).

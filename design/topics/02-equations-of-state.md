@@ -2,7 +2,7 @@
 
 ## 1. Overview
 
-An equation of state (EOS) closes the equations of [topic 1](01-equations-and-their-variables.md). It gives the pressure from the density and the internal energy, the sound speed for the time step and the Riemann solvers, and the temperature where sources need it. All five references use the ideal gas, and Ulula and Athena++ also offer the isothermal one. pyro has only the ideal gas, while ZEUS, which evolves the internal energy, takes any $p(\rho, e)$ directly. Zingale's text and Athena++ treat a general EOS: the text after Colella and Glaz, who carry an extra index of the gas to the faces, and Athena++ through the framework of Coleman, which reduces any EOS to three functions, analytic or tabulated, and tests it on eleven problems. The internal energy at high Mach numbers, the floors that keep density and pressure positive, and the root finding that inverts an EOS complete the topic. The temperatures of cooling follow in topic 17 and the relativistic equations of state in topic 22.
+An equation of state (EOS) closes the equations of [topic 1](01-equations-and-their-variables.md). It gives the pressure from the density and the internal energy, the sound speed for the time step and the Riemann solvers, and the temperature where sources need it. All five references use the ideal gas, and Ulula and Athena++ also offer the isothermal one. pyro has only the ideal gas, while ZEUS, which evolves the internal energy, takes any $p(\rho, e)$ directly. Zingale's text and Athena++ treat a general EOS: the text after Colella and Glaz, who carry an extra index of the gas to the faces, and Athena++ through the framework of Coleman, which reduces any EOS to three functions, analytic or tabulated, and tests it on eleven problems. The internal energy at high Mach numbers, the floors that keep density and pressure positive, and the root finding that inverts an EOS complete the topic. The temperatures of cooling follow in topic 19 and the relativistic equations of state in topic 25.
 
 ## 2. Methods
 
@@ -39,7 +39,7 @@ Detail: [Zingale 2.5.21](../references/computational-hydrodynamics-synthesis.md#
 
 ### 2.3 The general equation of state
 
-A finite-difference code such as ZEUS takes a general EOS easily, but a Godunov code must solve its Riemann problems with the same EOS ([Coleman](#coleman-2020) 2020, §1). The Riemann problem has a unique solution if $(\partial p/\partial\rho)_e > 0$ and $(\partial p/\partial e)_\rho > 0$ (eqs. 4 and 5), and its generalisation needs the exact adiabatic sound speed, $c_\mathrm{s}^2 = (\partial p/\partial\rho)_s$ at constant specific entropy (eq. 8). [Chen et al.](#chen-et-al-2019) (2019) solve it exactly for any EOS, at a cost too high for simulations, which use approximate solvers instead (topic 6).
+A finite-difference code such as ZEUS takes a general EOS easily, but a Godunov code must solve its Riemann problems with the same EOS ([Coleman](#coleman-2020) 2020, §1). The Riemann problem has a unique solution if $(\partial p/\partial\rho)_e > 0$ and $(\partial p/\partial e)_\rho > 0$ (eqs. 4 and 5), and its generalisation needs the exact adiabatic sound speed, $c_\mathrm{s}^2 = (\partial p/\partial\rho)_s$ at constant specific entropy (eq. 8). [Chen et al.](#chen-et-al-2019) (2019) solve it exactly for any EOS, at a cost too high for simulations, which use approximate solvers instead (topic 7).
 
 Athena++ reduces any EOS that meets these conditions to three functions (Coleman 2020, eqs. 13 to 18), which replace the relations of the ideal gas:
 

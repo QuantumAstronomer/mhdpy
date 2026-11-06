@@ -2,7 +2,7 @@
 
 ## 1. Overview
 
-A grid turns the continuous fields of [topic 1](01-equations-and-their-variables.md) into a finite set of numbers, and the finite-volume discretisation turns the conservation laws into an update of those numbers that conserves mass, momentum and energy to round-off. Gridless methods expand the fields in basis functions, as spectral methods do, or carry the mass on particles, as smoothed particle hydrodynamics does. Grids are structured, with one integer index per dimension and a direct map onto arrays, or unstructured, which fit irregular domains at the cost of complex data and slower access to memory. All five references use structured grids, which suit the boxes, discs and spheres of astrophysics. pyro, Ulula and Athena++ store cell averages on uniform grids, Athena++ also on nonuniform ones, while ZEUS uses a staggered mesh that may be nonuniform and may move. Ghost cells and boundaries follow in topic 4, reconstruction and the fluxes in topics 5 and 6, curvilinear grids in topic 11, mesh refinement in topic 36 and the decomposition of the domain in topic 37. Unstructured grids and the moving Voronoi meshes of codes such as Arepo are only named, by Zingale's text.
+A grid turns the continuous fields of [topic 1](01-equations-and-their-variables.md) into a finite set of numbers, and the finite-volume discretisation turns the conservation laws into an update of those numbers that conserves mass, momentum and energy to round-off. Gridless methods expand the fields in basis functions, as spectral methods do, or carry the mass on particles, as smoothed particle hydrodynamics does. Grids are structured, with one integer index per dimension and a direct map onto arrays, or unstructured, which fit irregular domains at the cost of complex data and slower access to memory. All five references use structured grids, which suit the boxes, discs and spheres of astrophysics. pyro, Ulula and Athena++ store cell averages on uniform grids, Athena++ also on nonuniform ones, while ZEUS uses a staggered mesh that may be nonuniform and may move. Ghost cells and boundaries follow in topic 4, reconstruction and the fluxes in topics 6 and 7, curvilinear grids in topic 12, mesh refinement in topic 40 and the decomposition of the domain in topic 42. Unstructured grids and the moving Voronoi meshes of codes such as Arepo are only named, by Zingale's text.
 
 ## 2. Methods
 
@@ -22,7 +22,7 @@ Three structured grids hold the data differently (Zingale's text, eqs. 3.1 to 3.
 
 $$\langle f\rangle_i = \frac{1}{\Delta x}\int_{x_{i-1/2}}^{x_{i+1/2}} f(x)\,dx,$$
 
-so that $\Delta x\,\langle f\rangle_i$ is the amount of $f$ in the cell. Average and central value agree to second order, $\langle f\rangle_i \approx f(x_i)$, so that pyro does not tell them apart, and its fourth-order methods convert between them (topic 8). **[GK]** The Taylor expansion inside the integral gives $\langle f\rangle_i = f(x_i) + (\Delta x^2/24)\,f''(x_i) + \mathcal{O}(\Delta x^4)$.
+so that $\Delta x\,\langle f\rangle_i$ is the amount of $f$ in the cell. Average and central value agree to second order, $\langle f\rangle_i \approx f(x_i)$, so that pyro does not tell them apart, and its fourth-order methods convert between them (topic 9). **[GK]** The Taylor expansion inside the integral gives $\langle f\rangle_i = f(x_i) + (\Delta x^2/24)\,f''(x_i) + \mathcal{O}(\Delta x^4)$.
 
 An interpolation on a finite-volume grid must be conservative: averaged over a cell, it returns the average of that cell. The parabola through three neighbouring averages is (eqs. 3.5 to 3.9)
 
@@ -46,13 +46,13 @@ Integrating over a time step as well gives the update of Athena and Ulula, exact
 
 $$\mathbf{U}^{n+1}_{i,j,k} = \mathbf{U}^{n}_{i,j,k} - \frac{\Delta t}{\Delta x}\left(\mathbf{F}^{n+1/2}_{i+1/2} - \mathbf{F}^{n+1/2}_{i-1/2}\right) - \frac{\Delta t}{\Delta y}\left(\mathbf{G}^{n+1/2}_{j+1/2} - \mathbf{G}^{n+1/2}_{j-1/2}\right) - \frac{\Delta t}{\Delta z}\left(\mathbf{H}^{n+1/2}_{k+1/2} - \mathbf{H}^{n+1/2}_{k-1/2}\right) + \Delta t\,\mathbf{S}^{n+1/2}_{i,j,k}.$$
 
-Here $\mathbf{U}^n_{i,j,k}$ is the average over the cell, and each flux the average over its face and over the step. The superscript $n + 1/2$ marks that average in time, not a value at $t^{n+1/2}$, and a method lies wholly in how it approximates the averaged fluxes and sources. To second order, the averages equal the fluxes at the centres of the faces at the midpoint of the step (Zingale's text, eq. 5.41). Two routes reach second order in time: a predictor gives the states at the half step, or the method of lines integrates the semi-discrete equation as a system of ordinary differential equations (topic 7). One step of the scheme runs as follows.
+Here $\mathbf{U}^n_{i,j,k}$ is the average over the cell, and each flux the average over its face and over the step. The superscript $n + 1/2$ marks that average in time, not a value at $t^{n+1/2}$, and a method lies wholly in how it approximates the averaged fluxes and sources. To second order, the averages equal the fluxes at the centres of the faces at the midpoint of the step (Zingale's text, eq. 5.41). Two routes reach second order in time: a predictor gives the states at the half step, or the method of lines integrates the semi-discrete equation as a system of ordinary differential equations (topic 8). One step of the scheme runs as follows.
 
-1. Reconstruct from the averages $\mathbf{U}^n_i$ the states on either side of each face, $\mathbf{W}_{\mathrm{L},i+1/2}$ and $\mathbf{W}_{\mathrm{R},i+1/2}$ (topic 5).
-2. Approximate the flux averaged over each face and the step, $\mathbf{F}^{n+1/2}_{i+1/2}$, by a Riemann solver between the two states (topics 6 and 7).
+1. Reconstruct from the averages $\mathbf{U}^n_i$ the states on either side of each face, $\mathbf{W}_{\mathrm{L},i+1/2}$ and $\mathbf{W}_{\mathrm{R},i+1/2}$ (topic 6).
+2. Approximate the flux averaged over each face and the step, $\mathbf{F}^{n+1/2}_{i+1/2}$, by a Riemann solver between the two states (topics 7 and 8).
 3. Update every cell by the differences of its face fluxes and the sources, as above.
 
-pyro, Ulula and Athena++ share this update. Athena++ stores the averages at the centres of the volumes, which in curvilinear coordinates differ from the geometric centres (topic 11), and holds the magnetic field as averages over the faces, for constrained transport (topic 10).
+pyro, Ulula and Athena++ share this update. Athena++ stores the averages at the centres of the volumes, which in curvilinear coordinates differ from the geometric centres (topic 12), and holds the magnetic field as averages over the faces, for constrained transport (topic 11).
 
 Detail: [Zingale 2.2.4](../references/computational-hydrodynamics-synthesis.md#224-conservation), [Zingale 2.3.7](../references/computational-hydrodynamics-synthesis.md#237-finite-volume-advection), [Zingale 2.3.13](../references/computational-hydrodynamics-synthesis.md#2313-finite-volumes-in-several-dimensions), [Ulula 2.3.1](../references/ulula-synthesis.md#231-the-godunov-update), [Athena 2.1.3](../references/athena-synthesis.md#213-the-finite-volume-discretisation).
 
@@ -70,7 +70,7 @@ ZEUS chooses its spacings freely, but the grid must stay orthogonal, so that a s
 
 On a moving grid the fluxes carry the velocity relative to the grid, and every variable is transported consistently with the mass, after [Norman, Wilson and Barton](#norman-et-al-1980) (1980). The flux of each variable is built from the mass flux, which limits the damage that numerical diffusion does to its local conservation, notably of the specific angular momentum. A sweep along $x$ runs as follows (Stone and Norman 1992a, eqs. 51 to 64).
 
-1. Interpolate the density to the faces, $\rho_{i-1/2}$ (topic 5).
+1. Interpolate the density to the faces, $\rho_{i-1/2}$ (topic 6).
 2. Form the mass flux relative to the grid, $\dot M_{i-1/2} = \rho_{i-1/2}\,(v_{x,i-1/2} - v_{\mathrm{g},i-1/2})$.
 3. Update the mass $\rho V$ of each zone with the fluxes $\dot M A$, using the face areas $A_{i\mp1/2}$ centred in time and the volume $V$ at the new time.
 4. Transport every other quantity with the flux of its interpolated specific value times $\dot M A$, such as $e_{i-1/2}\,\dot M_{i-1/2}\,A_{i-1/2}$ for the internal energy.

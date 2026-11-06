@@ -551,7 +551,7 @@ The software architecture draws on §3.4, §13.6, §13.7 and appendices A to C o
 
 ### 3.1 Data layout on the grid
 
-A finite-volume grid maps onto a multi-dimensional array (§3.4). In NumPy, the state of a one-dimensional grid with $n_x$ zones and $n_g$ ghost cells at each end is an array of shape $(n_x + 2 n_g, n_\mathrm{var})$, for $n_\mathrm{var}$ state variables per zone. The interior runs from index $i_\mathrm{lo} = n_g$ to $i_\mathrm{hi} = n_x + n_g - 1$, and loops over the domain use these bounds. Fluxes live on the zone edges, which half-integer indices cannot address, so by convention element $i$ of a flux array holds the flux $F_{i-1/2}$ on the left edge of zone $i$.
+A finite-volume grid maps onto a multi-dimensional array (§3.4). In NumPy, the state of a one-dimensional grid with $n_x$ zones and $n_g$ ghost cells at each end is an array of shape $(n_x + 2 n_g, n_\mathrm{var})$, for $n_\mathrm{var}$ state variables per zone. The interior runs from index $i_\mathrm{lo} = n_g$ to $i_\mathrm{hi} = n_x + n_g - 1$, and loops over the domain use these bounds. Fluxes live on the zone edges, whose half-integer indices an array cannot take, so by convention element $i$ of a flux array holds the flux $F_{i-1/2}$ on the left edge of zone $i$.
 
 ### 3.2 Computational cost
 

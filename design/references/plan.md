@@ -55,6 +55,8 @@ In the review of the topic summaries, eq. 8.51 proved to blend the right state a
 
 In the second part of the review of the topic summaries, two passages proved to repeat slips of the text. §11.2 calls $\phi = 0$ the ash of the flame and $\phi = 1$ its fuel, while the source drives $\phi$ towards 1, the burnt state (2.8.2), and the third remedy of §12.2.1, one limited slope for all species, keeps the sum of the mass fractions only if read as one limiting factor for all slopes (2.8.6). Notes marked **[GK]** record both.
 
+In the fourth part of the review of the topic summaries, 3.1 proved to say that half-integer indices cannot address the edges of zones, the reverse of what it meant. It now says that an array cannot take their half-integer indices.
+
 ## Pyro
 
 The synthesis is kept in `pyro-synthesis.md`. Its sources are the pyro2 code with its documentation, in `reference-works/Pyro/Code`, and two papers in `reference-works/Pyro/Docs`: the pyro paper, Zingale (2014, `1306.6883v3.pdf`), and the paper in the Journal of Open Source Software (JOSS), Harpole et al. (2019, `1902.08702v1.pdf`). The copy of the code has no git metadata, and `pyproject.toml` takes the version from git tags, so the code is cited at version 4.5.1, the latest entry of `CHANGES.md`.

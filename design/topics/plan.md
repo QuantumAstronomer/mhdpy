@@ -81,7 +81,7 @@ Each step is put to the author with its review and is committed once the author 
 | 38 | Problem setups and user functions | `38-problem-setups-and-user-functions.md` | pyro 3.3 (problems); Ulula 2.2.3, 2.8.1, 3.6; Athena 3.6 | 1,200 | done |
 | 39 | Output, restarts and analysis | `39-output-restarts-and-analysis.md` | Zingale 3.3; pyro 3.4 (output, plotting); Ulula 3.4; Athena 3.7 | 2,600 | done |
 | 40 | Mesh refinement | `40-mesh-refinement.md` | Zingale 2.2.6, 2.6.5; pyro 2.1.4; Athena 3.4 | 4,500 | done |
-| 41 | Vectorised and compiled kernels | `41-vectorised-and-compiled-kernels.md` | Performance in Python 2.1–2.3, 2.7, 3 | 12,700 | open |
+| 41 | Vectorised and compiled kernels | `41-vectorised-and-compiled-kernels.md` | Performance in Python 2.1–2.3, 2.7, 3.1, 3.4, 3.10 | 10,900 | done |
 | 42 | Parallelisation and performance | `42-parallelisation-and-performance.md` | Zingale 2.9.1, 3.2; Ulula 3.7; Athena 3.1 (optimisation), 3.5 (parallelisation), 3.9 | 2,500 | done |
 
 Each collection ends with a step that extends the earlier topics it adds to, named by its last step and a letter, such as 20a. An extension keeps each topic within its limit of words, and adds the subsections that it draws on to the row of the topic in the first table.

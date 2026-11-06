@@ -10,9 +10,9 @@ An equation of state (EOS) closes the equations of [topic 1](01-equations-and-th
 
 An ideal gas has ([Diemer](#diemer-2025) 2025, eq. 4)
 
-$$p = n k_\mathrm{B} T = \frac{\rho k_\mathrm{B} T}{\mu m_\mathrm{p}} = (\gamma - 1)\,\rho e, \qquad c_\mathrm{s}^2 = \frac{\gamma p}{\rho},$$
+$$p = n_\mathrm{tot} k_\mathrm{B} T = \frac{\rho k_\mathrm{B} T}{\mu m_\mathrm{p}} = (\gamma - 1)\,\rho e, \qquad c_\mathrm{s}^2 = \frac{\gamma p}{\rho},$$
 
-with the number density $n$, Boltzmann's constant $k_\mathrm{B}$, the temperature $T$ and the mean particle mass $\mu$ in units of the proton mass $m_\mathrm{p}$. The adiabatic index is $5/3$ for an atomic gas and $7/5$ for a diatomic molecular one. Ulula takes $5/3$ by default and pyro $1.4$, while Athena++ requires it to be given. An isothermal gas keeps $T$, and with it $e$, constant. It is barotropic, $p = c_\mathrm{s}^2\rho$ with the constant $c_\mathrm{s}^2 = p/\rho$, so that the energy equation is dropped. Ulula and Athena++ offer it, Athena++ with a given sound speed and Ulula with a given internal energy, which may be derived from a temperature.
+with the number density $n_\mathrm{tot}$ of all particles, Boltzmann's constant $k_\mathrm{B}$, the temperature $T$ and the mean particle mass $\mu$ in units of the proton mass $m_\mathrm{p}$. The adiabatic index is $5/3$ for an atomic gas and $7/5$ for a diatomic molecular one. Ulula takes $5/3$ by default and pyro $1.4$, while Athena++ requires it to be given. An isothermal gas keeps $T$, and with it $e$, constant. It is barotropic, $p = c_\mathrm{s}^2\rho$ with the constant $c_\mathrm{s}^2 = p/\rho$, so that the energy equation is dropped. Ulula and Athena++ offer it, Athena++ with a given sound speed and Ulula with a given internal energy, which may be derived from a temperature.
 
 In MHD the fast magnetosonic speed along $x$ enters the time step and the Riemann solvers. Athena++ computes it in a form that avoids the difference of two large terms:
 

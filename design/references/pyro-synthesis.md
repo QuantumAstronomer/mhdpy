@@ -201,7 +201,7 @@ A sponge damps the velocity where the density is low, as above an atmosphere wit
 
 Beyond the standard types of 2.1.3, the compressible solvers define three of their own, none a solid wall (`pyro/compressible/BC.py`, `user`). `hse` holds an atmosphere in hydrostatic equilibrium at the lower or upper boundary in y. The ghost cells copy the density, the momenta and the other variables from the edge zone, and the pressure falls or rises by $g \rho \Delta y$ from zone to zone with the density of the edge zone, while the kinetic energy of the edge zone is kept in the total energy. `ambient` fills the upper boundary in y with an ambient state of density, velocity and pressure set by the problem. `ramp` serves the double Mach reflection, in which a Mach 10 shock meets a reflecting wall at an angle of 60°. The lower boundary in x holds the post-shock state $\rho = 8$, $u = 7.1447096$, $v = -4.125$ and $p = 116.5$. The lower boundary in y holds the same state for $x < 1/6$ and reflects beyond it. The upper boundary in y follows the exact position of the moving shock, blending the pre-shock state, $\rho = 1.4$, $p = 1$ and zero velocity, with the post-shock state by sampling each ghost zone at four points.
 
-The time step is $C \min[L_x/(|u| + c), L_y/(|v| + c)]$ over the zones, with $C = 0.8$ by default (`method_compute_timestep`). Tracer particles, if switched on, move with the velocity.
+The time step is $C \min[L_x/(|u| + c), L_y/(|v| + c)]$ over the zones, with $C = 0.8$ by default (`method_compute_timestep`). `evolve` would move tracer particles with the derived velocity after the update, but switching them on stops the compressible solvers at 4.5.1 (2.10.2).
 
 #### 2.4.7 Riemann solvers
 

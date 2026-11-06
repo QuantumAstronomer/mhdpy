@@ -104,6 +104,8 @@ Two checks concern the synthesis of Zingale's text. Step 18 of that synthesis le
 
 In the review of the topic summaries, the pressure of the problem `hse` proved to fall with height where 2.4.12 had it rise, which the item now states.
 
+In the second part of the review of the topic summaries, 2.4.6 proved to let the compressible solvers move tracer particles, although switching them on stops these solvers, as 1.2 and 2.10.2 say. The item now states it.
+
 ## ZEUS
 
 The synthesis is kept in `zeus-synthesis.md`. Its sources are the three papers on ZEUS-2D in `reference-works/Zeus/Docs`, which describe its hydrodynamic, magnetohydrodynamic and radiation hydrodynamic algorithms and tests in ApJS 80 of June 1992: Stone and Norman (1992a, doi:10.1086/191680, `1992ApJS80753S.pdf`), Stone and Norman (1992b, doi:10.1086/191681, `1992ApJS80791S.pdf`), and Stone, Mihalas and Norman (1992, doi:10.1086/191682, `1992ApJS80819S.pdf`). The papers call one another Paper I, II and III, and this section names them I, II and III. The local copies are scans from the ADS. Their text layer, made by optical character recognition, garbles the equations, which are therefore read from the page images. The code of ZEUS-2D is not among the sources.

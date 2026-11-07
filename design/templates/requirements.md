@@ -12,11 +12,11 @@
 
 ## {Function or operation}
 
-<a id="{prefix}-1"></a>**{PREFIX}-1** *The statement in one sentence, with "shall", in a pattern of EARS where a condition applies, and with its tolerance or range where it is numerical. Then the reason in a few sentences, with links to the sub-decisions, experiments and topic sections that it rests on.*
+<a id="{prefix}01"></a>**{PREFIX}01** *The statement in one sentence, with "shall", in a pattern of EARS where a condition applies, and with its tolerance or range where it is numerical. Then the reason in a few sentences, with links to the sub-decisions, experiments and topic sections that it rests on.*
 
 ## Verification
 
-<a id="{prefix}-{m}"></a>**{PREFIX}-{m}** *A requirement of §1.3 on the component as a whole: an order of convergence, conservation to round-off, or a reference test of its topic reproduced, with the reason as above.*
+<a id="{prefix}{mm}"></a>**{PREFIX}{mm}** *A requirement of §1.3 on the component as a whole: an order of convergence, conservation to round-off, or a reference test of its topic reproduced, with the reason as above.*
 
 ## Sources
 

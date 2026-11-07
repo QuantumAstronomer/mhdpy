@@ -107,7 +107,7 @@ The templates of the decision briefs, experiments and requirement documents are 
 | Brief | B7 | `design/briefs/B07-riemann-solvers.md`, its diagrams in `design/briefs/B07-riemann-solvers/` |
 | Sub-decision | B7D2 | a section of its brief |
 | Experiment | B7E1 | `design/experiments/B07-riemann-solvers/E1-cost-of-hllc/README.md` |
-| Requirement | RIEM-4 | `design/requirements/riemann-solvers.md` |
+| Requirement | RIEM04 | `design/requirements/riemann-solvers.md` |
 
 Documents cite an identifier by a link whose text is the identifier, while tests, code and commit messages cite it alone.
 

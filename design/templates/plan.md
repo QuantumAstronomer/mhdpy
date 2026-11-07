@@ -27,7 +27,7 @@ The layout comes first, as every template refers to paths. The brief follows, si
 | Step | Subject | Files | Status |
 |---:|---|---|---|
 | 1 | Way of working | `design/templates/plan.md` | done |
-| 2 | Layout of folders and files | `design/templates/plan.md` | in progress |
+| 2 | Layout of folders and files | `design/templates/plan.md` | done |
 | 3 | Decision briefs | skeleton and rules file in `design/templates/` | |
 | 4 | Experiments | skeleton and rules file in `design/templates/` | |
 | 5 | Requirement documents | skeleton and rules file in `design/templates/` | |
@@ -39,4 +39,4 @@ The layout comes first, as every template refers to paths. The brief follows, si
 
 Step 1. The author decided that each template has a skeleton and a rules file, that the conventions go into §3.4, that the structure of a template is shown as an outline first, that a round holds two or three questions, that each template is tried in `.scratch/` before it is committed, and that this file records the work.
 
-Step 2, so far. The author decided that the templates are kept in `design/templates/`, that each brief has a folder of its own in `design/briefs/`, without folders for the layers, and that the experiments of a brief are kept in `design/experiments/`, in a folder that bears the name of the brief's folder. Open are where the requirement documents are kept, what the folder of a brief holds besides the brief, and how several experiments of one brief are arranged in their folder.
+Step 2. The author decided that the templates are kept in `design/templates/` and that each brief has a folder of its own in `design/briefs/`, without folders for the layers. The folder holds the brief as one document, with a section for each sub-decision, and any diagram drawn for the brief itself. The experiments of a brief are kept in `design/experiments/`, in a folder that bears the name of the brief's folder, with a subfolder for each experiment that holds its document, scripts, results and figures. The requirement documents are kept apart, in `design/requirements/`, since a brief is frozen once decided, while a requirement document lives as long as its component and may draw on several briefs. The names of the folders and files are fixed with the templates and gathered in step 6.

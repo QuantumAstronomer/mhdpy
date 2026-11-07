@@ -98,9 +98,18 @@ Colours are used in this order: black, red (`#cc0000`), darker reds (`#7a0000`, 
 
 Figures are always redrawn, never copied. A plotting script of its own reads saved results, so that a change of style does not require the computation to run again.
 
-### 3.4 Templates
+### 3.4 Templates, names and commits
 
-The templates of briefs, requirement documents and experiments, the naming of their files and identifiers, and the style of commit messages are designed with the author, before the overview of the layers (§2.3).
+The templates of the decision briefs, experiments and requirement documents are kept in `design/templates/`, each as a skeleton that begins a document and a rules file that explains its parts and the reasons for its names, and `design/templates/plan.md` records how they were designed with the author. Identifiers and files are named as follows, with subjects in lower case, with hyphens and without articles or commas, and with numbers and prefixes never reused.
+
+| Item | Identifier | File |
+|---|---|---|
+| Brief | B7 | `design/briefs/B07-riemann-solvers.md`, its diagrams in `design/briefs/B07-riemann-solvers/` |
+| Sub-decision | B7D2 | a section of its brief |
+| Experiment | B7E1 | `design/experiments/B07-riemann-solvers/E1-cost-of-hllc/README.md` |
+| Requirement | RIEM-4 | `design/requirements/riemann-solvers.md` |
+
+Documents cite an identifier by a link whose text is the identifier, while tests, code and commit messages cite it alone.
 
 ## 4. Material and machine
 

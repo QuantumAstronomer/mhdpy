@@ -32,7 +32,7 @@ The layout comes first, as every template refers to paths. The brief follows, si
 | 4 | Experiments | `design/templates/experiment.md`, `design/templates/experiment-rules.md`, `.gitignore` | done |
 | 5 | Requirement documents | `design/templates/requirements.md`, `design/templates/requirements-rules.md` | done |
 | 6 | Naming of files and identifiers | CLAUDE.md §3.4 | done |
-| 7 | Style of commit messages | CLAUDE.md §3.4 | |
+| 7 | Style of commit messages | CLAUDE.md §3.4 | done |
 | 8 | Consistency of the whole | the files of steps 2 to 7 | |
 
 ## Decisions
@@ -48,3 +48,5 @@ Step 4. The author reads the result of an experiment rather than its code, and i
 Step 5. The author opens a requirement document when writing a test or code, when reading code later and when judging a component done, and looks there for the statement with its reason, while formulas stay in the topics. Having written requirements formally before, the author chose statements with "shall", after ISO/IEC/IEEE 29148, in the patterns of EARS where a condition applies, each with its reason in the same paragraph. The requirements are grouped by function, with the verification of §1.3 last. Only the tests name their requirements, at the start of their docstrings, and a check derived from the tests, built with those of the first component, lists the requirements that have none. Code cites requirements in docstrings and, for a single line, in a `##` comment. A requirement is identified by a mnemonic prefix and a number, as RIEM-4, the prefix staying with its requirements, and its document is named by the component, as `riemann-solvers.md`. A change of meaning withdraws a requirement in favour of a new one. A trial on the state arrays of the trial brief led to three further rules: a reason may rest on an experiment, a choice that no sub-decision has made goes to a brief before a requirement states it, and a requirement on speed names the machine, the statistic and the margin of its threshold.
 
 Step 6. The names that the three rules files fixed are gathered in §3.4 as a table of item, identifier and file, between a sentence on the templates and one on citing, and §3.4 is retitled Templates, names and commits, as the author decided.
+
+Step 7. The style that the history practises is written into §3.4: a subject in the imperative of at most 72 characters, without a full stop or a prefix, and a body of prose wrapped at 72 columns in the voice of §3.1. The author decided that a subject names the identifier where a commit concerns one item, that every commit carries the Co-Authored-By line, and that a test is committed with the code that makes it pass, so that every commit passes its tests.

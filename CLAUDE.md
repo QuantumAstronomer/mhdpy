@@ -111,6 +111,8 @@ The templates of the decision briefs, experiments and requirement documents are 
 
 Documents cite an identifier by a link whose text is the identifier, while tests, code and commit messages cite it alone.
 
+A commit message opens with a subject in the imperative and in sentence case, without a full stop or a prefix, of at most 72 characters, as "Add the template of the experiments". The subject names the identifier where the commit concerns one brief, sub-decision, experiment or requirement, as "Decide B7D2, the solver for hydrodynamics". After a blank line, the body says in prose what changed and why, wrapped at 72 columns in the voice of §3.1, and names the files, sections and identifiers concerned and the decisions of the author. Every message ends with the Co-Authored-By line of the assistant, which prepares every step. A test and the code that makes it pass are committed together, so that every commit passes its tests.
+
 ## 4. Material and machine
 
 ### 4.1 References

@@ -14,7 +14,7 @@ The folder of an experiment holds five things.
 - `results/`, the numbers on which the answer and the figures rest, with `environment.json`, the record of what produced them (3).
 - `figures/`, the figures that `plot.py` draws.
 
-A brief cites an experiment by a link whose text is its identifier, as [B7E1](../experiments/B07-riemann-solvers/E1-cost-of-hllc/README.md), and commit messages by the identifier alone.
+A brief cites an experiment by a link whose text is its identifier, as `[B7E1](../experiments/B07-riemann-solvers/E1-cost-of-hllc/README.md)`, and commit messages by the identifier alone.
 
 ## 2. The record
 
@@ -33,6 +33,8 @@ The head names, with links, the sub-decision that the experiment serves, and any
 **Rerun.** The commands that rerun the experiment in its folder, `uv run run.py` and `uv run plot.py`, and how long they take on the development machine.
 
 The question, the expectation and the method form the plan. The plan comes to the author before any code is written, is agreed and is then kept unchanged, as in a registered report, while the results and the answer follow the run. The record therefore shows both what was expected and what was found.
+
+The record follows §3.1, as the briefs do. A fact that the references do not give, as in an expectation, is marked **[GK]**, while the measured results need no mark.
 
 ## 3. The code
 

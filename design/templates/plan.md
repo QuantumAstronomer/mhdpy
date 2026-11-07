@@ -33,7 +33,7 @@ The layout comes first, as every template refers to paths. The brief follows, si
 | 5 | Requirement documents | `design/templates/requirements.md`, `design/templates/requirements-rules.md` | done |
 | 6 | Naming of files and identifiers | CLAUDE.md §3.4 | done |
 | 7 | Style of commit messages | CLAUDE.md §3.4 | done |
-| 8 | Consistency of the whole | the files of steps 2 to 7 | |
+| 8 | Consistency of the whole | the files of steps 2 to 7 | done |
 
 ## Decisions
 
@@ -50,3 +50,5 @@ Step 5. The author opens a requirement document when writing a test or code, whe
 Step 6. The names that the three rules files fixed are gathered in §3.4 as a table of item, identifier and file, between a sentence on the templates and one on citing, and §3.4 is retitled Templates, names and commits, as the author decided.
 
 Step 7. The style that the history practises is written into §3.4: a subject in the imperative of at most 72 characters, without a full stop or a prefix, and a body of prose wrapped at 72 columns in the voice of §3.1. The author decided that a subject names the identifier where a commit concerns one item, that every commit carries the Co-Authored-By line, and that a test is committed with the code that makes it pass, so that every commit passes its tests.
+
+Step 8. Read together, the templates and §3.4 agree but for two points, which the author settled. The examples of citations in the three rules files, which pointed as live links to files that do not exist, are shown as code, and the rules of the experiments gain the sentence on §3.1 and **[GK]** marks that the other two rules files have. The layout and visuals of figures remain to be planned apart, as step 4 records.

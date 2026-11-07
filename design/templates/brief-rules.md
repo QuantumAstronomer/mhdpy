@@ -8,7 +8,7 @@ A brief is identified by the letter B and a number, given in the order in which 
 
 A brief that needs diagrams keeps them in a folder of the same name beside it, as `design/briefs/B07-riemann-solvers/`, made when the first diagram is needed. A diagram is saved as SVG, which is text, small and sharp at any size, and may be drawn by hand or by a short script that lies beside it. The folder is committed, as its diagrams belong to the record that a decided brief freezes. The experiments of a brief lie in a folder of the same name in `design/experiments/`, one subfolder to an experiment, as the template of the experiments sets out.
 
-A sub-decision is identified by its brief, the letter D and a number, as B7D2. The number is given when the sub-decision is written and is never changed or reused. Within a sub-decision the options are lettered A, B and so on, and cited as option B of B7D2. Documents cite a sub-decision by a link whose text is its identifier, as [B7D2](../briefs/B07-riemann-solvers.md#b7d2-the-solver-for-hydrodynamics), and commit messages by the identifier alone.
+A sub-decision is identified by its brief, the letter D and a number, as B7D2. The number is given when the sub-decision is written and is never changed or reused. Within a sub-decision the options are lettered A, B and so on, and cited as option B of B7D2. Documents cite a sub-decision by a link whose text is its identifier, as `[B7D2](../briefs/B07-riemann-solvers.md#b7d2-the-solver-for-hydrodynamics)`, and commit messages by the identifier alone.
 
 ## 2. The head of a brief
 

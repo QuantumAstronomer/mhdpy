@@ -1,3 +1,4 @@
 /reference-works/
 /.scratch/
 .DS_Store
+/design/experiments/**/results/raw/

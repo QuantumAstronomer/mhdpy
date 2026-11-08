@@ -36,7 +36,11 @@ It is closed by tests of its own, since tools of verification need tests as much
 
 ### 3.2 Mesh and data
 
-The code that holds the state on the grid: coordinates with a geometry kept general ([topic 3](topics/03-grids-and-finite-volume-discretisation.md)), the arrays of the state with room for the face fields of MHD ([topic 36](topics/36-data-structures.md)), and ghost cells with the standard boundaries and their exchange between blocks ([topic 4](topics/04-boundary-conditions-and-ghost-cells.md)). Extensions: curvilinear coordinates ([topic 12](topics/12-curvilinear-coordinates.md)) and mesh refinement ([topic 40](topics/40-mesh-refinement.md)).
+The code that holds the state on the grid: coordinates with a geometry kept general ([topic 3](topics/03-grids-and-finite-volume-discretisation.md)), the arrays of the state with room for the face fields of MHD ([topic 36](topics/36-data-structures.md)), and [ghost cells](#ghost-cell) with the standard boundaries and their exchange between [blocks](#block) ([topic 4](topics/04-boundary-conditions-and-ghost-cells.md)). Extensions: curvilinear coordinates ([topic 12](topics/12-curvilinear-coordinates.md)) and mesh refinement ([topic 40](topics/40-mesh-refinement.md)).
+
+To the numerical core, it provides the [cell averages](#cell-average) of the conserved and primitive variables, each variable named and indexed once for every stratum, any number of passive scalars among them, the fluxes on the faces, and as many ghost cells as the widest [stencil](#stencil) needs, three for parabolic reconstruction. Its layout serves the kernels of stratum 1, and its blocks, if the briefs choose them, the execution in parallel. The grid keeps its areas, lengths and volumes general, so that curvilinear coordinates enter later without redesign, and the arrays leave room for the [face-centred fields](#face-centred-field) and the electric fields on the edges that constrained transport needs. The periodic, outflow and reflecting conditions are its own, while the strata above add conditions of theirs, the characteristic conditions of stratum 3 and those of a problem setup. For the extensions it leaves room for blocks of a tree, which refinement needs, and for boundaries across the pole and shifted by the shear.
+
+It is closed by tests of its own: areas and volumes that sum to those of the domain, ghost cells that each standard condition fills as its symmetry demands, and a domain split into blocks that fills them as one block would.
 
 ### 3.3 Numerical core
 
@@ -64,7 +68,7 @@ Some conventions bind every stratum, although no stratum holds them, and each is
 
 Briefs are opened stratum by stratum, from infrastructure upwards, those of the first pass before the extensions. A brief is opened in the lowest stratum whose code its decision shapes, even where most of its code lies higher: the coupling of processes within a step is decided with the integrator of stratum 3, although the driver of stratum 5 runs it.
 
-Each stratum has a table of its briefs in the order in which they are opened. A brief not yet opened has no identifier, since it receives one only when it is opened, and its subject names the questions that it settles. The status reads Not begun, Open, or Decided with its date, and the last column names what a decided brief changed in the overview, with a link to the sub-decision. A line on the requirements and code of the stratum follows its table.
+Each stratum has a table of the briefs of its first pass in the order in which they are opened and, where it has extensions, a second table of their briefs in a provisional order. A brief not yet opened has no identifier, since it receives one only when it is opened, and its subject names the questions that it settles. The status reads Not begun, Open, or Decided with its date, and the last column names what a decided brief changed in the overview, with a link to the sub-decision. A line on the requirements and code of the stratum follows its table.
 
 ### 6.1 Infrastructure
 
@@ -79,19 +83,42 @@ Each stratum has a table of its briefs in the order in which they are opened. A 
 
 Requirements and code: not begun.
 
-*The tables of strata 2 to 5 follow in steps 6b to 6e of the plan.*
+### 6.2 Mesh and data
+
+| Brief | Subject | Topics | Status | Changed in the overview |
+|---|---|---|---|---|
+| — | The arrays of the state: the order of their axes, the naming and indexing of variables, and the storage of face fields beside cell averages | [36](topics/36-data-structures.md) | Not begun | |
+| — | The domain in blocks: one block or many, their size, and room for the tree that refinement needs | [36, §2.4](topics/36-data-structures.md#24-blocks-of-a-tree), [40](topics/40-mesh-refinement.md), [42, §2.4](topics/42-parallelisation-and-performance.md#24-parallel-execution) | Not begun | |
+| — | The grid and its geometry: uniform or nonuniform spacing, and areas, lengths and volumes kept general | [3](topics/03-grids-and-finite-volume-discretisation.md), [12, §2.2](topics/12-curvilinear-coordinates.md#22-finite-volumes-and-geometric-source-terms) | Not begun | |
+| — | Ghost cells and boundaries: their number, the standard conditions, how the strata above add conditions, and the exchange between blocks | [4](topics/04-boundary-conditions-and-ghost-cells.md) | Not begun | |
+
+Extensions, in a provisional order:
+
+| Brief | Subject | Topics | Status | Changed in the overview |
+|---|---|---|---|---|
+| — | Curvilinear coordinates: cylindrical and spherical grids, with boundaries across the pole | [12](topics/12-curvilinear-coordinates.md), [4, §2.6](topics/04-boundary-conditions-and-ghost-cells.md#26-boundaries-between-blocks-and-across-poles) | Not begun | |
+| — | Mesh refinement: restriction, prolongation, the correction of fluxes, and the criteria of refining | [40](topics/40-mesh-refinement.md) | Not begun | |
+
+Requirements and code: not begun.
+
+*The tables of strata 3 to 5 follow in steps 6c to 6e of the plan.*
 
 ## 7. Glossary
 
+- <a id="block"></a>**Block.** A part of the domain with its own cells, ghost cells and coordinates. A domain cut into blocks can be shared among threads or processes and refined block by block ([topic 36, §2.4](topics/36-data-structures.md#24-blocks-of-a-tree)).
+- <a id="cell-average"></a>**Cell average.** The mean of a quantity over a cell, which a finite-volume scheme stores and changes only by the fluxes through the faces of the cell, so that it conserves what the equations conserve ([topic 3, §2.3](topics/03-grids-and-finite-volume-discretisation.md#23-the-conservative-update)).
 - <a id="cell-update"></a>**Cell update.** The advance of one cell by one time step. Their number sets the cost of a run, and their rate per second its speed ([topic 42, §2.1](topics/42-parallelisation-and-performance.md#21-the-cost-of-a-simulation)).
+- <a id="face-centred-field"></a>**Face-centred field.** A field stored on the faces of the cells rather than as cell averages, as constrained transport stores each component of the magnetic field on the faces normal to it ([topic 11, §2.1](topics/11-constrained-transport.md#21-the-staggered-field)).
 - <a id="free-threaded-build"></a>**Free-threaded build.** A build of Python without the global interpreter lock, in which threads run Python code at the same time on several cores ([topic 42, §2.5](topics/42-parallelisation-and-performance.md#25-threads-and-processes-in-python)).
+- <a id="ghost-cell"></a>**Ghost cell.** A cell outside the domain whose values a boundary condition, or a neighbouring block, sets, so that one stencil serves every cell of the domain ([topic 4, §2.1](topics/04-boundary-conditions-and-ghost-cells.md#21-ghost-cells)).
 - <a id="kernel"></a>**Kernel.** A loop over the cells of a grid that performs one operation of the scheme, such as a reconstruction or a Riemann solver. Kernels take most of the time of a run ([topic 41](topics/41-vectorised-and-compiled-kernels.md)).
 - <a id="mpi"></a>**MPI.** The Message Passing Interface, a standard by which separate processes, on one machine or on many, exchange data ([topic 42, §2.4](topics/42-parallelisation-and-performance.md#24-parallel-execution)).
 - <a id="order-of-convergence"></a>**Order of convergence.** The power of the cell width with which the error falls as the grid is refined, two for a scheme of second order on a smooth problem ([topic 28, §2.2](topics/28-verification-and-testing.md#22-norms-and-the-order-of-convergence)).
 - <a id="regression-test"></a>**Regression test.** A test that compares the result of a run with one stored earlier, so that an unintended change shows ([topic 28, §2.5](topics/28-verification-and-testing.md#25-regression-tests-and-reproducibility)).
+- <a id="stencil"></a>**Stencil.** The cells from which a scheme computes the update of one cell. Its width sets how many ghost cells the domain needs ([topic 3, §2.1](topics/03-grids-and-finite-volume-discretisation.md#21-differences-and-stencils)).
 - <a id="vectorisation"></a>**Vectorisation.** Writing a kernel as operations on whole arrays, which NumPy performs in compiled loops, rather than as a loop in Python over the cells ([topic 41, §2.1](topics/41-vectorised-and-compiled-kernels.md#21-vectorisation-in-numpy)).
 
-*The entries of strata 2 to 5 and of the remaining parts follow in steps 6b to 6f of the plan, each term with an anchor, a sentence and its topic, in alphabetical order.*
+*The entries of strata 3 to 5 and of the remaining parts follow in steps 6c to 6f of the plan, each term with an anchor, a sentence and its topic, in alphabetical order.*
 
 ## Sources
 

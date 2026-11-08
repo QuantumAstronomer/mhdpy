@@ -46,13 +46,17 @@ It is closed by tests of its own: areas and volumes that sum to those of the dom
 
 The code that advances the equations of the gas: its variables ([topic 1](topics/01-equations-and-their-variables.md)), equations of state ([topic 2](topics/02-equations-of-state.md)), reconstruction ([topic 6](topics/06-reconstruction-and-limiting.md)), Riemann solvers ([topic 7](topics/07-riemann-solvers.md)), the integrator ([topic 8](topics/08-time-integration.md)), source terms ([topic 13](topics/13-source-terms.md)), the coupling of processes within a step ([topic 18](topics/18-operator-splitting-and-coupling-of-processes.md)), the passive scalar, whose flux is the mass flux of the gas ([topic 21](topics/21-passive-scalars.md)), and open boundaries ([topic 5](topics/05-non-reflecting-boundaries.md)). Extensions: MHD with constrained transport ([topic 11](topics/11-constrained-transport.md)) first, then methods of higher order ([topic 9](topics/09-methods-of-higher-order.md)), artificial viscosity ([topic 10](topics/10-artificial-viscosity.md)) and relativistic MHD ([topic 25](topics/25-relativistic-mhd.md)).
 
-In each stage of its [integrator](#integrator), the core turns the conserved variables into primitive ones through the [equation of state](#equation-of-state), [reconstructs](#reconstruction) them on the faces, lets a [Riemann solver](#riemann-solver) compute the fluxes, and updates the cell averages with the fluxes and the [source terms](#source-term). To the physics above, it provides a registration by which a new process adds its source terms without changes to the core, the places in the step where diffusive fluxes and stiff sources enter, and the temperature and metallicity that conduction and cooling read. To the driver, it provides the step that the [Courant condition](#courant-condition) allows, and to problem setups the conversion of their initial states. The boundaries through which waves leave the domain, which the production runs need on every side, are its own, since they rest on the waves of the equations. For the extensions, its briefs choose an integrator that serves constrained transport, keep the Riemann solvers behind one interface, which the solvers of MHD join as [§1.3](#13-success-criteria) asks of a new solver, and leave the conversion of variables open to the iterative inversion of relativistic MHD.
+In each stage of its [integrator](#integrator), the core turns the conserved variables into primitive ones through the [equation of state](#equation-of-state), [reconstructs](#reconstruction) them on the faces, lets a [Riemann solver](#riemann-solver) compute the fluxes, and updates the cell averages with the fluxes and the [source terms](#source-term). To the physics above, it provides a registration by which a new process adds its source terms without changes to the core, the places in the step where diffusive fluxes and [stiff sources](#stiff-source) enter, and the temperature and metallicity that conduction and cooling read. To the driver, it provides the step that the [Courant condition](#courant-condition) allows, and to problem setups the conversion of their initial states. The boundaries through which waves leave the domain, which the production runs need on every side, are its own, since they rest on the waves of the equations. For the extensions, its briefs choose an integrator that serves constrained transport, keep the Riemann solvers behind one interface, which the solvers of MHD join as [§1.3](#13-success-criteria) asks of a new solver, and leave the conversion of variables open to the iterative inversion of relativistic MHD.
 
 It is closed by tests of its own: each Riemann solver against the exact solution, each reconstruction by its order on smooth profiles, and a small loop in its tests that steps Sod's shock tube against its exact solution and a linear wave, which must converge at second order and conserve mass, momentum and energy to round-off on a periodic domain.
 
 ### 3.4 Physics
 
 The modules that add processes to the flow: diffusion ([topic 16](topics/16-diffusion.md)) and thermal conduction ([topic 17](topics/17-thermal-conduction.md)), and radiative cooling ([topic 20](topics/20-radiative-cooling.md)) with the integration of local, stiff sources ([topic 19](topics/19-reactions-chemistry-and-cooling.md)). Extensions: gravity of a fixed potential and rotating frames ([topic 13, §2.2](topics/13-source-terms.md#22-gravity)), elliptic solvers and self-gravity ([topic 14](topics/14-elliptic-solvers.md), [topic 15](topics/15-self-gravity.md)), particles ([topic 22](topics/22-particles.md)), radiation ([topic 23](topics/23-radiation-transport.md)), the shearing box ([topic 24](topics/24-shearing-box-and-orbital-advection.md)), cosmic rays ([topic 26](topics/26-cosmic-rays.md)), driven turbulence ([topic 27](topics/27-driving-of-turbulence.md)) and chemical networks.
+
+Thermal conduction carries heat down the gradient of temperature, at a rate that rises steeply with the temperature and [saturates](#saturation) where the gradient grows too steep for the electrons to follow, so that in a hot corona it can outpace the flow by far. It therefore enters the step by [super time-stepping](#super-time-stepping), by semi-implicit sweeps or implicitly, as its brief decides. Radiative cooling removes energy at a rate that a [cooling function](#cooling-function) of temperature and metallicity sets, often faster than the flow changes, and is integrated over each step as a [stiff source](#stiff-source), exactly or in substeps. To the driver, the stratum provides the limits that both put on the step and the quantities of cooling and mixing that the problems record, and to problem setups the parameters of the table, the conductivity and its saturation. For the extensions it keeps the diffusive fluxes general enough for conduction along the field once MHD enters, and for viscosity and resistivity, and leaves the integration of stiff sources open to chemical networks.
+
+It is closed by tests of its own, each stepped through a small loop in its tests, as the numerical core is: a Gaussian that diffuses against its analytic profile at the order of its integration ([topic 16, §3](topics/16-diffusion.md#3-tests)), a plane conduction front against the self-similar solution of Reale ([topic 17, §3](topics/17-thermal-conduction.md#3-tests)), and a single cell that cools against the exact solution for its cooling function ([topic 20, §3](topics/20-radiative-cooling.md#3-tests)).
 
 ### 3.5 Driver and problems
 
@@ -130,7 +134,30 @@ Extensions, in a provisional order:
 
 Requirements and code: not begun.
 
-*The tables of strata 4 and 5 follow in steps 6d and 6e of the plan.*
+### 6.4 Physics
+
+| Brief | Subject | Topics | Status | Changed in the overview |
+|---|---|---|---|---|
+| — | Thermal conduction: its flux and saturation, its integration by super time-stepping, semi-implicit sweeps or implicitly, and diffusive fluxes in a form that viscosity and resistivity can join | [17](topics/17-thermal-conduction.md), [16](topics/16-diffusion.md) | Not begun | |
+| — | Radiative cooling: the table and its dependence on metallicity, the floor and heating, the integration of a stiff source, and the limit of the step | [20](topics/20-radiative-cooling.md), [19, §2.2](topics/19-reactions-chemistry-and-cooling.md#22-stiff-integration) | Not begun | |
+
+Extensions, in a provisional order:
+
+| Brief | Subject | Topics | Status | Changed in the overview |
+|---|---|---|---|---|
+| — | Further diffusion: conduction along the field, viscosity and resistivity, once MHD enters | [16, §2.4](topics/16-diffusion.md#24-physical-diffusion-in-mhd), [17, §2.3](topics/17-thermal-conduction.md#23-anisotropic-conduction) | Not begun | |
+| — | Gravity of a fixed potential and rotating frames: their sources, hydrostatic boundaries, and whether the scheme must keep their balance exactly | [13, §2.2](topics/13-source-terms.md#22-gravity), [4, §2.3](topics/04-boundary-conditions-and-ghost-cells.md#23-prescribed-values-inflow-and-hydrostatic-boundaries) | Not begun | |
+| — | Elliptic solvers and self-gravity: multigrid or Fourier transforms, the solve in each stage, and a solver that implicit diffusion and radiation may share | [14](topics/14-elliptic-solvers.md), [15](topics/15-self-gravity.md) | Not begun | |
+| — | Particles: tracers of mixing, and dust coupled to the gas by drag | [22](topics/22-particles.md) | Not begun | |
+| — | Driven turbulence: forcing in Fourier space and its random state in restarts | [27](topics/27-driving-of-turbulence.md) | Not begun | |
+| — | The shearing box and orbital advection | [24](topics/24-shearing-box-and-orbital-advection.md) | Not begun | |
+| — | Radiation transport: its closure and its implicit solve | [23](topics/23-radiation-transport.md) | Not begun | |
+| — | Cosmic rays: their transport by two moments and their diffusion | [26](topics/26-cosmic-rays.md) | Not begun | |
+| — | Chemical networks: their integration and their coupling to the flow | [19](topics/19-reactions-chemistry-and-cooling.md) | Not begun | |
+
+Requirements and code: not begun.
+
+*The table of stratum 5 follows in step 6e of the plan.*
 
 ## 7. Glossary
 
@@ -140,6 +167,7 @@ Requirements and code: not begun.
 - <a id="characteristics"></a>**Characteristics.** The paths along which the waves of the equations carry information. Characteristic variables each follow one family of waves, so that a reconstruction may limit them and a boundary may let the outgoing waves leave ([topic 1, §2.3](topics/01-equations-and-their-variables.md#23-the-quasi-linear-primitive-and-characteristic-forms)).
 - <a id="conserved-and-primitive-variables"></a>**Conserved and primitive variables.** The two sets of variables of the gas: density, momentum and total energy, which the scheme conserves and updates, and density, velocity and pressure, from which it reconstructs ([topic 1](topics/01-equations-and-their-variables.md)).
 - <a id="constrained-transport"></a>**Constrained transport.** A method that updates the magnetic field on the faces of the cells from electric fields on their edges, so that the field stays free of divergence to round-off ([topic 11](topics/11-constrained-transport.md)).
+- <a id="cooling-function"></a>**Cooling function.** The rate at which optically thin gas radiates, per unit volume and per product of the densities of its electrons and ions, as a function of temperature and metallicity that tables give ([topic 20, §2.1](topics/20-radiative-cooling.md#21-cooling-in-the-equation-of-the-energy)).
 - <a id="courant-condition"></a>**Courant condition.** The limit on the step of an explicit scheme: in one step no wave may cross more than a fraction of a cell, the Courant number ([topic 8, §2.1](topics/08-time-integration.md#21-stability-and-the-courant-condition)).
 - <a id="equation-of-state"></a>**Equation of state.** The relation that gives the pressure, the sound speed and the temperature of the gas from its density and internal energy ([topic 2](topics/02-equations-of-state.md)).
 - <a id="face-centred-field"></a>**Face-centred field.** A field stored on the faces of the cells rather than as cell averages, as constrained transport stores each component of the magnetic field on the faces normal to it ([topic 11, §2.1](topics/11-constrained-transport.md#21-the-staggered-field)).
@@ -156,11 +184,14 @@ Requirements and code: not begun.
 - <a id="reconstruction"></a>**Reconstruction.** The building of a profile within each cell from the cell averages, whose values at the faces are the states between which a Riemann solver computes the flux ([topic 6](topics/06-reconstruction-and-limiting.md)).
 - <a id="regression-test"></a>**Regression test.** A test that compares the result of a run with one stored earlier, so that an unintended change shows ([topic 28, §2.5](topics/28-verification-and-testing.md#25-regression-tests-and-reproducibility)).
 - <a id="riemann-solver"></a>**Riemann solver.** The method that computes the flux through a face from the two states on either side of it, from the waves that the jump between them launches ([topic 7](topics/07-riemann-solvers.md)).
+- <a id="saturation"></a>**Saturation.** The limit of the conductive flux where the gradient of temperature is so steep that the electrons cannot carry the classical flux, which caps it near the heat that they hold times their speed ([topic 17, §2.2](topics/17-thermal-conduction.md#22-saturation)).
 - <a id="source-term"></a>**Source term.** A term of the equations that no flux carries, such as gravity or cooling, which changes the state of a cell directly ([topic 13](topics/13-source-terms.md)).
 - <a id="stencil"></a>**Stencil.** The cells from which a scheme computes the update of one cell. Its width sets how many ghost cells the domain needs ([topic 3, §2.1](topics/03-grids-and-finite-volume-discretisation.md#21-differences-and-stencils)).
+- <a id="stiff-source"></a>**Stiff source.** A source whose time scale is far shorter than the step of the flow, such as fast cooling, so that an explicit update would need tiny steps and the source is integrated over the step instead ([topic 19, §2.2](topics/19-reactions-chemistry-and-cooling.md#22-stiff-integration)).
+- <a id="super-time-stepping"></a>**Super time-stepping.** Explicit steps of diffusion beyond their limit of stability, taken as a sequence of substeps whose sizes keep the whole sequence stable ([topic 16, §2.5](topics/16-diffusion.md#25-super-time-stepping)).
 - <a id="vectorisation"></a>**Vectorisation.** Writing a kernel as operations on whole arrays, which NumPy performs in compiled loops, rather than as a loop in Python over the cells ([topic 41, §2.1](topics/41-vectorised-and-compiled-kernels.md#21-vectorisation-in-numpy)).
 
-*The entries of strata 4 and 5 and of the remaining parts follow in steps 6d to 6f of the plan, each term with an anchor, a sentence and its topic, in alphabetical order.*
+*The entries of stratum 5 and of the remaining parts follow in steps 6e and 6f of the plan, each term with an anchor, a sentence and its topic, in alphabetical order.*
 
 ## Sources
 

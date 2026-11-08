@@ -28,7 +28,11 @@ mhdpy is cut into five strata by the kind of code that each holds, after the lay
 
 ### 3.1 Infrastructure
 
-The code that every stratum runs on and that knows nothing of grids or physics: the package and its installation ([topic 35](topics/35-packaging-configuration-and-build.md)), runtime parameters and units ([topic 37, §2.5](topics/37-driver-and-control-of-time-step.md#25-runtime-parameters-and-units)), the route of the kernels ([topic 41](topics/41-vectorised-and-compiled-kernels.md)), execution in parallel and the measure of cell updates ([topic 42](topics/42-parallelisation-and-performance.md)), and the tools of testing ([topic 28](topics/28-verification-and-testing.md)).
+The code that every stratum runs on and that knows nothing of grids or physics: the package and its installation ([topic 35](topics/35-packaging-configuration-and-build.md)), runtime parameters and units ([topic 37, §2.5](topics/37-driver-and-control-of-time-step.md#25-runtime-parameters-and-units)), the route of the [kernels](#kernel) ([topic 41](topics/41-vectorised-and-compiled-kernels.md)), execution in parallel and the measure of [cell updates](#cell-update) ([topic 42](topics/42-parallelisation-and-performance.md)), and the tools of testing ([topic 28](topics/28-verification-and-testing.md)).
+
+To the strata above, it provides the route in which they write their loops over cells, [vectorised](#vectorisation) in NumPy or compiled, fast enough for the rate of cell updates that the production run needs, and an execution in parallel, by threads or by processes, which the layout of the data in stratum 2 and the driver of stratum 5 serve. Every module declares its parameters with their defaults, which the driver reads and records, and finds the physical units and constants that cooling and conduction need. The tests of every stratum use its norms, [orders of convergence](#order-of-convergence), checks of conservation and [regression tests](#regression-test), and its check lists the requirements that no test cites. For the extensions it leaves room for compiled kernels and for communication across the whole grid, which the inversion of relativistic MHD, the deposition of particles and the Fourier transforms of self-gravity and driven turbulence need.
+
+It is closed by tests of its own, since tools of verification need tests as much as the code that they check ([topic 28, §4](topics/28-verification-and-testing.md#4-assessment)): parameters with defaults, overrides and unknown names, units against their constants, the tools of testing on sequences of known order, and the installation by one command on clean macOS and Linux, the latter in Docker.
 
 ### 3.2 Mesh and data
 
@@ -60,17 +64,34 @@ Some conventions bind every stratum, although no stratum holds them, and each is
 
 Briefs are opened stratum by stratum, from infrastructure upwards, those of the first pass before the extensions. A brief is opened in the lowest stratum whose code its decision shapes, even where most of its code lies higher: the coupling of processes within a step is decided with the integrator of stratum 3, although the driver of stratum 5 runs it.
 
-*One subsection to a stratum, in the order of part 3, with a table of its briefs in the order in which they are opened, then a line on its requirements and code. A brief not yet opened is listed by its subject, since it receives its identifier only when it is opened. About 300 words.*
+Each stratum has a table of its briefs in the order in which they are opened. A brief not yet opened has no identifier, since it receives one only when it is opened, and its subject names the questions that it settles. The status reads Not begun, Open, or Decided with its date, and the last column names what a decided brief changed in the overview, with a link to the sub-decision. A line on the requirements and code of the stratum follows its table.
+
+### 6.1 Infrastructure
 
 | Brief | Subject | Topics | Status | Changed in the overview |
 |---|---|---|---|---|
-| *Identifier, once opened* | *Subject* | *Topics, linked* | *Not begun, open, or decided on {date}* | *What the brief changed, with a link to the sub-decision* |
+| — | The strata in the package: their subpackages, the rule of use between them, and how the rule is checked | [35, §2.1](topics/35-packaging-configuration-and-build.md#21-python-packages) | Not begun | |
+| — | The route of the kernels: vectorised or compiled, a simple version to check a fast one, and the benchmark by which the rate of cell updates is tracked | [41](topics/41-vectorised-and-compiled-kernels.md), [36, §2.5](topics/36-data-structures.md#25-layouts-for-kernels) | Not begun | |
+| — | Execution in parallel: threads in the [free-threaded build](#free-threaded-build) or processes with [MPI](#mpi), and whether it enters the first pass | [42](topics/42-parallelisation-and-performance.md) | Not begun | |
+| — | The package and its installation: the build backend, the versions of Python, the dependencies, the licence and the releases | [35](topics/35-packaging-configuration-and-build.md) | Not begun | |
+| — | Runtime parameters and units: their format, declaration and record, and the system of units with its constants | [37, §2.5](topics/37-driver-and-control-of-time-step.md#25-runtime-parameters-and-units) | Not begun | |
+| — | Testing and verification: the norms and variables of orders, conservation, the tolerance of regression tests, and the check of requirements | [28](topics/28-verification-and-testing.md) | Not begun | |
 
-*Requirements: each document of the stratum, with its status, draft or agreed on {date}. Code: not begun, in progress or complete.*
+Requirements and code: not begun.
+
+*The tables of strata 2 to 5 follow in steps 6b to 6e of the plan.*
 
 ## 7. Glossary
 
-*The terms that a newcomer meets, in alphabetical order, each with an anchor, a sentence of explanation and its topic linked. The first use of a term in the text links to its entry. About 250 words.*
+- <a id="cell-update"></a>**Cell update.** The advance of one cell by one time step. Their number sets the cost of a run, and their rate per second its speed ([topic 42, §2.1](topics/42-parallelisation-and-performance.md#21-the-cost-of-a-simulation)).
+- <a id="free-threaded-build"></a>**Free-threaded build.** A build of Python without the global interpreter lock, in which threads run Python code at the same time on several cores ([topic 42, §2.5](topics/42-parallelisation-and-performance.md#25-threads-and-processes-in-python)).
+- <a id="kernel"></a>**Kernel.** A loop over the cells of a grid that performs one operation of the scheme, such as a reconstruction or a Riemann solver. Kernels take most of the time of a run ([topic 41](topics/41-vectorised-and-compiled-kernels.md)).
+- <a id="mpi"></a>**MPI.** The Message Passing Interface, a standard by which separate processes, on one machine or on many, exchange data ([topic 42, §2.4](topics/42-parallelisation-and-performance.md#24-parallel-execution)).
+- <a id="order-of-convergence"></a>**Order of convergence.** The power of the cell width with which the error falls as the grid is refined, two for a scheme of second order on a smooth problem ([topic 28, §2.2](topics/28-verification-and-testing.md#22-norms-and-the-order-of-convergence)).
+- <a id="regression-test"></a>**Regression test.** A test that compares the result of a run with one stored earlier, so that an unintended change shows ([topic 28, §2.5](topics/28-verification-and-testing.md#25-regression-tests-and-reproducibility)).
+- <a id="vectorisation"></a>**Vectorisation.** Writing a kernel as operations on whole arrays, which NumPy performs in compiled loops, rather than as a loop in Python over the cells ([topic 41, §2.1](topics/41-vectorised-and-compiled-kernels.md#21-vectorisation-in-numpy)).
+
+*The entries of strata 2 to 5 and of the remaining parts follow in steps 6b to 6f of the plan, each term with an anchor, a sentence and its topic, in alphabetical order.*
 
 ## Sources
 

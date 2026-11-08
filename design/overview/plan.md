@@ -26,7 +26,7 @@ Each step is agreed with the author before the next begins (§2.2). Each decisio
 | Step | Subject | Files | Status |
 |---:|---|---|---|
 | 1 | Way of working, form and place | `design/overview/plan.md` | done |
-| 2 | Use | `design/overview/plan.md` | |
+| 2 | Use | `design/overview/plan.md` | done |
 | 3 | Practice | `design/overview/plan.md` | |
 | 4 | Structure of the overview | `design/overview/plan.md`, `design/overview.md` | |
 | 5 | Cut into layers | `design/overview/plan.md`, `design/overview.md` | |
@@ -37,3 +37,5 @@ Each step is agreed with the author before the next begins (§2.2). Each decisio
 ## Decisions
 
 Step 1. The author decided that the overview is a living document rather than a brief. Its cut into layers is agreed as the order of work, as the cut into topics was. Every architectural choice that the cut implies is named and left to a brief, and decided sub-decisions are linked as they come. The overview lives as long as the project, as a requirement document lives as long as its component, and is updated in place, with the author's agreement, whenever a brief changes what a layer must provide. The cut is thus agreed without the form of a brief, its options and the alternatives set aside. The overview is kept in `design/overview.md`, beside the folders that it maps, so that the document cited most has the shortest path. The folder `design/overview/` of the same name holds this plan and any diagrams, as a brief keeps its diagrams beside it. Once the overview is written, the goals, scope and success criteria of §1.1 to §1.3 become its first part, since the layers answer to them. CLAUDE.md keeps in §1 the priorities with a line that links the overview, so that every session still finds them.
+
+Step 2. The author decided that the overview is written for newcomers as well as for the author at work, so that someone new to codes of MHD can follow it without the topic summaries, as the learning goal asks for a form that others can pick up easily. Each term is therefore explained in plain words where it first appears, in a sentence, with its topic linked for the detail. The overview also shows where the work stands: each layer lists its briefs as not begun, open or decided, and its requirements and code in the same way, so that the next step of the work is read there. It runs to about 3,000 words, the goals, scope and success criteria included, so that it can be read in one sitting, with each layer in about 300 words.

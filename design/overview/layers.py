@@ -16,7 +16,8 @@ STRATA: list[tuple[str, list[tuple[str, bool]]]] = [
     ]),
     ("4 Physics", [
         ("diffusion", True), ("thermal conduction", True), ("radiative cooling", True), ("stiff local sources", True),
-        ("elliptic solvers", False), ("self-gravity", False), ("particles", False), ("radiation", False),
+        ("external gravity", False), ("elliptic solvers", False), ("self-gravity", False), ("particles", False),
+        ("radiation", False),
         ("shearing box", False), ("cosmic rays", False), ("driven turbulence", False), ("chemical networks", False),
     ]),
     ("3 Numerical core", [

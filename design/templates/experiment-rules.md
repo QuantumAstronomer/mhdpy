@@ -26,7 +26,7 @@ The head names, with links, the sub-decision that the experiment serves, and any
 
 **Expectation.** What is expected and why, written before the run, so that the result can confirm or correct it. The part is left out where no expectation can be argued, so that none is invented.
 
-**Method.** The smallest computation that answers the question: what is computed and measured, on which problem, grid and parameters. An experiment that times code runs it once to warm up, which leaves compilation out, then repeats it and reports the median with the minimum and maximum, so that both the typical speed and its spread show. Where it applies, the time is also given as cell updates per second, the rate that §1.3 tracks. An experiment that compares implementations first checks that they give the same result, so that no version is fast because it is wrong.
+**Method.** The smallest computation that answers the question: what is computed and measured, on which problem, grid and parameters. An experiment that times code runs it once to warm up, which leaves compilation out, then repeats it and reports the median with the minimum and maximum, so that both the typical speed and its spread show. Where it applies, the time is also given as cell updates per second, the rate that [§1.3 of the overview](../overview.md#13-success-criteria) tracks. An experiment that compares implementations first checks that they give the same result, so that no version is fast because it is wrong.
 
 **Results.** The figures and numbers as measured, without interpretation, with the machine and versions from `results/environment.json`. A deviation from the plan, such as a grid made smaller because the first runs took too long, is stated here with its reason. A result that the plan did not foresee is reported apart, under a note that says so. The answer may name it as a limit, while the rule of the plan still decides.
 
@@ -38,7 +38,7 @@ The record follows §3.1, as the briefs do. A fact that the references do not gi
 
 ## 3. The code
 
-The scripts follow §3.2 in full, strict type checking included, since evidence must be right before anything else (§1.4). `run.py` begins with the directive `# pyright: strict`. `plot.py` begins with `# pyright: strict, reportUnknownMemberType=false`, as the type stubs of matplotlib leave the keyword arguments of its methods untyped, so that strict checking would flag every call, while every other check stays. Each script is checked against the environment that uv builds for it:
+The scripts follow §3.2 in full, strict type checking included, since evidence must be right before anything else (§1). `run.py` begins with the directive `# pyright: strict`. `plot.py` begins with `# pyright: strict, reportUnknownMemberType=false`, as the type stubs of matplotlib leave the keyword arguments of its methods untyped, so that strict checking would flag every call, while every other check stays. Each script is checked against the environment that uv builds for it:
 
 ```
 uvx pyright --pythonpath "$(uv python find --script run.py)" run.py

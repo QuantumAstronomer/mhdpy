@@ -1,36 +1,10 @@
 # mhdpy
 
-This file sets out the purpose of mhdpy, the way of working, and the conventions of its documents, code and figures.
+This file sets out the priorities of mhdpy, the way of working, and the conventions of its documents, code and figures.
 
-## 1. Purpose
+## 1. Priorities
 
-Goals, scope and success criteria move to the overview of the layers (§2.3) once it is written. The priorities of §1.4 stay here.
-
-### 1.1 Goals
-
-mhdpy is a framework for astrophysical (magneto)hydrodynamical simulations in Python. It is a hobby project, by an author who used Athena, then a state-of-the-art MHD code, for a bachelor thesis. It serves educational and scientific work, from standard verification problems to production-scale runs of the size used in published studies. These aims can conflict, so §1.4 ranks them.
-
-The main goal is **learning**. This means learning to write scientifically applicable code, whose physics is demonstrably correct and extensible. It also means learning to build a large, multi-layered software project robustly, in a form that others can pick up easily.
-
-The second goal is **production-scale runs**. The project grew out of earlier work with production-grade MHD software, on simulations of the scale of [Armillotta, Fraternali and Marinacci (2016)](https://ui.adsabs.harvard.edu/abs/2016MNRAS.462.4157A/abstract). Those follow Galactic fountain clouds that lead to coronal condensation, which feeds star formation, on a grid with cells of 2 pc, without mesh refinement.
-
-### 1.2 Scope
-
-The eventual scope is every physics module that state-of-the-art (magneto)hydrodynamics codes such as Athena++ implement, with a focus on astrophysics. It ranges from compressible hydrodynamics with general equations of state to Lagrangian particles for dust. This whole scope shapes the architecture from the start, also for parts that are built much later. The lower layers must accommodate those parts without significant redesign.
-
-### 1.3 Success criteria
-
-Success is judged by four criteria, each stated so that it can be checked rather than asserted. Learning is deliberately not among them. It is no property of the finished code, and is served by the way mhdpy is developed instead (§2).
-
-**Correctness.** No physics module is complete before it is verified against problems with known solutions. For smooth problems, the measured order of convergence matches the formal order of the scheme. For problems with discontinuities, results are compared with exact or reference solutions. Conserved quantities are conserved to round-off wherever the boundary conditions permit. The test problems are those of the suites of state-of-the-art reference codes, and a capability counts as implemented once its reference tests are reproduced.
-
-**Production capability.** mhdpy completes a research-scale run like those of Armillotta et al. (2016) on the development machine and on a small multi-core server, within a time still to be set. Such a run is two-dimensional, with hydrodynamics, radiative cooling, thermal conduction and a passive scalar for the metallicity. The cost of a run is set roughly by its total number of cell updates. The rate of cell updates per second is therefore the measure tracked during development.
-
-**Extensibility.** New physics modules, such as another cooling function or a new Riemann solver, are added without changes to the framework. Every module beyond the hydrodynamics core tests this criterion, since it plugs in through the same interfaces.
-
-**Usability.** mhdpy installs on macOS and Linux with a single `pip` or `uv` command. A newcomer then runs a standard test problem within minutes by following the documentation.
-
-### 1.4 Priorities
+The goals, scope and success criteria of mhdpy are set out in part 1 of the overview of the layers, [design/overview.md](design/overview.md).
 
 The goals pull in different directions at times, and the decision briefs resolve such conflicts with one ranking. Correctness comes first. A wrong result has no value, however fast or readable the code behind it. Performance comes second, since production-scale runs are a clear target, and readability gives way where performance requires it. Readability comes third. The code must stay understandable to serve the learning goal, and code that is hard to understand is also hard to maintain and extend. Extensibility and usability come last: the interface gets less focus, although it is not ignored.
 
@@ -60,7 +34,7 @@ Redoing work is to be avoided. Building pieces without a use in the near future 
 
 ### 2.4 Decision briefs
 
-Every architectural choice is made in a decision brief, one topic at a time. A brief gives the background from the reference material (§4.1) and the options. Where the references leave a question open, experiments supply the evidence, each with the smallest code that answers its question. Experiments are not early versions of mhdpy. The recommendation is kept apart from the evidence and states where it falls in the ranking of §1.4. Interesting options that are not chosen are recorded for later. The author tends to trust the solutions of Athena++ as robust and performant.
+Every architectural choice is made in a decision brief, one topic at a time. A brief gives the background from the reference material (§4.1) and the options. Where the references leave a question open, experiments supply the evidence, each with the smallest code that answers its question. Experiments are not early versions of mhdpy. The recommendation is kept apart from the evidence and states where it falls in the ranking of §1. Interesting options that are not chosen are recorded for later. The author tends to trust the solutions of Athena++ as robust and performant.
 
 A brief is worked through one sub-decision at a time. Each sub-decision is written, discussed and decided before the next one is written. A decided brief is frozen, and changing a decision takes a new brief that supersedes the old one. Work that conflicts with a decided brief stops and names the sub-decision concerned, rather than working around it.
 
@@ -117,7 +91,7 @@ A commit message opens with a subject in the imperative and in sentence case, wi
 
 ### 4.1 References
 
-`reference-works/` holds the third-party material: the code and papers of Athena and Athena++, Pyro and Ulula, the papers of ZEUS, Michael Zingale's text on computational astrophysical hydrodynamics (`CompHydroTutorial.pdf`), a collection of papers on thermal conduction and radiative cooling, gathered around the study of Armillotta, Fraternali and Marinacci (2016) that §1.1 names, a collection on the mixing of clouds with hot gas and the resolution it demands, gathered around the review of Gronke and Schneider (2026), a collection on non-reflecting boundaries for subsonic flow, gathered around the review of Colonius (2004), and a collection on the performance of finite-volume codes in Python, gathered around the code AGATE of Bard and Dorelli (2026). The folder is read-only, and each part keeps its own licence. The repository ignores the folder from its first commit, so that no commit can include third-party material.
+`reference-works/` holds the third-party material: the code and papers of Athena and Athena++, Pyro and Ulula, the papers of ZEUS, Michael Zingale's text on computational astrophysical hydrodynamics (`CompHydroTutorial.pdf`), a collection of papers on thermal conduction and radiative cooling, gathered around the study of Armillotta, Fraternali and Marinacci (2016) that [§1.1 of the overview](design/overview.md#11-goals) names, a collection on the mixing of clouds with hot gas and the resolution it demands, gathered around the review of Gronke and Schneider (2026), a collection on non-reflecting boundaries for subsonic flow, gathered around the review of Colonius (2004), and a collection on the performance of finite-volume codes in Python, gathered around the code AGATE of Bard and Dorelli (2026). The folder is read-only, and each part keeps its own licence. The repository ignores the folder from its first commit, so that no commit can include third-party material.
 
 Each folder of `reference-works/` gets a synthesis of its own in `design/references/`, so that Athena and Athena++ share one synthesis. A synthesis is a full digest, readable without the source. It holds an overview of the reference and its scope, its numerical methods, its software architecture and a list of its sources. A reference without material for a section says so in one line. Papers are cited by arXiv identifier, DOI or ADS bibcode, with section and equation numbers, and code by its repository path at a recorded version. In the text, the authors of each citation link to its entry in the list of sources, and every identifier and address is a link to its target. Gaps in a reference may be filled, and its claims checked, by web search. What is found is marked **[GK]** and cited, preferably by arXiv identifier, DOI or ADS bibcode. A synthesis is written in its own words, without passages, tables or figures copied from the source. The syntheses are written in the order Zingale's text, Pyro, ZEUS, Ulula, Athena, and the collections on conduction and cooling, on mixing and resolution, on non-reflecting boundaries and on performance in Python, one source per step: one paper, or one part of a code. The syntheses of Pyro and ZEUS are written in parallel, as are those of the collections.
 

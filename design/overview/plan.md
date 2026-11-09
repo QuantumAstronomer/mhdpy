@@ -20,7 +20,7 @@ Each step is agreed with the author before the next begins (§2.2). Each decisio
 4. Structure. The overview is shown as an outline, its parts with one line each, and the parts are then decided one at a time.
 5. Cut into layers. The layers are shown as an outline, one line to a layer, drawn from the topics, and the cut is decided before any layer is written in full.
 6. Contents. Each stratum is written in a step of its own, 6a to 6e, from infrastructure upwards: what it holds, what it must provide to the strata above, the briefs that it needs in their order, the tests that close it, and the entries of the glossary for the terms that it introduces. Step 6f writes the remaining parts: the head, the context of a run, one time step and the crosscutting concepts.
-7. Goals. The goals, scope and success criteria of §1.1 to §1.3 become the first part of the overview. CLAUDE.md keeps in §1 the priorities and a line that links the overview, and the nine citations of §1.1 to §1.3 in seven files are pointed at the overview.
+7. Goals. The goals, scope and success criteria of §1.1 to §1.3 become the first part of the overview. CLAUDE.md keeps in §1 the priorities and a line that links the overview, and the eleven citations of §1.1 to §1.3 in seven files are pointed at the overview.
 8. Consistency. The overview is read together with the templates and CLAUDE.md, every topic and every module of §1.2 is checked to have its layer, and the briefs of the first layer are listed.
 
 | Step | Subject | Files | Status |
@@ -31,7 +31,7 @@ Each step is agreed with the author before the next begins (§2.2). Each decisio
 | 4 | Structure of the overview | `design/overview/plan.md`, `design/overview.md` | done |
 | 5 | Cut into layers | `design/overview/plan.md`, `design/overview.md`, `design/overview/layers.py`, `design/overview/layers.svg` | done |
 | 6 | Contents of the overview | `design/overview.md`, `design/overview/layers.py`, `design/overview/layers.svg` | done |
-| 7 | Goals, scope and success criteria | `design/overview.md`, CLAUDE.md and the six other files that cite §1.1 to §1.3 | |
+| 7 | Goals, scope and success criteria | `design/overview.md`, CLAUDE.md and the eight other files that cite §1.1 to §1.4 | done |
 | 8 | Consistency of the whole | the files of steps 4 to 7 | |
 
 ## Decisions
@@ -57,3 +57,5 @@ Step 6d. Stratum 4, physics, is written in part 3 with what conduction and cooli
 Step 6e. Stratum 5, the driver and problems, is written in part 3 with what the driver, the problem setups and the outputs do in a run, what the stratum must take in from every extension, and the problems that close the first pass, which replace the small loops in the tests of strata 3 and 4. Its briefs are listed in part 6, the extensions bringing their problems with their own briefs, and its seven terms enter the glossary. The author decided that the problems that verify the first pass, with their measures and thresholds and the production problem, form a brief of their own, and the order of the four briefs: the driver, problem setups and user functions, outputs, restarts and analysis, and the problems that verify the first pass. The author also decided that the commits of this plan are pushed after step 8.
 
 Step 6f. The remaining parts are written: the head, with what mhdpy is, what the overview holds and for whom, and where the work stands; the context of a run; one time step of the production run, traced through the strata in six numbered steps, each choice of method left to its brief; and the crosscutting concepts, each with the brief that settles it. The glossary gains its last three entries, each of its 39 entries is linked where its term first appears, and of the placeholders of the skeleton only that of the goals remains, which step 7 fills. The prose runs to about 2,700 words before the goals.
+
+Step 7. The goals, scope and success criteria of §1.1 to §1.3 form part 1 of the overview, in the words that CLAUDE.md gave them, with links to the glossary where its terms first appear, a new entry for mesh refinement, and their references to §1.4 and §2 of CLAUDE.md made explicit. The author decided that §1 of CLAUDE.md becomes Priorities, without subsections, holding the ranking and one sentence that links part 1 of the overview and names no goal, since the ranking names both. Eleven citations of §1.1 to §1.3 in seven files, not the nine that step 1 counted by lines, now point to the overview, and the seven citations of §1.4 in five files read §1. The section signs of this plan name the sections of CLAUDE.md as they stood before the move.

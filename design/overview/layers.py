@@ -16,15 +16,15 @@ STRATA: list[tuple[str, list[tuple[str, bool]]]] = [
     ]),
     ("4 Physics", [
         ("diffusion", True), ("thermal conduction", True), ("radiative cooling", True), ("stiff local sources", True),
-        ("external gravity", False), ("elliptic solvers", False), ("self-gravity", False), ("particles", False),
-        ("radiation", False),
-        ("shearing box", False), ("cosmic rays", False), ("driven turbulence", False), ("chemical networks", False),
+        ("further diffusion", False), ("external gravity", False), ("elliptic solvers", False), ("self-gravity", False),
+        ("particles", False), ("driven turbulence", False), ("shearing box", False), ("radiation", False),
+        ("cosmic rays", False), ("chemical networks", False),
     ]),
     ("3 Numerical core", [
         ("variables", True), ("equations of state", True), ("reconstruction", True), ("Riemann solvers", True),
         ("integrator", True), ("source terms", True), ("coupling of processes", True), ("passive scalar", True),
-        ("open boundaries", True), ("MHD", False), ("higher order", False), ("artificial viscosity", False),
-        ("relativistic MHD", False),
+        ("open boundaries", True), ("MHD", False), ("general equations of state", False), ("higher order", False),
+        ("artificial viscosity", False), ("relativistic MHD", False),
     ]),
     ("2 Mesh and data", [
         ("grid and geometry", True), ("state arrays", True), ("ghost cells and boundaries", True),

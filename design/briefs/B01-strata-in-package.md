@@ -2,7 +2,7 @@
 
 **Status.** Open.
 
-**Topics.** [Topic 35, §2.1](../topics/35-packaging-configuration-and-build.md#21-python-packages).
+**Topics.** [Topic 35, §2.1](../topics/35-packaging-configuration-and-build.md#21-python-packages), with [topic 38, §2](../topics/38-problem-setups-and-user-functions.md#2-designs) for the functions that a problem hands to the framework.
 
 **Supersedes.** None.
 
@@ -11,8 +11,9 @@
 The brief settles how the five strata of the overview ([§3](../overview.md#3-layers)) take shape in the package mhdpy: the subpackages that hold them and their names, the imports that the rule of use allows between the strata and within each of them, where the tests of each stratum lie and whether the rule binds them, and how the rule is checked. It leaves the modules within each subpackage to the briefs of their stratum, the layout of the repository, the build and the dependencies to the brief on the package and its installation, and the interface that the package offers its users to the briefs of stratum 5. It is the first brief and builds on no earlier one.
 
 - [B1D1](#b1d1-the-subpackages-of-the-strata) The subpackages of the strata: decided.
+- [B1D2](#b1d2-the-rule-between-the-strata) The rule between the strata: decided.
 
-Still to be written: the rule between the strata, the rule within a stratum, the place of the tests, and the check of the rule.
+Still to be written: the rule within a stratum, the place of the tests, and the check of the rule.
 
 ## B1D1 The subpackages of the strata
 
@@ -29,3 +30,27 @@ Still to be written: the rule between the strata, the rule within a stratum, the
 **Recommendation.** Option A, since the tree then shows the strata of the overview, and the check covers every later module, extensions included, without being changed. Its names follow the overview, shortened where the overview's name is long: `infra` for the infrastructure, `core` for the numerical core and `driver` for the driver and problems. The option serves readability, the third priority of §1, and extensibility, the fourth, and gives up none.
 
 **Set aside.** Option B would return if components came to move between strata often, since a move then changes only the configuration of the check, while under option A it changes every import of the component.
+
+## B1D2 The rule between the strata
+
+**Decision.** In the context of five subpackages built from the bottom up, facing strata that must each be readable and testable alone while all use the infrastructure, imports from any stratum below and none above, those for type checking alone included (option A), are chosen over imports from the stratum directly below only (B) and no rule (C). This achieves readability, and extensibility through points of extension declared below, accepting that no stratum holds the objects of one above it, as the block of Athena++ holds the physics. Decided on 2026-11-09, as recommended.
+
+**Question.** The subpackages of [B1D1](#b1d1-the-subpackages-of-the-strata) need a rule for the imports between them before the first module is written, since every import obeys it and the check enforces it. The rule also fixes how a lower stratum calls code above it, as the core calls the sources of the physics, and how the package `mhdpy` stands to its strata. To be read first are [§3](../overview.md#3-layers) and [§5](../overview.md#5-crosscutting-concepts) of the overview and [topic 38, §2](../topics/38-problem-setups-and-user-functions.md#2-designs), on how the references hand the functions of a problem to the framework, with the imports of the references in [Ulula 3.1](../references/ulula-synthesis.md#31-packaging-and-installation), [pyro 3.3](../references/pyro-synthesis.md#33-driver-simulations-and-runtime-parameters) and [Athena 3.2](../references/athena-synthesis.md#32-arrays-the-mesh-and-its-blocks).
+
+**Option A: any stratum below.** A stratum imports any stratum below it and none above, imports for type checking alone included, and reaches code above only through objects handed down at run time, in a form that it declares. Ulula keeps to such a rule in practice ([Ulula 3.1](../references/ulula-synthesis.md#31-packaging-and-installation)), and all references hand the functions of a problem to the framework rather than let the framework import them ([topic 38, §2](../topics/38-problem-setups-and-user-functions.md#2-designs)). **[GK]** [Buschmann et al.](#buschmann-et-al-1996) (1996) call such layers relaxed, and let lower layers reach upper ones through callbacks. For mhdpy, every stratum uses the services of those below it directly, above all the parameters, units and kernels of stratum 1 ([§3.1](../overview.md#31-infrastructure) of the overview). A stratum can be read and tested with the strata below it alone, as the overview demands of strata built before those above them exist ([§3](../overview.md#3-layers)). The points of extension of §5 become forms declared below, such as a protocol of [PEP 544](#pep-544) for a source, which a module of the physics satisfies without the core importing it. The block of Athena++, which creates and holds the objects of the physics, is excluded, so that the briefs of strata 2 and 3 must let the core or the driver hold them. The package `mhdpy` imports no stratum when it is loaded, since Python runs it before any of its subpackages ([import system](#python-import-system), §5.2.1), so that an import of the driver there would load all five strata with any one of them.
+
+**Option B: the stratum directly below only.** A stratum imports only the stratum directly below it, and code above is reached as in option A. No reference keeps such a rule. **[GK]** [Buschmann et al.](#buschmann-et-al-1996) (1996) call it strict layering, which confines the effect of a change to the layer above and so eases maintenance, at a cost in flexibility and efficiency. For mhdpy, stratum 2 must pass on to the strata above the parameters, units and kernels of stratum 1, which it does not use itself. Such wrappers cost readability and shield little, since every stratum needs the infrastructure.
+
+**Option C: no rule between the strata.** The strata order the overview but not the imports, as in Athena++, whose block and physics point to each other, so that 47 pairs of the folders of `src/` include each other ([Athena 3.2](../references/athena-synthesis.md#32-arrays-the-mesh-and-its-blocks)), and in pyro, whose `mesh` and `util` import each other ([pyro 3.3](../references/pyro-synthesis.md#33-driver-simulations-and-runtime-parameters)). **[GK]** In Python, a cycle of imports leaves one of its modules half loaded while the other runs, which pyro works around by an import within a function. For mhdpy, a stratum may hold the objects of any other, as the block of Athena++ holds the physics. Nothing then keeps a lower stratum testable without those above it, as the overview requires ([§3](../overview.md#3-layers)). As the strata above do not exist while a lower one is written, the option differs from option A only in later changes and extensions.
+
+**Experiments.** None, since the options differ in what the code may import, which no measurement decides.
+
+**Recommendation.** Option A, since each stratum then stays readable and testable with the strata below it alone, while every stratum uses the infrastructure directly. It serves readability, the third priority of §1, and extensibility, the fourth, as the objects handed down make the points of extension explicit. It gives up none above them, since the results do not depend on the direction of the imports, and the points of extension are called once per step or stage rather than once per cell.
+
+**Set aside.** Option C would return if a design that needs cycles between strata, such as a block that holds the objects of the physics, proved necessary, as the brief on the domain in blocks might find.
+
+## Sources
+
+- <a id="buschmann-et-al-1996"></a>Buschmann, F., Meunier, R., Rohnert, H., Sommerlad, P. and Stal, M., Pattern-oriented software architecture, volume 1: a system of patterns, Wiley (1996), the pattern Layers.
+- <a id="pep-544"></a>PEP 544, Protocols: structural subtyping (static duck typing), Python Enhancement Proposals, [peps.python.org/pep-0544](https://peps.python.org/pep-0544/).
+- <a id="python-import-system"></a>The import system, The Python language reference, §5, [docs.python.org/3/reference/import.html](https://docs.python.org/3/reference/import.html).

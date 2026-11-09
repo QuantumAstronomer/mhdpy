@@ -12,8 +12,9 @@ The brief settles how the five strata of the overview ([§3](../overview.md#3-la
 
 - [B1D1](#b1d1-the-subpackages-of-the-strata) The subpackages of the strata: decided.
 - [B1D2](#b1d2-the-rule-between-the-strata) The rule between the strata: decided.
+- [B1D3](#b1d3-the-rule-within-a-stratum) The rule within a stratum: decided.
 
-Still to be written: the rule within a stratum, the place of the tests, and the check of the rule.
+Still to be written: the place of the tests, and the check of the rule.
 
 ## B1D1 The subpackages of the strata
 
@@ -49,8 +50,27 @@ Still to be written: the rule within a stratum, the place of the tests, and the 
 
 **Set aside.** Option C would return if a design that needs cycles between strata, such as a block that holds the objects of the physics, proved necessary, as the brief on the domain in blocks might find.
 
+## B1D3 The rule within a stratum
+
+**Decision.** In the context of the modules of one stratum, facing components that build on each other within it, imports without cycles (option B) are chosen over free use (A) and independent components (C). This achieves readability, as each module can be read and tested with the modules that it imports, accepting that two modules which would need each other must be split or composed. Decided on 2026-11-09, as recommended.
+
+**Question.** [B1D2](#b1d2-the-rule-between-the-strata) orders the strata, but not the modules within one, which need a rule of their own before the first modules of stratum 1 import each other. The rule shapes how the components of a stratum work together, for instance whether the integrator imports the Riemann solver that it calls or is handed it. To be read first are [Performance in Python 3.1](../references/performance-in-python-synthesis.md#31-agate-interfaces-and-implementations), [3.6](../references/performance-in-python-synthesis.md#36-pyexafmm-a-data-oriented-design-around-numba) and [3.9](../references/performance-in-python-synthesis.md#39-pace-components-compiled-at-initialisation), on codes that compose their components, and [pyro 3.3](../references/pyro-synthesis.md#33-driver-simulations-and-runtime-parameters), whose solvers build on one another.
+
+**Option A: free use.** The modules of a stratum import each other as they need, cycles included. pyro lets its parts import each other in this way, so that `mesh` and `util` form a cycle, which an import within a function works around ([pyro 3.3](../references/pyro-synthesis.md#33-driver-simulations-and-runtime-parameters)). **[GK]** For mhdpy, nothing needs to be planned, but each cycle risks a module that is half loaded when another uses it, as option C of [B1D2](#b1d2-the-rule-between-the-strata) sets out, and the modules of a cycle can be read and tested only together.
+
+**Option B: no cycles.** The modules of a stratum import each other freely, as long as their imports form no cycle, so that they can be ordered from those that import nothing of the stratum to those that build on the most. Ulula's subpackages form such an order ([Ulula 3.1](../references/ulula-synthesis.md#31-packaging-and-installation)), and pyro's solvers build on one another, as `incompressible` on `burgers` ([pyro 3.3](../references/pyro-synthesis.md#33-driver-simulations-and-runtime-parameters)). **[GK]** The contract of acyclic siblings of [Import Linter](#import-linter) checks this level by level, counting the imports of the descendants of each sibling. For mhdpy, a stratum is read and tested from the bottom up, as the strata are, one module with those that it imports. The integrator may import the solvers that it calls, so that composition is needed only where B1D2 already demands it, across strata.
+
+**Option C: independent components.** The components of one kind within a stratum, such as the Riemann solvers or the limiters, import nothing of each other, and the module that uses them is handed them as objects. AGATE composes interfaces and implementations in this way at run time ([Performance in Python 3.1](../references/performance-in-python-synthesis.md#31-agate-interfaces-and-implementations)), and Pace lets a scientist replace its reconstruction without changes elsewhere ([3.9](../references/performance-in-python-synthesis.md#39-pace-components-compiled-at-initialisation)). PyExaFMM keeps its operators separate, so that each can be tested on its own, at the price of a passage between Numba and Python for each call ([3.6](../references/performance-in-python-synthesis.md#36-pyexafmm-a-data-oriented-design-around-numba)). **[GK]** The contract of independence of [Import Linter](#import-linter) checks such groups, indirect imports included. For mhdpy, a new solver then joins without touching the others, which serves extensibility. The kinds of components, however, are defined by the briefs of each stratum rather than by B1, and a rule for all the modules of a stratum would forbid the integrator to import any solver, which would push all composition up to the driver.
+
+**Experiments.** None, since the options differ in what the code may import, which no measurement decides.
+
+**Recommendation.** Option B, since each module of a stratum can then be read and tested with the modules that it imports alone, as each stratum can with the strata below it, while the modules of a stratum may still build on each other. Option C fits groups of components of one kind, which the briefs of each stratum name: such a brief may declare its group independent and add it to the check. The option serves readability, the third priority of §1, and gives up none above it.
+
+**Set aside.** Option C returns for a group of components of one kind once the brief of its stratum declares the group independent and adds it to the check.
+
 ## Sources
 
 - <a id="buschmann-et-al-1996"></a>Buschmann, F., Meunier, R., Rohnert, H., Sommerlad, P. and Stal, M., Pattern-oriented software architecture, volume 1: a system of patterns, Wiley (1996), the pattern Layers.
+- <a id="import-linter"></a>Import Linter, the documentation of its contract types, release 2.16 of 2026-11-06, [import-linter.readthedocs.io/en/latest/contract_types](https://import-linter.readthedocs.io/en/latest/contract_types/).
 - <a id="pep-544"></a>PEP 544, Protocols: structural subtyping (static duck typing), Python Enhancement Proposals, [peps.python.org/pep-0544](https://peps.python.org/pep-0544/).
-- <a id="python-import-system"></a>The import system, The Python language reference, §5, [docs.python.org/3/reference/import.html](https://docs.python.org/3/reference/import.html).
+- <a id="python-import-system"></a>Python language reference, the import system, §5, [docs.python.org/3/reference/import.html](https://docs.python.org/3/reference/import.html).

@@ -2,19 +2,20 @@
 
 **Status.** Open.
 
-**Topics.** [Topic 35, §2.1](../topics/35-packaging-configuration-and-build.md#21-python-packages), with [topic 38, §2](../topics/38-problem-setups-and-user-functions.md#2-designs) for the functions that a problem hands to the framework.
+**Topics.** [Topic 35, §2.1](../topics/35-packaging-configuration-and-build.md#21-python-packages), with [topic 38, §2](../topics/38-problem-setups-and-user-functions.md#2-designs) for the functions that a problem hands to the framework and [topic 28, §2.5](../topics/28-verification-and-testing.md#25-regression-tests-and-reproducibility) for the tests.
 
 **Supersedes.** None.
 
 ## Scope
 
-The brief settles how the five strata of the overview ([§3](../overview.md#3-layers)) take shape in the package mhdpy: the subpackages that hold them and their names, the imports that the rule of use allows between the strata and within each of them, where the tests of each stratum lie and whether the rule binds them, and how the rule is checked. It leaves the modules within each subpackage to the briefs of their stratum, the layout of the repository, the build and the dependencies to the brief on the package and its installation, and the interface that the package offers its users to the briefs of stratum 5. It is the first brief and builds on no earlier one.
+The brief settles how the five strata of the overview ([§3](../overview.md#3-layers)) take shape in the package mhdpy: the subpackages that hold them and their names, the imports that the rule of use allows between the strata and within each of them, where the tests of each stratum lie and whether the rule binds them, and how the rule is checked. With the tests, it places the package in `src/` and its tests in `tests/`. It leaves the modules within each subpackage to the briefs of their stratum, the rest of the layout of the repository, the build and the dependencies to the brief on the package and its installation, and the interface that the package offers its users to the briefs of stratum 5. It is the first brief and builds on no earlier one.
 
 - [B1D1](#b1d1-the-subpackages-of-the-strata) The subpackages of the strata: decided.
 - [B1D2](#b1d2-the-rule-between-the-strata) The rule between the strata: decided.
 - [B1D3](#b1d3-the-rule-within-a-stratum) The rule within a stratum: decided.
+- [B1D4](#b1d4-the-place-of-the-tests) The place of the tests: decided.
 
-Still to be written: the place of the tests, and the check of the rule.
+Still to be written: the check of the rule.
 
 ## B1D1 The subpackages of the strata
 
@@ -68,9 +69,28 @@ Still to be written: the place of the tests, and the check of the rule.
 
 **Set aside.** Option C returns for a group of components of one kind once the brief of its stratum declares the group independent and adds it to the check.
 
+## B1D4 The place of the tests
+
+**Decision.** In the context of tests that must verify each stratum with the strata below it alone, facing where to put them so that the rule binds them, a tree of tests beside the package after the practice of pytest, with the package in `src/mhdpy/`, the tests in `tests/` in folders that mirror the strata, and each test module named after the module that it tests, as `tests/core/test_riemann.py` (option B), is chosen over tests beside their component (A) and the same tree free of the rule (C). This achieves correctness, as the rule still binds each test to its stratum, accepting a second configuration of the check that maps the folders of tests to the strata. Decided on 2026-11-09, against the recommendation of option A, since the practice that pytest recommends is the one that most Python developers know, so that a newcomer finds the tests where expected.
+
+**Question.** The tests of each stratum need a place before the first test of stratum 1 is written, and the rules of [B1D2](#b1d2-the-rule-between-the-strata) and [B1D3](#b1d3-the-rule-within-a-stratum) either bind them or not. The overview has each lower stratum checked by tests of its own, and the core by a small loop in its tests rather than by the driver, which does not yet exist while the core is built ([§3](../overview.md#3-layers)). To be read first are [topic 28, §2.5](../topics/28-verification-and-testing.md#25-regression-tests-and-reproducibility), [pyro 3.2](../references/pyro-synthesis.md#32-grids-and-data), [pyro 3.4](../references/pyro-synthesis.md#34-output-analysis-and-testing) and [Athena 3.8](../references/athena-synthesis.md#38-regression-tests).
+
+**Option A: beside their component.** The tests of a component lie beside it, within the subpackage of its stratum: those of a module in a module beside it, as `mhdpy/core/riemann_test.py` beside `riemann.py`, and those of a component that is a subpackage in a folder `tests` within it. pyro keeps its tests beside its parts in this way, as `pyro/mesh/tests/`, with the benchmarks of its regression tests in the folders of its solvers ([pyro 3.2](../references/pyro-synthesis.md#32-grids-and-data), [3.4](../references/pyro-synthesis.md#34-output-analysis-and-testing)). **[GK]** [pytest](#pytest-good-practices) describes this layout, finds `test_*.py` and `*_test.py` by default and runs such tests from an installed package with `pytest --pyargs`, and the wheel carries the tests unless the build leaves them out. For mhdpy, the tests fall under the rule and the check of the code without further configuration, so that a test of the core may use the mesh and the infrastructure but never the physics or the driver. Each stratum is then verified with the strata below it alone, and no fault above can mask one below. A reader finds the tests of a module beside it.
+
+**Option B: a tree of their own, bound by the rule.** The tests lie in a folder `tests/` beside the package, whose folders mirror the strata and whose modules mirror those of the package, as `tests/core/test_riemann.py` for `mhdpy/core/riemann.py`. Athena++ keeps its regression tests apart in this way, in `tst/regression/` beside `src/` ([Athena 3.8](../references/athena-synthesis.md#38-regression-tests)). **[GK]** [pytest](#pytest-good-practices) finds this layout useful where there are many functional tests, and recommends it together with the package in `src/`, so that the tests run against the package as installed. For mhdpy, the package installs without its tests, in the layout that most Python developers know. The rule binds the tests only through a second configuration of the check, which maps each folder of tests to its stratum and must be kept in step with the strata. The package then lies in `src/`, a choice that the scope had left to the brief on the package.
+
+**Option C: a tree of their own, free of the rule.** The tests lie as in option B, but a test may import any stratum. For mhdpy, the check stays as simple as in option A, but the testing of each stratum on its own rests on discipline alone, and a test of the core could step its problems with the driver once the driver exists.
+
+**Experiments.** None, since the options differ in where the tests lie and what the rule covers. Whether a check can bind a tree of tests beside the package belongs to the check of the rule.
+
+**Recommendation.** Option A, since the tests then fall under the rule and the check without further configuration, and a reader finds each test beside its code. It serves correctness, the first priority of §1, as no stratum above can mask a fault below it in the tests, and readability, the third. It gives up none, since tests that ship with the package also let a user test an installation.
+
+**Set aside.** Option A would return if the configuration that binds the tests proved hard to keep in step with the strata, since tests beside their component fall under the check of the code itself.
+
 ## Sources
 
 - <a id="buschmann-et-al-1996"></a>Buschmann, F., Meunier, R., Rohnert, H., Sommerlad, P. and Stal, M., Pattern-oriented software architecture, volume 1: a system of patterns, Wiley (1996), the pattern Layers.
 - <a id="import-linter"></a>Import Linter, the documentation of its contract types, release 2.16 of 2026-11-06, [import-linter.readthedocs.io/en/latest/contract_types](https://import-linter.readthedocs.io/en/latest/contract_types/).
 - <a id="pep-544"></a>PEP 544, Protocols: structural subtyping (static duck typing), Python Enhancement Proposals, [peps.python.org/pep-0544](https://peps.python.org/pep-0544/).
+- <a id="pytest-good-practices"></a>pytest, good integration practices, the layouts of the tests, [docs.pytest.org/en/stable/explanation/goodpractices.html](https://docs.pytest.org/en/stable/explanation/goodpractices.html).
 - <a id="python-import-system"></a>Python language reference, the import system, §5, [docs.python.org/3/reference/import.html](https://docs.python.org/3/reference/import.html).

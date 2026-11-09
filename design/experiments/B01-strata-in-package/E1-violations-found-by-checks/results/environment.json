@@ -1,0 +1,8 @@
+{
+  "date": "2026-11-09T12:30:46+00:00",
+  "python": "3.14.8",
+  "free_threaded": "False",
+  "uv": "uv 0.13.6 (329bf9448 2026-10-26 x86_64-apple-darwin)",
+  "machine": "Darwin 25.6.0, x86_64, Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz",
+  "commit": "1be42fc"
+}

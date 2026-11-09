@@ -1,6 +1,6 @@
 # B1 Strata in the package
 
-**Status.** Open.
+**Status.** Decided on 2026-11-09.
 
 **Topics.** [Topic 35, §2.1](../topics/35-packaging-configuration-and-build.md#21-python-packages), with [topic 38, §2](../topics/38-problem-setups-and-user-functions.md#2-designs) for the functions that a problem hands to the framework and [topic 28, §2.5](../topics/28-verification-and-testing.md#25-regression-tests-and-reproducibility) for the tests.
 

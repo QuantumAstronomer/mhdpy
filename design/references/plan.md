@@ -110,6 +110,8 @@ In the second part of the review of the topic summaries, 2.4.6 proved to let the
 
 In the third part of the review of the topic summaries, the note of 3.4, marked **[GK]**, proved to let values smaller than the absolute tolerance of the comparison always agree, which fails for values of opposite sign. It now says that values which differ by less than $10^{-8}$ always agree, and that the relative tolerance binds only for values above $10^4$.
 
+For B1, the first decision brief, 3.3 now records which subpackages import which, read from the imports of the code, with the cycle between `mesh` and `util` that the demonstration of `pyro/mesh/patch.py` avoids by an import within a function, as the author decided.
+
 ## ZEUS
 
 The synthesis is kept in `zeus-synthesis.md`. Its sources are the three papers on ZEUS-2D in `reference-works/Zeus/Docs`, which describe its hydrodynamic, magnetohydrodynamic and radiation hydrodynamic algorithms and tests in ApJS 80 of June 1992: Stone and Norman (1992a, doi:10.1086/191680, `1992ApJS80753S.pdf`), Stone and Norman (1992b, doi:10.1086/191681, `1992ApJS80791S.pdf`), and Stone, Mihalas and Norman (1992, doi:10.1086/191682, `1992ApJS80819S.pdf`). The papers call one another Paper I, II and III, and this section names them I, II and III. The local copies are scans from the ADS. Their text layer, made by optical character recognition, garbles the equations, which are therefore read from the page images. The code of ZEUS-2D is not among the sources.
@@ -203,6 +205,8 @@ In the review of the topic summaries, the statement of Diemer (2025, §3.2) and 
 In the second part of the review of the topic summaries, the note of 2.8.7, marked **[GK]**, proved to take the value of 1.5 in the docstring of the Jeans setup for an approximation of the threshold of 1.88, although the mode still grows fast at 1.5. The note now says so.
 
 In the third part of the review of the topic summaries, two passages were corrected. 2.8.17 now gives the errors of Fig. 7 at 16 cells as about 8 to 15 times those at 64 cells, as the data of the figure give them, and its note marked **[GK]** the values read from the figure accordingly. 2.8.10 now says that Klein, McKee and Colella (1994) treat mainly clouds struck by shocks, with one variant in a wind without a shock.
+
+For B1, the first decision brief, 3.1 now records that the subpackages import one another in one direction only, read from the imports of the code, as the author decided.
 
 ## Athena and Athena++
 
@@ -332,6 +336,8 @@ In the second part of the review of the topic summaries, eight passages were rea
 In the third part of the review of the topic summaries, four passages were read against their sources. Notes marked **[GK]** record three slips of the papers: the critical field of the magnetised Rayleigh–Taylor instability, whose value of 0.14 holds in Gaussian units, while the units of Athena give 0.040 (Stone et al. 2008, §8.4; 2.16.6), the nonlinear Alfvén waves of the braking problem, which their small amplitudes keep linear (§8.4; 2.16.6), and the linear wave along the diagonal of the mesh, whose normal $(1/3, 2/3, 2/3)$ lies at $35.3^\circ$ to the diagonal of the box (Stone et al. 2020, §3.3.1; 2.16.1). 2.7.4 now says that the circularly polarised wave is not subject to the parametric instability for its parameters, as Felker and Stone (2018, §5.2) have it.
 
 In the fourth part of the review of the topic summaries, three passages were corrected. 3.1 now ties communication between processes to parallel runs, as Stone et al. (2008, §7) do, in the comparison with ZEUS on one processor, 3.2 gives its eight and 26 neighbours for a uniform grid and refers to 3.3 for the 12 and 56 with refinement, and 3.7 excludes the restart files from what `athena_read.py` reads.
+
+For B1, the first decision brief, 3.2 now records the pointers between a block and the objects that it creates, and the includes in both directions between the folders of `src/` that follow from them, read from the copy, as the author decided. The count of the folders that include each other is marked **[GK]**, as it was made for the brief.
 
 ## Conduction and cooling
 

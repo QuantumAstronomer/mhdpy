@@ -2,7 +2,7 @@
 
 mhdpy is a framework in Python for simulations of astrophysical gases, in hydrodynamics and [MHD](#mhd), from standard tests to runs of the size of published studies ([§1](#1-goals)). This overview sets out what it is for, how its code is cut into five strata and how a step of a run passes through them, what the strata share, and the decision [briefs](#brief) that build each stratum, in the order in which they are taken. It serves newcomers and the author at work alike, and changes as the briefs decide.
 
-**Where the work stands.** B1 and B2, the first two briefs of stratum 1, on the strata in the package and on the route of the kernels, are decided. The next is the third, on execution in parallel ([§6.1](#61-infrastructure)).
+**Where the work stands.** B1 and B2, the first two briefs of stratum 1, on the strata in the package and on the route of the kernels, are decided, and B3, the third, on execution in parallel, is open ([§6.1](#61-infrastructure)).
 
 ## 1. Goals
 
@@ -119,7 +119,7 @@ Each stratum has a table of the briefs of its first pass in the order in which t
 |---|---|---|---|---|
 | [B1](briefs/B01-strata-in-package.md) | The strata in the package: their subpackages, the rule of use between and within them, the place of the tests, and how the rule is checked | [35, §2.1](topics/35-packaging-configuration-and-build.md#21-python-packages) | Decided on 2026-11-09 | §3 names the subpackages of the strata, their rule of use and its check ([B1D1](briefs/B01-strata-in-package.md#b1d1-the-subpackages-of-the-strata) to [B1D5](briefs/B01-strata-in-package.md#b1d5-the-check-of-the-rule)) |
 | [B2](briefs/B02-kernels.md) | The route of the kernels: vectorised or compiled, the compiler, a simple version to check a fast one, and the benchmark by which the rate of cell updates is tracked | [41](topics/41-vectorised-and-compiled-kernels.md), [36, §2.5](topics/36-data-structures.md#25-layouts-for-kernels) | Decided on 2026-11-10 | §3.1 and §5 name the kernels compiled by Cython, their references in NumPy and their benchmarks ([B2D1](briefs/B02-kernels.md#b2d1-vectorised-or-compiled) to [B2D4](briefs/B02-kernels.md#b2d4-the-benchmark)) |
-| — | Execution in parallel: threads in the [free-threaded build](#free-threaded-build) or processes with [MPI](#mpi), and whether it enters the first pass | [42](topics/42-parallelisation-and-performance.md) | Not begun | |
+| [B3](briefs/B03-parallel-execution.md) | Execution in parallel: threads in the [free-threaded build](#free-threaded-build) or processes with [MPI](#mpi), what each of them updates, and whether it enters the first pass | [42](topics/42-parallelisation-and-performance.md), [36, §2.4](topics/36-data-structures.md#24-blocks-of-a-tree) | Open | |
 | — | The package and its installation: the build backend, the versions of Python, the dependencies, the licence and the releases | [35](topics/35-packaging-configuration-and-build.md) | Not begun | |
 | — | Runtime parameters and units: their format, declaration and record, and the system of units with its constants | [37, §2.5](topics/37-driver-and-control-of-time-step.md#25-runtime-parameters-and-units) | Not begun | |
 | — | Testing and verification: the norms and variables of orders, conservation, the tolerance of regression tests, and the check of requirements | [28](topics/28-verification-and-testing.md) | Not begun | |

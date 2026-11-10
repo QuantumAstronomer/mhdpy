@@ -1,6 +1,6 @@
 # B4E1 Builds of each backend
 
-**Brief.** [B4D2](../../../briefs/B04-packaging.md#b4d2-the-build-backend), on the versions of Python that [B4D1](../../../briefs/B04-packaging.md#b4d1-the-versions-of-python-and-the-platforms) chooses.
+**Brief.** [B4D2](../../../briefs/B04-packaging.md#b4d2-the-build-backend), on the versions of Python that [B4D1](../../../briefs/B04-packaging.md#b4d1-the-versions-of-python-and-the-platforms) chooses, and [B4D3](../../../briefs/B04-packaging.md#b4d3-when-the-physics-is-chosen), which sets its rate beside those of [B4E2](../E2-cost-of-choices-at-run-time/README.md).
 
 **Status.** Run on 2026-11-10.
 

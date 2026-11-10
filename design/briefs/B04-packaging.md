@@ -1,6 +1,6 @@
 # B4 Packaging
 
-**Status.** Open.
+**Status.** Decided on 2026-11-10.
 
 **Topics.** [Topic 35](../topics/35-packaging-configuration-and-build.md), with [topic 42, §2.5](../topics/42-parallelisation-and-performance.md#25-threads-and-processes-in-python) for the free-threaded build whose wheels the brief weighs, [topic 39, §2.2](../topics/39-output-restarts-and-analysis.md#22-snapshots-in-hdf5) for the version that a run records, and [topic 38, §2](../topics/38-problem-setups-and-user-functions.md#2-designs) for the components that a run hands to the framework.
 

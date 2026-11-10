@@ -1,0 +1,10 @@
+{
+  "date": "2026-11-10T09:03:52+00:00",
+  "python": "3.14.8",
+  "free_threaded": "False",
+  "uv": "uv 0.13.6 (329bf9448 2026-10-26 x86_64-apple-darwin)",
+  "machine": "Darwin 25.6.0, x86_64, Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz",
+  "cores": "6 cores, 12 threads, 32 GB",
+  "compiler": "Apple clang version 21.0.0 (clang-2100.1.1.101)",
+  "commit": "87240be"
+}

@@ -1,0 +1,16 @@
+python,package,from_wheels,version
+3.13,numpy,True,2.5.4
+3.13,cython,True,3.3.1
+3.13,setuptools,True,84.2.1
+3.13,mpi4py,True,4.1.2
+3.13,mpich,True,5.0.2
+3.14,numpy,True,2.5.4
+3.14,cython,True,3.3.1
+3.14,setuptools,True,84.2.1
+3.14,mpi4py,True,4.1.2
+3.14,mpich,True,5.0.2
+3.14t,numpy,True,2.5.4
+3.14t,cython,True,3.3.1
+3.14t,setuptools,True,84.2.1
+3.14t,mpi4py,True,4.1.2
+3.14t,mpich,True,5.0.2

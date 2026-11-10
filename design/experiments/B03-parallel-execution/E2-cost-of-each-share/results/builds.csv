@@ -1,0 +1,3 @@
+python,version,seconds,gil
+3.14,3.14.8,16.33,True
+3.14t,3.14.8,8.15,False

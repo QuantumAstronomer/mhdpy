@@ -1,0 +1,17 @@
+{
+  "setuptools": {
+    "pyproject.toml": 5,
+    "setup.py": 6,
+    "total": 11
+  },
+  "meson-python": {
+    "meson.build": 15,
+    "pyproject.toml": 3,
+    "total": 18
+  },
+  "scikit-build-core": {
+    "CMakeLists.txt": 11,
+    "pyproject.toml": 6,
+    "total": 17
+  }
+}

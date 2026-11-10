@@ -1,0 +1,13 @@
+backend,python,passed,report
+setuptools,3.14,True,"Analyzed 7 files, 1 dependencies. | --------------------------------- |  | The core above the infrastructure KEPT |  | Contracts: 1 kept, 0 broken."
+setuptools,3.14t,True,"Analyzed 7 files, 1 dependencies. | --------------------------------- |  | The core above the infrastructure KEPT |  | Contracts: 1 kept, 0 broken."
+setuptools,3.15,True,"Analyzed 7 files, 1 dependencies. | --------------------------------- |  | The core above the infrastructure KEPT |  | Contracts: 1 kept, 0 broken."
+setuptools,3.15t,True,"Analyzed 7 files, 1 dependencies. | --------------------------------- |  | The core above the infrastructure KEPT |  | Contracts: 1 kept, 0 broken."
+meson-python,3.14,False,╚══╩╩╩╣╔═╩══╩╝╚═╝╚═══╩╩╝╚╩═╩╩═╩╝ |   └──▶║║                    ▲  |       ╚╝────────────────────┘ |  |  | Missing layer 'mhdpy.core': module mhdpy.core does not exist.
+meson-python,3.14t,False,╚══╩╩╩╣╔═╩══╩╝╚═╝╚═══╩╩╝╚╩═╩╩═╩╝ |   └──▶║║                    ▲  |       ╚╝────────────────────┘ |  |  | Missing layer 'mhdpy.core': module mhdpy.core does not exist.
+meson-python,3.15,False,╚══╩╩╩╣╔═╩══╩╝╚═╝╚═══╩╩╝╚╩═╩╩═╩╝ |   └──▶║║                    ▲  |       ╚╝────────────────────┘ |  |  | Missing layer 'mhdpy.core': module mhdpy.core does not exist.
+meson-python,3.15t,False,╚══╩╩╩╣╔═╩══╩╝╚═╝╚═══╩╩╝╚╩═╩╩═╩╝ |   └──▶║║                    ▲  |       ╚╝────────────────────┘ |  |  | Missing layer 'mhdpy.core': module mhdpy.core does not exist.
+scikit-build-core,3.14,True,"Analyzed 7 files, 1 dependencies. | --------------------------------- |  | The core above the infrastructure KEPT |  | Contracts: 1 kept, 0 broken."
+scikit-build-core,3.14t,True,"Analyzed 7 files, 1 dependencies. | --------------------------------- |  | The core above the infrastructure KEPT |  | Contracts: 1 kept, 0 broken."
+scikit-build-core,3.15,True,"Analyzed 7 files, 1 dependencies. | --------------------------------- |  | The core above the infrastructure KEPT |  | Contracts: 1 kept, 0 broken."
+scikit-build-core,3.15t,True,"Analyzed 7 files, 1 dependencies. | --------------------------------- |  | The core above the infrastructure KEPT |  | Contracts: 1 kept, 0 broken."

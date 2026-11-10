@@ -1,0 +1,97 @@
+{
+  "setuptools": {
+    "wheel": [
+      "mhdpy/__init__.py",
+      "mhdpy/core/__init__.py",
+      "mhdpy/core/eos.py",
+      "mhdpy/core/loops.c",
+      "mhdpy/core/loops.cpython-314-darwin.so",
+      "mhdpy/core/loops.pxd",
+      "mhdpy/core/loops.py",
+      "mhdpy/core/loops2.c",
+      "mhdpy/core/loops2.cpython-314-darwin.so",
+      "mhdpy/core/loops2.pxd",
+      "mhdpy/core/loops2.py",
+      "mhdpy/infrastructure/__init__.py",
+      "mhdpy/infrastructure/units.py"
+    ],
+    "sdist": [
+      "PKG-INFO",
+      "pyproject.toml",
+      "setup.cfg",
+      "setup.py",
+      "src/mhdpy.egg-info/PKG-INFO",
+      "src/mhdpy.egg-info/SOURCES.txt",
+      "src/mhdpy.egg-info/dependency_links.txt",
+      "src/mhdpy.egg-info/requires.txt",
+      "src/mhdpy.egg-info/top_level.txt",
+      "src/mhdpy/__init__.py",
+      "src/mhdpy/core/__init__.py",
+      "src/mhdpy/core/eos.py",
+      "src/mhdpy/core/loops.c",
+      "src/mhdpy/core/loops.pxd",
+      "src/mhdpy/core/loops.py",
+      "src/mhdpy/core/loops2.c",
+      "src/mhdpy/core/loops2.pxd",
+      "src/mhdpy/core/loops2.py",
+      "src/mhdpy/infrastructure/__init__.py",
+      "src/mhdpy/infrastructure/units.py"
+    ]
+  },
+  "meson-python": {
+    "wheel": [
+      "mhdpy/__init__.py",
+      "mhdpy/core/__init__.py",
+      "mhdpy/core/eos.py",
+      "mhdpy/core/loops.cpython-314-darwin.so",
+      "mhdpy/core/loops2.cpython-314-darwin.so",
+      "mhdpy/infrastructure/__init__.py",
+      "mhdpy/infrastructure/units.py"
+    ],
+    "sdist": [
+      ".gitignore",
+      "PKG-INFO",
+      "meson.build",
+      "pyproject.toml",
+      "src/mhdpy/__init__.py",
+      "src/mhdpy/core/__init__.py",
+      "src/mhdpy/core/eos.py",
+      "src/mhdpy/core/loops.pxd",
+      "src/mhdpy/core/loops.py",
+      "src/mhdpy/core/loops2.pxd",
+      "src/mhdpy/core/loops2.py",
+      "src/mhdpy/infrastructure/__init__.py",
+      "src/mhdpy/infrastructure/units.py"
+    ]
+  },
+  "scikit-build-core": {
+    "wheel": [
+      "mhdpy/__init__.py",
+      "mhdpy/core/__init__.py",
+      "mhdpy/core/eos.py",
+      "mhdpy/core/loops.cpython-314-darwin.so",
+      "mhdpy/core/loops.pxd",
+      "mhdpy/core/loops.py",
+      "mhdpy/core/loops2.cpython-314-darwin.so",
+      "mhdpy/core/loops2.pxd",
+      "mhdpy/core/loops2.py",
+      "mhdpy/infrastructure/__init__.py",
+      "mhdpy/infrastructure/units.py"
+    ],
+    "sdist": [
+      ".gitignore",
+      "CMakeLists.txt",
+      "PKG-INFO",
+      "pyproject.toml",
+      "src/mhdpy/__init__.py",
+      "src/mhdpy/core/__init__.py",
+      "src/mhdpy/core/eos.py",
+      "src/mhdpy/core/loops.pxd",
+      "src/mhdpy/core/loops.py",
+      "src/mhdpy/core/loops2.pxd",
+      "src/mhdpy/core/loops2.py",
+      "src/mhdpy/infrastructure/__init__.py",
+      "src/mhdpy/infrastructure/units.py"
+    ]
+  }
+}

@@ -1,0 +1,13 @@
+backend,python,loaded,agreement,gil,median_s,min_s,max_s,rate_per_s,hours
+setuptools,3.14,loops.cpython-314-darwin.so loops2.cpython-314-darwin.so,0 0,True,0.4377,0.4355,0.4490,9.583e+06,2.61
+setuptools,3.14t,loops.cpython-314t-darwin.so loops2.cpython-314t-darwin.so,0 0,False,0.4380,0.4357,0.4416,9.575e+06,2.61
+setuptools,3.15,loops.cpython-315-darwin.so loops2.cpython-315-darwin.so,0 0,True,0.4342,0.4281,0.4389,9.659e+06,2.59
+setuptools,3.15t,loops.cpython-315t-darwin.so loops2.cpython-315t-darwin.so,0 0,False,0.4378,0.4339,0.4441,9.581e+06,2.61
+meson-python,3.14,loops.cpython-314-darwin.so loops2.cpython-314-darwin.so,0 0,True,0.4343,0.4299,0.4367,9.658e+06,2.59
+meson-python,3.14t,loops.cpython-314t-darwin.so loops2.cpython-314t-darwin.so,0 0,False,0.4349,0.4337,0.4403,9.645e+06,2.59
+meson-python,3.15,loops.cpython-315-darwin.so loops2.cpython-315-darwin.so,0 0,True,0.4340,0.4307,0.4404,9.664e+06,2.59
+meson-python,3.15t,loops.cpython-315t-darwin.so loops2.cpython-315t-darwin.so,0 0,False,0.4291,0.4243,0.4486,9.774e+06,2.56
+scikit-build-core,3.14,loops.cpython-314-darwin.so loops2.cpython-314-darwin.so,0 0,True,0.4440,0.4375,0.4625,9.446e+06,2.65
+scikit-build-core,3.14t,loops.cpython-314t-darwin.so loops2.cpython-314t-darwin.so,0 0,False,0.4352,0.4329,0.4413,9.639e+06,2.59
+scikit-build-core,3.15,loops.cpython-315-darwin.so loops2.cpython-315-darwin.so,0 0,True,0.4334,0.4290,0.4543,9.679e+06,2.58
+scikit-build-core,3.15t,loops.cpython-315t-darwin.so loops2.cpython-315t-darwin.so,0 0,False,0.4692,0.4458,0.6811,8.94e+06,2.8

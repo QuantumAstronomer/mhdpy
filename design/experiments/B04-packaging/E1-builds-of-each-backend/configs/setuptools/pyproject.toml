@@ -1,0 +1,7 @@
+[build-system]
+requires = ["setuptools>=77", "cython>=3.1"]
+build-backend = "setuptools.build_meta"
+
+## the source distribution, from which the wheel is built, needs the declarations of the kernels
+[tool.setuptools.package-data]
+"*" = ["*.pxd"]

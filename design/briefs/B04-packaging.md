@@ -14,8 +14,9 @@ The brief settles how mhdpy is built, installed and released, so that it install
 
 - [B4D2](#b4d2-the-build-backend) The build backend: decided.
 - [B4D3](#b4d3-when-the-physics-is-chosen) When the physics is chosen: decided.
+- [B4D4](#b4d4-the-dependencies) The dependencies: decided.
 
-Still to be written: the dependencies, the licence, the version and its record, and the wheels and their publication.
+Still to be written: the licence, the version and its record, and the wheels and their publication.
 
 ## B4D1 The versions of Python and the platforms
 
@@ -71,14 +72,35 @@ Still to be written: the dependencies, the licence, the version and its record, 
 
 **Set aside.** Option A would return if kernels could keep every loop whose length the run gives outside their loops over cells, as one call per scalar would, since one version would then serve every run.
 
+## B4D4 The dependencies
+
+**Decision.** In the context of a package that users install with one command and that is developed through its tests, facing dependencies that weigh on the installation and versions that drift between sessions, NumPy alone at run time, from 2.3.2 with the floor raised as SPEC 0 drops releases and without upper bounds, each further package added by the brief that needs it, with the tools of development in groups of dependencies and their versions locked in a committed file `uv.lock` (option A), is chosen over extras without a lock (B) and the scientific stack at once (C). This achieves correctness, as the tests run on the same versions everywhere, and a light installation, accepting a lock to keep and a development that needs uv or pip 25.1. Decided on 2026-11-10, as recommended.
+
+**Question.** The file `pyproject.toml`, which the first module of stratum 1 needs, names what mhdpy depends on: NumPy, whose arrays every kernel takes, at run time; setuptools and Cython for its build ([B4D2](#b4d2-the-build-backend)); and for its development pytest, Import Linter ([B1D5](B01-strata-in-package.md#b1d5-the-check-of-the-rule)), airspeed velocity ([B2D4](B02-kernels.md#b2d4-the-benchmark)) and pyright (§3.2). It must be settled which packages the installation of a user pulls in, with which bounds, where the tools of development are named, and whether a file of locked versions fixes the environment in which the tests run. To be read first are [topic 35, §2.1](../topics/35-packaging-configuration-and-build.md#21-python-packages), [§2.4](../topics/35-packaging-configuration-and-build.md#24-dependencies-licences-and-development) and [§4](../topics/35-packaging-configuration-and-build.md#4-assessment). **[GK]** NumPy 2.3.2 is the first release with wheels for Python 3.14 and 3.14t on the four platforms of [B4D1](#b4d1-the-versions-of-python-and-the-platforms), and 2.5.2 the first for 3.15 and 3.15t ([NumPy releases](#numpy-releases)). SPEC 0 now asks for NumPy 2.3 or later ([SPEC 0](#spec-0)).
+
+**Option A: few dependencies, groups and a lock.** The installation pulls in NumPy alone, from 2.3.2, the floor rising as SPEC 0 drops releases, without upper bounds, and each later brief adds the package that it needs, as that on outputs may add h5py. Athena++ depends on as little as possible ([topic 35, §2.4](../topics/35-packaging-configuration-and-build.md#24-dependencies-licences-and-development)). **[GK]** The tools of development form groups of dependencies in `pyproject.toml` ([PEP 735](#pep-735)), which uv installs with the project and pip from release 25.1, and which the published metadata leaves out. A file `uv.lock`, committed, fixes the version of every package of the environment of development, which `uv lock --upgrade` raises when asked. For mhdpy, a user installs NumPy and mhdpy alone, the tests run on the same versions on every machine and in every session, and a change of version shows as a change of the lock. The lock must be kept, and the experiments keep their own environments by [PEP 723](#pep-723).
+
+**Option B: few dependencies, extras without a lock.** As option A for the installation, but the tools of development are named as optional extras of the package, installed by `pip install -e ".[dev]"`, or in a file of requirements, as pyro names its own ([pyro 3.1](../references/pyro-synthesis.md#31-packaging-installation-and-development)), and their versions float. **[GK]** For mhdpy, any release of pip installs the environment without uv, and no lock needs keeping. The tests run on whatever versions an installation finds that day, so that a change of a dependency can alter a result unseen, and the extras appear in the published metadata as if users needed them.
+
+**Option C: the scientific stack at once.** The installation pulls in NumPy, SciPy, Matplotlib and h5py from the start, as pyro and Ulula do, with the tools of development as in option A ([topic 35, §2.1](../topics/35-packaging-configuration-and-build.md#21-python-packages)). **[GK]** For mhdpy, a user has plots and files of HDF5 at hand from the first release. The installation grows by the dependencies of those packages, and their choice comes before the briefs on outputs and analysis that are to make it, a provision that §2.3 builds early only when it costs little. Ulula imports a package that it does not declare and receives only through Matplotlib ([topic 35, §4](../topics/35-packaging-configuration-and-build.md#4-assessment)), which a stack declared at once invites.
+
+**Experiments.** None, since the options differ in what is declared and where, which the facts of the tools settle.
+
+**Recommendation.** Option A, since a lock keeps the tests on the same versions from one session to the next, so that a changed result points to the code rather than to a dependency, while the installation stays as light as the exception of §1 wants. Against option C, it leaves each further dependency to the brief that needs it. The option serves correctness, the first priority of §1, through the reproducible environment of the tests, and usability, the fourth, through a light installation, and gives up the upkeep of a lock and an installation of development that needs uv or pip 25.1.
+
+**Set aside.** Option B would return if contributors without uv or a recent pip came to matter, as extras install with any release of pip.
+
 ## Sources
 
 - <a id="cython-compilation"></a>Cython, its documentation of source files and compilation, with its pages on setuptools, Meson, CMake with scikit-build-core, and hatchling, [cython.readthedocs.io/en/latest/src/userguide/source_files_and_compilation.html](https://cython.readthedocs.io/en/latest/src/userguide/source_files_and_compilation.html).
 - <a id="cython-changes"></a>Cython, its change log, release 3.3.0 of 2026-08-22, on the Limited API of Python 3.15 without `abi3t`, [github.com/cython/cython/blob/master/CHANGES.rst](https://github.com/cython/cython/blob/master/CHANGES.rst).
 - <a id="meson-cython"></a>Meson, its documentation of Cython, release 1.12, [mesonbuild.com/Cython.html](https://mesonbuild.com/Cython.html).
 - <a id="mesonpy-editable"></a>meson-python, its documentation of editable installations, release 0.22, [mesonbuild.com/meson-python/how-to-guides/editable-installs.html](https://mesonbuild.com/meson-python/how-to-guides/editable-installs.html).
+- <a id="numpy-releases"></a>NumPy on the Python Package Index, the files of its releases 2.3.2 of 2025-07-24 and 2.5.2 of 2026-08-09, [pypi.org/project/numpy/#history](https://pypi.org/project/numpy/#history).
 - <a id="numpy-254"></a>NumPy 2.5.4 on the Python Package Index, its files of 2026-10-10, [pypi.org/project/numpy/2.5.4/#files](https://pypi.org/project/numpy/2.5.4/#files).
 - <a id="pep-649"></a>PEP 649, Deferred evaluation of annotations using descriptors, Python Enhancement Proposals, [peps.python.org/pep-0649](https://peps.python.org/pep-0649/).
+- <a id="pep-723"></a>PEP 723, Inline script metadata, Python Enhancement Proposals, [peps.python.org/pep-0723](https://peps.python.org/pep-0723/).
+- <a id="pep-735"></a>PEP 735, Dependency groups in pyproject.toml, Python Enhancement Proposals, [peps.python.org/pep-0735](https://peps.python.org/pep-0735/).
 - <a id="pep-779"></a>PEP 779, Criteria for supported status for free-threaded Python, Python Enhancement Proposals, [peps.python.org/pep-0779](https://peps.python.org/pep-0779/).
 - <a id="pep-803"></a>PEP 803, "abi3t": stable ABI for free-threaded builds, Python Enhancement Proposals, [peps.python.org/pep-0803](https://peps.python.org/pep-0803/).
 - <a id="python-versions"></a>Python Developer's Guide, status of Python versions, [devguide.python.org/versions](https://devguide.python.org/versions/).

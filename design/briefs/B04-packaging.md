@@ -16,8 +16,9 @@ The brief settles how mhdpy is built, installed and released, so that it install
 - [B4D3](#b4d3-when-the-physics-is-chosen) When the physics is chosen: decided.
 - [B4D4](#b4d4-the-dependencies) The dependencies: decided.
 - [B4D5](#b4d5-the-licence) The licence: decided.
+- [B4D6](#b4d6-the-version-and-its-record) The version and its record: decided.
 
-Still to be written: the version and its record, and the wheels and their publication.
+Still to be written: the wheels and their publication.
 
 ## B4D1 The versions of Python and the platforms
 
@@ -108,6 +109,24 @@ Still to be written: the version and its record, and the wheels and their public
 **Recommendation.** Option A, since it lets others build on mhdpy freely, as Athena++ chose its licence to allow, and lets code of pyro and Ulula be taken with their notices, while its clause on endorsement keeps the names of its authors from being used for derived work, which option B leaves out. The option serves usability and extensibility, the fourth priority of §1, and the aim of a code that others can pick up ([§1.1](../overview.md#11-goals) of the overview). It gives up the guarantee of option C that what others derive stays open.
 
 **Set aside.** Option C would return if mhdpy came to need code of the modules of Athena++ under the GPL, which only a licence of copyleft could take in.
+
+## B4D6 The version and its record
+
+**Decision.** In the context of runs that are to name the code that produced them, facing an editable installation whose metadata keeps the version of its last installation, a version derived from the tags of git by setuptools-scm, recorded by every run together with the commit and the state of the tree that a run from a checkout reads from git (option C), is chosen over a version raised by hand (A) and the version of the installation alone (B). This achieves correctness, as every result can be traced to its code, accepting a plugin of the build and a function of stratum 1 that reads git. Decided on 2026-11-10, as recommended.
+
+**Question.** Every wheel names a version in its metadata, and every run is to record the version of mhdpy, so that the run can be reproduced ([§5](../overview.md#5-crosscutting-concepts) of the overview). The version must be set in one place, by hand or from the tags of git, and a run made during development must still name the code that produced it. The form of the record and where outputs keep it are left to the brief on outputs, restarts and analysis, and the numbering of releases to the sub-decision on the wheels and their publication. To be read first are [topic 35, §2.1](../topics/35-packaging-configuration-and-build.md#21-python-packages) and [§4](../topics/35-packaging-configuration-and-build.md#4-assessment), and [topic 39, §2.2](../topics/39-output-restarts-and-analysis.md#22-snapshots-in-hdf5), where Ulula writes its version into each file and refuses files older than 1.0.0. **[GK]** An editable installation keeps the version of its last installation in its metadata.
+
+**Option A: by hand, with git at run time.** The version is written in `pyproject.toml` and raised by hand before each release, as Ulula keeps its version in a file of its package ([Ulula 3.1](../references/ulula-synthesis.md#31-packaging-and-installation)). A run records it from the metadata of its installation and, where mhdpy runs from a checkout, also the commit and whether the tree differs from it, read from git as the experiments record theirs ([rules of the experiments, §3](../templates/experiment-rules.md#3-the-code)). **[GK]** For mhdpy, the build needs no plugin, and a run names its code wherever it runs. A release whose version was not raised repeats that of the last, and the tag of git must be kept in step with the version by hand.
+
+**Option B: from the tags, as installed.** A plugin of setuptools, setuptools-scm, derives the version from the last tag of git when the package is built, as for pyro ([topic 35, §2.1](../topics/35-packaging-configuration-and-build.md#21-python-packages)). **[GK]** A build at a tag gets the plain version, one fourteen commits later a version such as `0.2.dev14+g5f3e2a1` that names its commit, and one from a tree with changes a mark of the date. A run records the version of its installation. For mhdpy, releases and tags cannot diverge, and every wheel names its commit. A run made after later commits to modules of Python, which need no new installation under [B4D2](#b4d2-the-build-backend), records the commit of the last installation rather than that of its code.
+
+**Option C: from the tags, with git at run time.** As option B, and a run from a checkout also reads the commit and the state of the tree from git, as in option A. **[GK]** For mhdpy, releases follow the tags, and every run names the code that produced it, from a wheel by its version and from a checkout by its commit. setuptools-scm joins the requirements of the build, and a short function of stratum 1 reads git.
+
+**Experiments.** None, since the options differ in where the version is set and read, which the tools document.
+
+**Recommendation.** Option C, since every run then names the exact code that produced it, during development as well as from a wheel, which option B fails to do after a commit without a new installation, while releases follow their tags without the raise by hand that option A needs. The top package can expose the version from the metadata without importing a stratum, as [B1D2](B01-strata-in-package.md#b1d2-the-rule-between-the-strata) asks. The option serves correctness, the first priority of §1, as a result can be traced to its code, and gives up a plugin of the build and a function that reads git.
+
+**Set aside.** Option A would return if setuptools-scm ceased to be maintained or to serve the backend of [B4D2](#b4d2-the-build-backend), as a version raised by hand needs no plugin.
 
 ## Sources
 

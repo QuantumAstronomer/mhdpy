@@ -15,8 +15,9 @@ The brief settles how mhdpy is built, installed and released, so that it install
 - [B4D2](#b4d2-the-build-backend) The build backend: decided.
 - [B4D3](#b4d3-when-the-physics-is-chosen) When the physics is chosen: decided.
 - [B4D4](#b4d4-the-dependencies) The dependencies: decided.
+- [B4D5](#b4d5-the-licence) The licence: decided.
 
-Still to be written: the licence, the version and its record, and the wheels and their publication.
+Still to be written: the version and its record, and the wheels and their publication.
 
 ## B4D1 The versions of Python and the platforms
 
@@ -90,6 +91,24 @@ Still to be written: the licence, the version and its record, and the wheels and
 
 **Set aside.** Option B would return if contributors without uv or a recent pip came to matter, as extras install with any release of pip.
 
+## B4D5 The licence
+
+**Decision.** In the context of a public repository without a licence, facing a code that others are to pick up and references under licences of their own, the BSD licence of three clauses for the code and the documents of the repository (option A) is chosen over MIT (B) and the GPL from version 3 (C). This achieves usability and extensibility, as others may build mhdpy into any code and code of pyro and Ulula may be taken with their notices, accepting that what others derive may stay closed and that no code of the modules of Athena++ under the GPL may be taken. Decided on 2026-11-10, as recommended.
+
+**Question.** **[GK]** The repository of mhdpy is public but bears no licence, so that copyright reserves every use to its author: others may read the code, but not use, change or share it. The licence must be chosen before code is written that others might build on, and before the first wheel, whose metadata names it by an expression of SPDX in `pyproject.toml`, which setuptools reads from release 77 ([PEP 639](#pep-639)). It also bounds what mhdpy may take from the references, each of which keeps its own licence (§4.1). The documents of `design/` would share the licence of the code, so that one licence covers the repository. To be read first are [topic 35, §2.4](../topics/35-packaging-configuration-and-build.md#24-dependencies-licences-and-development) and [§4](../topics/35-packaging-configuration-and-build.md#4-assessment), with [pyro 1.1](../references/pyro-synthesis.md#11-origin-version-and-licence) and [Ulula 1.1](../references/ulula-synthesis.md#11-origin-version-and-licence). The Apache licence, whose grant of patents matters little to a code of simulation, is left out.
+
+**Option A: BSD, three clauses.** The licence of Athena++, chosen over version 3 of the GNU General Public License as it eases the redistribution of derived works, for instance within the closed frameworks of national laboratories, and of pyro ([topic 35, §2.4](../topics/35-packaging-configuration-and-build.md#24-dependencies-licences-and-development), [pyro 1.1](../references/pyro-synthesis.md#11-origin-version-and-licence)). **[GK]** Anyone may use, change and redistribute the code, in open or closed form, keeping its notice of copyright, without naming its authors to endorse what derives from it. For mhdpy, others may build it into any code, and code of pyro and Ulula may be taken with their notices, but not code of the modules of Athena++ that bear headers of the GPL ([topic 35, §4](../topics/35-packaging-configuration-and-build.md#4-assessment)).
+
+**Option B: MIT.** The licence of Ulula ([Ulula 1.1](../references/ulula-synthesis.md#11-origin-version-and-licence)). **[GK]** As permissive as option A in a shorter text, without its clause on endorsement. For mhdpy, the use that others may make of it, and what it may take from the references, are those of option A.
+
+**Option C: GPL, version 3 or later.** **[GK]** A licence of copyleft: whoever distributes a work derived from the code must release its source under the same licence. For mhdpy, what others build on it stays open, and code of the modules of Athena++ under the GPL could be taken. No closed framework may embed mhdpy, the reason for which Athena++ chose BSD, and code of mhdpy could not flow back into pyro or Ulula without binding them to the GPL.
+
+**Experiments.** None, since the options differ in the rights that they grant, which their texts settle.
+
+**Recommendation.** Option A, since it lets others build on mhdpy freely, as Athena++ chose its licence to allow, and lets code of pyro and Ulula be taken with their notices, while its clause on endorsement keeps the names of its authors from being used for derived work, which option B leaves out. The option serves usability and extensibility, the fourth priority of §1, and the aim of a code that others can pick up ([§1.1](../overview.md#11-goals) of the overview). It gives up the guarantee of option C that what others derive stays open.
+
+**Set aside.** Option C would return if mhdpy came to need code of the modules of Athena++ under the GPL, which only a licence of copyleft could take in.
+
 ## Sources
 
 - <a id="cython-compilation"></a>Cython, its documentation of source files and compilation, with its pages on setuptools, Meson, CMake with scikit-build-core, and hatchling, [cython.readthedocs.io/en/latest/src/userguide/source_files_and_compilation.html](https://cython.readthedocs.io/en/latest/src/userguide/source_files_and_compilation.html).
@@ -98,6 +117,7 @@ Still to be written: the licence, the version and its record, and the wheels and
 - <a id="mesonpy-editable"></a>meson-python, its documentation of editable installations, release 0.22, [mesonbuild.com/meson-python/how-to-guides/editable-installs.html](https://mesonbuild.com/meson-python/how-to-guides/editable-installs.html).
 - <a id="numpy-releases"></a>NumPy on the Python Package Index, the files of its releases 2.3.2 of 2025-07-24 and 2.5.2 of 2026-08-09, [pypi.org/project/numpy/#history](https://pypi.org/project/numpy/#history).
 - <a id="numpy-254"></a>NumPy 2.5.4 on the Python Package Index, its files of 2026-10-10, [pypi.org/project/numpy/2.5.4/#files](https://pypi.org/project/numpy/2.5.4/#files).
+- <a id="pep-639"></a>PEP 639, Improving license clarity with better package metadata, Python Enhancement Proposals, [peps.python.org/pep-0639](https://peps.python.org/pep-0639/).
 - <a id="pep-649"></a>PEP 649, Deferred evaluation of annotations using descriptors, Python Enhancement Proposals, [peps.python.org/pep-0649](https://peps.python.org/pep-0649/).
 - <a id="pep-723"></a>PEP 723, Inline script metadata, Python Enhancement Proposals, [peps.python.org/pep-0723](https://peps.python.org/pep-0723/).
 - <a id="pep-735"></a>PEP 735, Dependency groups in pyproject.toml, Python Enhancement Proposals, [peps.python.org/pep-0735](https://peps.python.org/pep-0735/).

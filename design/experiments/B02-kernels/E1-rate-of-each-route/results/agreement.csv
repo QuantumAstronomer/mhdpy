@@ -1,0 +1,17 @@
+route,python,rho,mx,my,energy
+numpy,3.13,0,0,0,0
+inplace,3.13,0,0,0,0
+loop,3.13,0,1.11e-16,2.19e-15,1.11e-16
+numba,3.13,0,0,0,0
+cython,3.13,0,0,0,0
+pythran,3.13,0,0,0,0
+numpy,3.14,0,0,0,0
+inplace,3.14,0,0,0,0
+loop,3.14,0,1.11e-16,2.19e-15,1.11e-16
+cython,3.14,0,0,0,0
+pythran,3.14,0,0,0,0
+numpy,3.14t,0,0,0,0
+inplace,3.14t,0,0,0,0
+loop,3.14t,0,1.11e-16,2.19e-15,1.11e-16
+cython,3.14t,0,0,0,0
+pythran,3.14t,0,0,0,0

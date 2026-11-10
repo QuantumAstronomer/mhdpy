@@ -1,6 +1,6 @@
 # B2E1 Rate of each route
 
-**Brief.** [B2D1](../../../briefs/B02-kernels.md#b2d1-vectorised-or-compiled), with the choice of the compiler and the simple version beside the fast one, which follow it.
+**Brief.** [B2D1](../../../briefs/B02-kernels.md#b2d1-vectorised-or-compiled), with [B2D2](../../../briefs/B02-kernels.md#b2d2-the-compiler-of-the-kernels) and the simple version beside the fast one, which follow it.
 
 **Status.** Run on 2026-11-09.
 

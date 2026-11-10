@@ -18,7 +18,7 @@ The way of working guards against two ways of losing hold of the project: steps 
 
 The author makes every decision. The assistant recommends, and explains the reasoning behind each recommendation, since learning is the main goal. Where the author's input is needed, or the assistant is unsure, it asks rather than assumes. It asks questionnaire-style, one decision per question, also about the points it reports for review.
 
-The assistant writes the documents, such as briefs, requirements, syntheses, summaries and templates, and the experiments (§2.4). It changes the repository only when asked for that step, and an earlier request does not carry over. It keeps nothing in a private memory. Whatever has to last is written into the repository.
+The assistant writes the documents, such as briefs, requirements, syntheses, summaries and templates, and the experiments (§2.4). Before it runs an experiment, it states how long the run is expected to take, so that the author can return when it is done. It changes the repository only when asked for that step, and an earlier request does not carry over. It keeps nothing in a private memory. Whatever has to last is written into the repository.
 
 Nothing is committed or pushed without the author's explicit approval. For each commit, the assistant proposes a summary of the change, the files changed and the commit message exactly as it will be committed, and commits once the author approves. The message stands in the question that asks for the approval, so that it is in view when the author decides. An approval holds for one commit only. A push needs an approval of its own.
 

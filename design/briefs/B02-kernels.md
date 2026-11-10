@@ -1,6 +1,6 @@
 # B2 Kernels
 
-**Status.** Open.
+**Status.** Decided on 2026-11-10.
 
 **Topics.** [Topic 41](../topics/41-vectorised-and-compiled-kernels.md), with [topic 36, §2.5](../topics/36-data-structures.md#25-layouts-for-kernels) for the layouts that the kernels favour, [topic 35, §2.5](../topics/35-packaging-configuration-and-build.md#25-compiled-kernels-and-their-builds) for the builds of compiled kernels and [topic 42, §4](../topics/42-parallelisation-and-performance.md#4-assessment) for the cost of the production run.
 

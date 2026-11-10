@@ -1,0 +1,4 @@
+variant,pxd,directives,built,seconds
+full,full.pxd,none,True,11.37
+signatures,signatures.pxd,none,True,5.37
+inferred,signatures.pxd,infer_types=True,True,5.11

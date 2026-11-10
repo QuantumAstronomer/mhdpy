@@ -13,8 +13,7 @@ The brief settles the route in which the loops over cells of strata 2 to 4 are w
 - [B2D1](#b2d1-vectorised-or-compiled) Vectorised or compiled: decided.
 - [B2D2](#b2d2-the-compiler-of-the-kernels) The compiler of the kernels: decided.
 - [B2D3](#b2d3-a-simple-version-beside-the-fast-one) A simple version beside the fast one: decided.
-
-Still to be written: the benchmark.
+- [B2D4](#b2d4-the-benchmark) The benchmark: decided.
 
 ## B2D1 Vectorised or compiled
 
@@ -67,3 +66,28 @@ Still to be written: the benchmark.
 **Recommendation.** Option B, since the uncompiled source checks the compiled kernel for every fault that compiling brings, at no cost in code, while the faults of the algorithm, which both versions share, are those that the tests of known solutions of every stratum must catch in any case. It serves correctness, the first priority of §1, and spares readability, the third, the second version of every kernel that option C would cost. It gives up an independent check of the algorithm within each kernel.
 
 **Set aside.** Option B stays open within C, as the tests can also run the source of a kernel uncompiled, which tells a fault of compiling from one of the algorithm. It would return alone for a kernel whose version in NumPy proves too hard to write, such as one with substeps that differ between cells.
+
+## B2D4 The benchmark
+
+**Decision.** In the context of a rate tracked through development on a machine whose sessions differ by up to 18 per cent, benchmarks in `benchmarks/` that airspeed velocity builds and times commit by commit, from the first kernel of stratum 3 (option C), are chosen over a script with a log (A) and a test with a threshold (B). This achieves performance, as a kernel that grows slower is found by bisection, accepting a dependency of development, a configuration and the conventions of a tool. Decided on 2026-11-10, as recommended.
+
+**Question.** The rate of cell updates per second is the measure that the overview tracks during development ([§1.3](../overview.md#13-success-criteria)), so that a slower kernel shows before the production run does. Its benchmark needs a form before the first kernel of stratum 3: how the rate is measured, where the results are kept and compared, and whether a slower kernel stops a commit. [B2E2](../experiments/B02-kernels/E2-declarations-for-cython/README.md) found the rate of one build 18 per cent apart in two sessions on the development machine, which every comparison must allow for. The problems that it times are left to the briefs of strata 3 and 5, and the report of the rate at the end of each run to the brief on the driver. To be read first are [topic 42, §2.1](../topics/42-parallelisation-and-performance.md#21-the-cost-of-a-simulation) and [§4](../topics/42-parallelisation-and-performance.md#4-assessment).
+
+**Option A: a script and a log.** A script in a folder `benchmarks/` beside `tests/` times the step of the numerical core on fixed problems and grids as the experiments do, after one step to warm up and by the median of repeats ([rules of the experiments, §2](../templates/experiment-rules.md#2-the-record)), and appends to a log in git a line with the date, the commit, the machine and the rate. Athena++ shaped its classes by such benchmarks of its core kernel against plain C ([Athena 3.9](../references/athena-synthesis.md#39-performance)), and Ulula prints the time per step at the end of a run ([Ulula 3.7](../references/ulula-synthesis.md#37-performance)). For mhdpy, the benchmark needs no dependency, reads like an experiment and keeps its history in the repository. It runs only by hand, and whether two lines of the log, from sessions 18 per cent apart, show a regression is left to the reader.
+
+**Option B: a test with a threshold.** A test of the suite times the step and fails below a rate, as the regression test of the Fourier transforms of Athena++ warns below $10^6$ zone-cycles per second ([Athena 2.10.1](../references/athena-synthesis.md#2101-self-gravity-by-fast-fourier-transform)). **[GK]** pytest-benchmark compares such timings with a run saved earlier and fails beyond a margin ([pytest-benchmark](#pytest-benchmark)). For mhdpy, every run of the tests checks the rate, so that a slower kernel shows at once. The threshold needs either a target, which the scope leaves to stratum 5, or a run saved on the same machine, and with 18 per cent between sessions a margin tight enough to matter fails at times without cause, while every commit must pass its tests (§3.4). Each run of the tests also takes the time of the benchmark.
+
+**Option C: airspeed velocity.** **[GK]** The benchmarks are functions in `benchmarks/` that the tool asv runs ([asv](#asv)). For each commit that it measures, asv builds the package in an environment of its own, keeps the results per machine and commit in files of JSON, draws their history as pages of HTML, and finds by bisection the commit at which a benchmark grew slower. A benchmark may also return a value of its own, such as a rate. NumPy and SciPy track their performance with it ([NumPy](#numpy-benchmarks), [SciPy](#scipy-benchmarks)), and its release 0.6.6 installs from wheels on Python 3.13, 3.14 and 3.14t. For mhdpy, the rate is tracked commit by commit, with the spread of its repeats, and a regression is found rather than read from a log, while no commit is stopped. It adds a dependency of development and a configuration, and compiles the kernels at every commit that it measures.
+
+**Experiments.** None, since the options differ in how the rate is kept and compared, which no measurement decides, and [B2E2](../experiments/B02-kernels/E2-declarations-for-cython/README.md) gives the spread between sessions that every comparison must allow for.
+
+**Recommendation.** Option C, since asv keeps the history of the rate commit by commit and finds the commit at which a kernel grew slower, without a threshold that the spread between sessions would trip, as in option B, or a log compared by eye, as in option A. It serves performance, the second priority of §1, and gives up some readability, the third, as its benchmarks follow the conventions of a tool rather than those of the experiments. It is built with the first kernel of stratum 3, when it first has something to time, and gains the production problem with stratum 5.
+
+**Set aside.** Option A would return if asv ceased to be maintained or to install on the versions of Python that mhdpy supports, as a script and a log need nothing beyond the experiments. Option B would return once stratum 5 sets a target with a margin wider than the spread between sessions, as a test could then guard the target itself.
+
+## Sources
+
+- <a id="asv"></a>airspeed velocity (asv), a tool that benchmarks Python packages over their history, release 0.6.6, its documentation with the writing of benchmarks and the command `asv find`, [asv.readthedocs.io/en/stable](https://asv.readthedocs.io/en/stable/).
+- <a id="numpy-benchmarks"></a>NumPy, its benchmarks for asv with their configuration `asv.conf.json`, [github.com/numpy/numpy/tree/main/benchmarks](https://github.com/numpy/numpy/tree/main/benchmarks).
+- <a id="pytest-benchmark"></a>pytest-benchmark, release 5.3.1, its documentation with the option `--benchmark-compare-fail`, [pytest-benchmark.readthedocs.io](https://pytest-benchmark.readthedocs.io/en/latest/).
+- <a id="scipy-benchmarks"></a>SciPy, its benchmarks for asv with their configuration `asv.conf.json`, [github.com/scipy/scipy/tree/main/benchmarks](https://github.com/scipy/scipy/tree/main/benchmarks).

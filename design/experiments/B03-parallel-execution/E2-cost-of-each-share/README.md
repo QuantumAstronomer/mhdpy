@@ -1,6 +1,6 @@
 # B3E2 Cost of each share
 
-**Brief.** [B3D2](../../../briefs/B03-parallel-execution.md#b3d2-the-share-of-each-worker).
+**Brief.** [B3D2](../../../briefs/B03-parallel-execution.md#b3d2-the-share-of-each-worker), with [B3D3](../../../briefs/B03-parallel-execution.md#b3d3-whether-it-enters-the-first-pass), which follows it.
 
 **Status.** Run on 2026-11-10.
 

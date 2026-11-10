@@ -1,8 +1,8 @@
 # B3 Parallel execution
 
-**Status.** Open.
+**Status.** Decided on 2026-11-10.
 
-**Topics.** [Topic 42](../topics/42-parallelisation-and-performance.md), with [topic 36, §2.4](../topics/36-data-structures.md#24-blocks-of-a-tree) for the blocks over which the work may be shared.
+**Topics.** [Topic 42](../topics/42-parallelisation-and-performance.md), with [topic 36, §2.4](../topics/36-data-structures.md#24-blocks-of-a-tree) and [§4](../topics/36-data-structures.md#4-assessment) for the blocks over which the work is shared, and [topic 17, §2.4](../topics/17-thermal-conduction.md#24-semi-implicit-integration) for the solves along whole lines that the blocks must gather.
 
 **Supersedes.** None.
 

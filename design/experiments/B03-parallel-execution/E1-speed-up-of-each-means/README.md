@@ -1,6 +1,6 @@
 # B3E1 Speed-up of each means
 
-**Brief.** [B3D1](../../../briefs/B03-parallel-execution.md#b3d1-threads-or-processes), with the sub-decisions on the share of each worker and on the first pass, which follow it.
+**Brief.** [B3D1](../../../briefs/B03-parallel-execution.md#b3d1-threads-or-processes), with [B3D3](../../../briefs/B03-parallel-execution.md#b3d3-whether-it-enters-the-first-pass), which follows it.
 
 **Status.** Run on 2026-11-10.
 

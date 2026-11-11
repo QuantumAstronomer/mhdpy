@@ -4,7 +4,7 @@
 
 **Status.** Draft.
 
-**Briefs.** [B{n}D{k}](../briefs/B{nn}-{subject}.md#b{n}d{k}-{heading}) *and every other sub-decision that the component implements.*
+**Briefs.** [B{n}D{k}](../../briefs/B{nn}-{subject}.md#b{n}d{k}-{heading}) *and every other sub-decision that the component implements.*
 
 ## Scope
 
@@ -16,7 +16,7 @@
 
 ## Verification
 
-<a id="{prefix}{mm}"></a>**{PREFIX}{mm}** *A requirement of [§1.3 of the overview](../overview.md#13-success-criteria) on the component as a whole: an order of convergence, conservation to round-off, or a reference test of its topic reproduced, with the reason as above.*
+<a id="{prefix}{mm}"></a>**{PREFIX}{mm}** *A requirement of [§1.3 of the overview](../../overview.md#13-success-criteria) on the component as a whole: an order of convergence, conservation to round-off, or a reference test of its topic reproduced, with the reason as above.*
 
 ## Sources
 

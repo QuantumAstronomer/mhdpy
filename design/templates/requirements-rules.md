@@ -4,11 +4,11 @@ Each component of mhdpy is specified by its requirements before it is built (§2
 
 ## 1. Files and identifiers
 
-A component has one requirement document in `design/requirements/`, named by the component in lower case, with hyphens and without articles or commas, as `riemann-solvers.md`. The document is written once the briefs of the component's layer are decided, and before the component is built (§2.3).
+A component has one requirement document in the folder of its stratum within `design/requirements/`, which bears the name of the subpackage of the stratum, so that the documents mirror `src/mhdpy/` and `tests/`. The document is named by the component in lower case, with hyphens and without articles or commas, as `core/riemann-solvers.md`. The document is written once the briefs of the component's layer are decided, and before the component is built (§2.3).
 
 A requirement is identified by the prefix of its component followed by a number of two digits, without a hyphen, as RIEM04. The prefix is a short mnemonic of capitals alone, chosen when the document is begun, named in its head and used by no other component, so that the number that follows it is never read as part of it. The number is given when the requirement is written, padded to two digits so that the identifiers sort in order, and is never reused. A prefix stays with its requirements: if a component is renamed or split, its requirements keep their identifiers, and a new component takes a new prefix. Every citation thus keeps the meaning that it had when it was written.
 
-Documents cite a requirement by a link whose text is its identifier, to the anchor before it, as `[RIEM04](../requirements/riemann-solvers.md#riem04)`. A test names the requirements that it checks at the start of its docstring, as "Checks RIEM04 and RIEM05." (§2.5). Code names the requirements that a function implements in its docstring, as "Implements RIEM04.", and a single line that carries one in a comment beside it, as `## RIEM04`, so that the reasoning that the code leaves out is one search away (§3.2). Commit messages cite requirements by their identifiers alone.
+Documents cite a requirement by a link whose text is its identifier, to the anchor before it, as `[RIEM04](../requirements/core/riemann-solvers.md#riem04)` from a brief. A test names the requirements that it checks at the start of its docstring, as "Checks RIEM04 and RIEM05." (§2.5). Code names the requirements that a function implements in its docstring, as "Implements RIEM04.", and a single line that carries one in a comment beside it, as `## RIEM04`, so that the reasoning that the code leaves out is one search away (§3.2). Commit messages cite requirements by their identifiers alone.
 
 ## 2. The head and the scope
 

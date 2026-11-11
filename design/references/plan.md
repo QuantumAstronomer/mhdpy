@@ -343,6 +343,8 @@ For B1, the first decision brief, 3.2 now records the pointers between a block a
 
 For B5, the fifth decision brief, 3.1 now records the units that `Units` derives, the main constants of `src/units/units.hpp` with their values and the kelvin kept at 1 in code units, read from the copy, and, marked **[GK]**, the release of CODATA to which two of the constants belong and the kind of year, as the author decided.
 
+For B6, the sixth decision brief, 2.16.1 and 2.16.4 now record how `linear_wave` and `shock_tube` form their errors: at the centres of the cells, corrected to cell averages of fourth order with `correct_err`, and with a root mean square that the code forms as the root of the sum of the squares of the $L_1$ errors, read from the copy, as the author decided.
+
 ## Conduction and cooling
 
 The synthesis is kept in `conduction-and-cooling-synthesis.md`. Its sources lie in `reference-works/Conduction and Cooling/Docs/`. They are gathered around [Armillotta, Fraternali and Marinacci](https://arxiv.org/abs/1608.06290) (2016, arXiv:1608.06290), the study of fountain clouds at the disc–corona interface that [§1.1 of the overview](../overview.md#11-goals) takes as the model of the production runs. The collection follows the works that this paper cites on conduction and cooling, newer studies that build on it, and the methods that it leaves out: anisotropic conduction and the forms of radiative cooling beyond its tables. Papers are cited by arXiv identifier, DOI or ADS bibcode, and by their sections, equations, figures and tables. They are downloaded with the author's approval, the older ones from the scans of ADS, and kept in the folder.

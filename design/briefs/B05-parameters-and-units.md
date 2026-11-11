@@ -14,7 +14,9 @@ The brief settles how the parameters of a run reach the modules that use them, a
 
 - [B5D2](#b5d2-the-format-of-the-values) The format of the values: decided.
 
-Still to be written: the record, the system of units, and the constants.
+- [B5D3](#b5d3-the-record) The record: decided.
+
+Still to be written: the system of units, and the constants.
 
 ## B5D1 The declaration of parameters
 
@@ -51,6 +53,24 @@ Still to be written: the record, the system of units, and the constants.
 **Recommendation.** Option B, since the values of a run then stand in a file apart from its code, which one parser reads together with the overrides from the command line, and in which the record can be written for a later run to read back, while TOML tells an integer from a float where the strings of option C cannot. Against option A, the form that the record needs in any case also serves the inputs, and values from Python remain possible as overrides. The option serves correctness, the first priority of §1, as a run can be repeated from its record, and usability, the fourth, through files of a format that Python projects know. It gives up some readability, the third, as the record needs a short writer of mhdpy, which spares the dependency that tomli-w would add.
 
 **Set aside.** None, as option B keeps the values from Python that option A would offer alone, and holds all that the files of option C hold.
+
+## B5D3 The record
+
+**Decision.** In the context of runs that must be repeatable from the record that they leave, facing defaults that may change in the code after a run, every parameter of the modules of a run with its value in use, defaults included, written in TOML as one file of inputs as the run starts (option A), is chosen over the values given alone (B) and every value marked with its source (C). This achieves correctness and readability, as the record alone gives a later run the same values through the simplest writer, accepting a record that shows the values chosen only against the inputs of the run. Decided on 2026-11-11, as recommended.
+
+**Question.** A run records its parameters beside the version and the commit of [B4D6](B04-packaging.md#b4d6-the-version-and-its-record), so that it can be repeated ([§5](../overview.md#5-crosscutting-concepts) of the overview), and [B5D2](#b5d2-the-format-of-the-values) writes the record in TOML, so that a later run can read it as its inputs. Which values the record holds must be settled before its writer is built, as it fixes whether a run can be repeated once a default has changed, and whether a reader of the record can tell the values chosen from the defaults. The record is written as a run starts, before its first step, so that a run that fails still leaves it. The seeds of the random numbers of a run are parameters like any other under [B5D1](#b5d1-the-declaration-of-parameters), declared by the modules that draw them, and the record holds them with the rest. Where outputs and restarts keep it is left to the brief on outputs, restarts and analysis. To be read first are [topic 37, §4](../topics/37-driver-and-control-of-time-step.md#4-assessment), [topic 39, §2.2](../topics/39-output-restarts-and-analysis.md#22-snapshots-in-hdf5) and [§4](../topics/39-output-restarts-and-analysis.md#4-assessment), [pyro 3.3](../references/pyro-synthesis.md#33-driver-simulations-and-runtime-parameters) and [Athena 3.1](../references/athena-synthesis.md#31-configuration-build-and-the-main-loop). **[GK]** A float written as Python represents it, by the shortest string that reads back to it, returns exactly, so that a record in TOML gives back every value of a run.
+
+**Option A: every value in use.** The record holds every parameter of the modules of the run with its value, defaults included, as one file of inputs. pyro writes its full set to a file `inputs.auto` and into its outputs in HDF5, and Athena++ adds each default to its parameters as it reads it, so that the head of its restart files holds every value in use ([pyro 3.3](../references/pyro-synthesis.md#33-driver-simulations-and-runtime-parameters), [Athena 3.1](../references/athena-synthesis.md#31-configuration-build-and-the-main-loop)). For mhdpy, the record alone gives a later run the same values, even after a default has changed in the code, and names every value that the analysis of a run may need. Which values the user chose shows only against the inputs of the run.
+
+**Option B: the values given alone.** The record holds only the values that the user gave, in the file and the overrides, and leaves the defaults to the code whose version and commit stand beside it. No reference records so. For mhdpy, the record is short and shows what was chosen for the run. A default changed in a later commit alters a run repeated from the record unseen, and B4D6 records whether the tree differed from its commit but not how, so that a run made with changes not yet committed cannot be repeated from its record.
+
+**Option C: every value with its source.** As option A, with a comment beside each value that names where it came from: its default, the file, Python or the command line. No reference marks its values so, while pyro keeps beside the values of `inputs.auto` the comments of its files of defaults ([pyro 3.3](../references/pyro-synthesis.md#33-driver-simulations-and-runtime-parameters)). **[GK]** A reader of TOML passes over comments, so that the record still reads back as inputs. For mhdpy, the record shows the full set and the values chosen at once. The reader must carry the source of each value through the overrides of B5D2, and a run repeated from a record marks every value as taken from its file.
+
+**Experiments.** None, since the options differ in which values are written, which no measurement decides.
+
+**Recommendation.** Option A, since the record then gives back every value of a run by itself, even after a default has changed or where the tree held changes never committed, which option B cannot, while its writer writes values alone, which option C would mark at the price of a source carried through every override. The values chosen show against the inputs of the run, which the brief on outputs may keep beside the record. The option serves correctness, the first priority of §1, and readability, the third, through the simplest reader and writer, and gives up a record that shows at a glance which values were chosen.
+
+**Set aside.** Option C would return if records came to be compared across many runs, as in a study of parameters, since marks of the values chosen would show at a glance where runs differ.
 
 ## Sources
 

@@ -12,7 +12,9 @@ The brief settles how the parameters of a run reach the modules that use them, a
 
 - [B5D1](#b5d1-the-declaration-of-parameters) The declaration of parameters: decided.
 
-Still to be written: the format of the values, the record, the system of units, and the constants.
+- [B5D2](#b5d2-the-format-of-the-values) The format of the values: decided.
+
+Still to be written: the record, the system of units, and the constants.
 
 ## B5D1 The declaration of parameters
 
@@ -32,6 +34,25 @@ Still to be written: the format of the values, the record, the system of units, 
 
 **Set aside.** Option B would return if the parameters of a module came to depend on values read while a run is built, such as a table that names parameters of its own, since reads at the point of use follow them without a declaration made in advance.
 
+## B5D2 The format of the values
+
+**Decision.** In the context of values that a user gives for a run and that its record must give back, facing a standard library that reads TOML but does not write it, files of TOML with one table to each class of [B5D1](#b5d1-the-declaration-of-parameters), overridden by values from Python and from the command line that may change only declared names, with the record written in TOML by a writer of mhdpy (option B), are chosen over Python alone (A) and files of sections read by `configparser` (C). This achieves correctness and usability, as a run can be repeated from its record and its values change without editing a script, accepting a writer of mhdpy for the record. Decided on 2026-11-11, as recommended.
+
+**Question.** The reader of [B5D1](#b5d1-the-declaration-of-parameters) receives the values that a user gives for a run, checks them against the classes of its modules and fills the defaults. The form in which the values are given must be settled with the reader, since it fixes what the reader parses, how values given in several places override each other, as the tests of [§3.1](../overview.md#31-infrastructure) of the overview check, and in which form the record of a run can be read back. A problem setup is written in Python ([§2](../overview.md#2-context-of-a-run) of the overview), in a form that the brief on problem setups decides, and the launching of a run is left to the brief on the driver. To be read first are [topic 37, §2.5](../topics/37-driver-and-control-of-time-step.md#25-runtime-parameters-and-units), [pyro 3.3](../references/pyro-synthesis.md#33-driver-simulations-and-runtime-parameters), [Athena 3.1](../references/athena-synthesis.md#31-configuration-build-and-the-main-loop) and [Ulula 3.3](../references/ulula-synthesis.md#33-the-runtime-function). **[GK]** JSON, which the standard library reads and writes, is left out, as it allows no comments in files written by hand, and so is YAML, whose reader would join the dependencies at run time against [B4D4](B04-packaging.md#b4d4-the-dependencies).
+
+**Option A: Python alone.** The script that runs a problem gives the values as instances of the classes of B5D1, and no file of parameters exists. Ulula passes its parameters so, as arguments of its runtime function and of the constructor of its scheme ([Ulula 3.2](../references/ulula-synthesis.md#32-the-simulation-object-and-its-data), [3.3](../references/ulula-synthesis.md#33-the-runtime-function)). **[GK]** For mhdpy, strict checking follows each value where it is written, the reader parses nothing, and one language serves problems and runs. A run is repeated by its script, a variant by a copy of the script or a loop in Python, and a value can be changed from the command line only by code of the script. The record of a run still needs a form in which a later run can read it.
+
+**Option B: files of TOML.** A file in the format TOML gives one table to each class of B5D1, with lines `name = value` and comments, and holds integers, floats, booleans, strings and arrays as such. Values given from Python as a dictionary, and from the command line as `table.name=value`, override those of the file, which override the defaults, and each may change only a declared name, as pyro and Athena++ let theirs change only names they know ([pyro 3.3](../references/pyro-synthesis.md#33-driver-simulations-and-runtime-parameters), [Athena 3.1](../references/athena-synthesis.md#31-configuration-build-and-the-main-loop)). **[GK]** The standard library reads TOML from Python 3.11, the format of `pyproject.toml`, but leaves writing it to packages such as tomli-w ([PEP 680](#pep-680)). An override from the command line is itself a line of TOML, which the same reader parses. For mhdpy, the values of a run stand in a file apart from its code, to be kept, compared and changed without editing a script, and TOML tells an integer from a float, so that `nscalars = 1.0` fails as the wrong type. A record in TOML, which a later run could read, needs a writer of mhdpy for tables of single values and arrays, unless B4D4 admits a further dependency.
+
+**Option C: files of sections, as pyro and Athena++.** A file of sections, one to each class of B5D1, with lines `name = value` and comments, as pyro reads `[section]` and Athena++ `<block>` ([pyro 3.3](../references/pyro-synthesis.md#33-driver-simulations-and-runtime-parameters), [Athena 3.1](../references/athena-synthesis.md#31-configuration-build-and-the-main-loop)), with overrides from Python and the command line as in option B. **[GK]** The module `configparser` of the standard library reads and writes such files, keeping each value as a string, which the reader converts by the type that B5D1 declares, once the substitution of values that it performs by default is switched off and its folding of names to lower case is allowed for. For mhdpy, the record is written and read by the standard library alone, in the format of the references, at the price of values without types of their own and of arrays written by a convention of mhdpy.
+
+**Experiments.** None, since the standard library and the references settle what each format holds and how it is read and written.
+
+**Recommendation.** Option B, since the values of a run then stand in a file apart from its code, which one parser reads together with the overrides from the command line, and in which the record can be written for a later run to read back, while TOML tells an integer from a float where the strings of option C cannot. Against option A, the form that the record needs in any case also serves the inputs, and values from Python remain possible as overrides. The option serves correctness, the first priority of §1, as a run can be repeated from its record, and usability, the fourth, through files of a format that Python projects know. It gives up some readability, the third, as the record needs a short writer of mhdpy, which spares the dependency that tomli-w would add.
+
+**Set aside.** None, as option B keeps the values from Python that option A would offer alone, and holds all that the files of option C hold.
+
 ## Sources
 
 - <a id="pep-557"></a>PEP 557, Data Classes, Python Enhancement Proposals, [peps.python.org/pep-0557](https://peps.python.org/pep-0557/).
+- <a id="pep-680"></a>PEP 680, tomllib: Support for parsing TOML in the standard library, Python Enhancement Proposals, [peps.python.org/pep-0680](https://peps.python.org/pep-0680/).

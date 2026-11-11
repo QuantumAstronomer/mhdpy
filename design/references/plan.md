@@ -208,6 +208,8 @@ In the third part of the review of the topic summaries, two passages were correc
 
 For B1, the first decision brief, 3.1 now records that the subpackages import one another in one direction only, read from the imports of the code, as the author decided.
 
+For B5, the fifth decision brief, 3.5 now records the values of the three constants of `ulula/physics/constants.py`, read from the code, and, marked **[GK]**, the release of CODATA to which they belong and the kind of year of the module `units`, as the author decided.
+
 ## Athena and Athena++
 
 The synthesis is kept in `athena-synthesis.md`. Its sources are the code of Athena++ in `reference-works/Athena/Code` and thirteen papers in `reference-works/Athena/Docs`, each named by its arXiv identifier and each the latest version on arXiv. Seven describe Athena, the predecessor of Athena++ written in C, whose code is not among the sources: Gardiner and Stone (2005, `0501557v1.pdf`; 2008, `0712.2634v1.pdf`) on the unsplit integrator with constrained transport (CT) in two and three dimensions, Stone et al. (2008, `0804.0402v1.pdf`) on the code, Skinner and Ostriker (2010, `1004.2487v1.pdf`) on cylindrical coordinates, Stone and Gardiner (2010, `1006.0139v1.pdf`) on the shearing box, Bai and Stone (2010, `1005.4980v2.pdf`) on particles, and Beckwith and Stone (2011, `1101.3573v1.pdf`) on relativistic MHD. Six describe Athena++: Stone et al. (2020, `2005.06651v1.pdf`) on the code, Felker and Stone (2018, `1711.07439v2.pdf`) on its fourth-order method, White, Stone and Gammie (2016, `1511.00943v2.pdf`) on general relativistic MHD, Tomida and Stone (2023, `2302.13903v1.pdf`) on multigrid, Coleman (2020, `1909.05274v3.pdf`) on general equations of state, and Mullen, Hanawa and Gammie (2021, `2012.01340v1.pdf`) on self-gravity. The last five come from the list of publications on the website of Athena++, athena-astro.app/publications.html, as the papers on modules that the synthesis digests in full. The others on that list describe modules digested in outline, a relativistic radiation module that this copy lacks, or codes outside it. The wiki of Athena++ is not a source, but its pages may be consulted as web sources.
@@ -338,6 +340,8 @@ In the third part of the review of the topic summaries, four passages were read 
 In the fourth part of the review of the topic summaries, three passages were corrected. 3.1 now ties communication between processes to parallel runs, as Stone et al. (2008, §7) do, in the comparison with ZEUS on one processor, 3.2 gives its eight and 26 neighbours for a uniform grid and refers to 3.3 for the 12 and 56 with refinement, and 3.7 excludes the restart files from what `athena_read.py` reads.
 
 For B1, the first decision brief, 3.2 now records the pointers between a block and the objects that it creates, and the includes in both directions between the folders of `src/` that follow from them, read from the copy, as the author decided. The count of the folders that include each other is marked **[GK]**, as it was made for the brief.
+
+For B5, the fifth decision brief, 3.1 now records the units that `Units` derives, the main constants of `src/units/units.hpp` with their values and the kelvin kept at 1 in code units, read from the copy, and, marked **[GK]**, the release of CODATA to which two of the constants belong and the kind of year, as the author decided.
 
 ## Conduction and cooling
 

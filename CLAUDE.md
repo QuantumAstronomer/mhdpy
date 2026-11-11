@@ -58,7 +58,7 @@ Texts read as prose, with lists only where they help, and without words added fo
 
 ### 3.1 Writing
 
-Documents use a passive, scientific voice and name neither the author nor the assistant. Where an agent is needed, the text says "the author". This file is the exception, as it names the assistant. Sentences are short, without contractions. Spelling is British: discretisation, licence, centred. Mathematics is typeset in inline LaTeX (`$...$`), never as Unicode symbols and without displayed equations. Only the topic summaries (§4.1) may display key formulas, as `$$...$$`. A fraction is written with a slash where that reads better in a sentence. In briefs, syntheses and summaries, anything not taken from the reference material is marked **[GK]**, for general knowledge.
+Documents use a passive, scientific voice and name neither the author nor the assistant. Where an agent is needed, the text says "the author". This file is the exception, as it names the assistant. Sentences are short, without contractions. Spelling is British: discretisation, licence, centred. Mathematics is typeset in inline LaTeX (`$...$`), never as Unicode symbols and without displayed equations. An inline formula opens with a symbol, never with a digit, which some viewers take for an amount of money: `$k\epsilon$ with $k = 2^{12}$` rather than `$2^{12}\epsilon$`. Only the topic summaries (§4.1) may display key formulas, as `$$...$$`. A fraction is written with a slash where that reads better in a sentence. In briefs, syntheses and summaries, anything not taken from the reference material is marked **[GK]**, for general knowledge.
 
 ### 3.2 Code
 

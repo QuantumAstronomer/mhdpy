@@ -1,0 +1,4 @@
+build,cflags,seconds,fused_in_assembly,fused_in_module
+plain,none,15.1,0,0
+within,-mfma,7.3,125,125
+across,-mfma -ffp-contract=fast,7.4,88,88

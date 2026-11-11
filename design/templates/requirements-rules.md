@@ -24,7 +24,7 @@ Each requirement is one paragraph, preceded by its anchor and opened by its iden
 
 The rest of the paragraph is the reason: why the requirement holds, in a few sentences, with links to the sub-decisions, experiments and topic sections that it rests on. It holds the reasoning that the code cites and leaves out, so that docstrings and comments can stay short (§3.2). Formulas stay in the topics and syntheses, which the reason links.
 
-A requirement states only what a decided sub-decision chose, or what follows from it. Where it would contradict a decided sub-decision, the work stops and names the sub-decision, and a new brief supersedes it first (§2.4). Where it would make a choice that no sub-decision has made, such as between an error and a floor for a negative pressure, the choice becomes a sub-decision first, of its brief while that is open or of a new brief, as every architectural choice is made in a brief (§2.4).
+A requirement states only what a decided sub-decision chose, or what follows from it. Where it would contradict a decided sub-decision, the work stops and names the sub-decision, and a new brief supersedes it first (§2.4). Where it would make a choice that no sub-decision has made, such as between an error and a floor for a negative pressure, the choice becomes a sub-decision first, of its brief while that is open or of a new brief, as every architectural choice is made in a brief (§2.4). A choice of interface alone, such as the name of a module, a function or a key, or the type of an error, is settled in the requirements instead. It is put to the author while the document is written, and the reason of the requirement records it.
 
 ## 4. Writing
 

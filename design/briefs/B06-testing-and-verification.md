@@ -18,8 +18,9 @@ The brief builds on [B1D4](B01-strata-in-package.md#b1d4-the-place-of-the-tests)
 - [B6D4](#b6d4-exact-and-round-off-comparisons) Exact and round-off comparisons: decided.
 - [B6D5](#b6d5-conservation) Conservation: decided.
 - [B6D6](#b6d6-regression-tests) Regression tests: decided.
+- [B6D7](#b6d7-the-check-of-requirements) The check of requirements: decided.
 
-Still to be written: the check of requirements, and a guard against stale kernels.
+Still to be written: a guard against stale kernels.
 
 ## B6D1 The place of the tools
 
@@ -126,6 +127,24 @@ Still to be written: the check of requirements, and a guard against stale kernel
 **Recommendation.** Option B, since an exact comparison on the platform of the benchmark shows every change of the arithmetic, such as the build without `-O3` of the trial of B6E1, which the rule of option A and the tolerances of option C let pass, while the rule still guards the runners of B4D7 against changes of the algorithm. The benchmarks stay small, on small grids and over at most 64 steps, and their renewal is a deliberate step, committed with the change that causes it. The option serves correctness, the first priority of §1, and gives up some readability, the third, as each benchmark carries its platform and every intended change of the arithmetic renews the benchmarks.
 
 **Set aside.** Option A would return if the development came to move between machines, as one benchmark compared to round-off serves them all. Option C would return for problems that must run longer than the 64 steps of the rule of B6D4, such as a cloud that a wind disrupts, whose stored results only loose tolerances can follow.
+
+## B6D7 The check of requirements
+
+**Decision.** In the context of tests that cite their requirements in their docstrings and are written one at a time, facing citations that may be missing, mistyped or withdrawn and requirements whose tests are still to come, a test at the top of `tests/` that reads the tests and the requirements with the module `ast`, fails on a test that cites nothing or a requirement that is unknown or withdrawn, warns of requirements without tests and prints the full list when run as a script (option A), is chosen over a plugin of pytest (B) and a script run by hand (C). This achieves correctness and readability, as no commit can cite a requirement that does not exist and the check takes the form of B1D5, accepting the full list outside the summary of a run. Decided on 2026-11-11, as recommended.
+
+**Question.** Every test names the requirements that it checks at the start of its docstring, as "Checks RIEM04 and RIEM05.", and the [rules of the requirements, §5](../templates/requirements-rules.md#5-agreement-and-change), ask for a small check, derived from the tests and built with those of the first component, that lists each requirement with its tests, the requirements without tests and the tests that cite a withdrawn requirement. How the check reads the citations, when it runs and what makes it fail must be settled before the requirements of stratum 1 are written, as the first component brings it. Requirements come before their tests, which follow one at a time, each committed with its code (§2.5, §2.6 and §3.4 of CLAUDE.md), so that a requirement without a test is normal until its component is finished, while a test that cites nothing, or a requirement that does not exist or is withdrawn, is always a fault. No reference traces requirements to tests. To be read first are the [rules of the requirements, §1](../templates/requirements-rules.md#1-files-and-identifiers) and [§5](../templates/requirements-rules.md#5-agreement-and-change), and [B1D5](B01-strata-in-package.md#b1d5-the-check-of-the-rule), whose check runs as a test.
+
+**Option A: a test at the top of `tests/`, after B1D5.** A test reads, with the module `ast` of the standard library, the docstring of every test in `tests/`, and the anchors and the withdrawn requirements in `design/requirements/`. It fails on a test that cites nothing, or a requirement that is unknown or withdrawn, and names each requirement without a test in a warning, which pytest lists at the end of a run. Run as a script, the same module prints each requirement with its tests. **[GK]** For mhdpy, the check runs with every full run of the tests, as the check of the rule does, reads the files without importing them, and needs no dependency. It sees the tests as written rather than as pytest collects them, so that a test made at run time would escape it, and it needs tests of its own, as [§3.1](../overview.md#31-infrastructure) of the overview asks of every tool of testing.
+
+**Option B: a plugin of pytest in `tests/conftest.py`.** Hooks of pytest read the docstring of each test as pytest collects it, fail the run on a fault, and print each requirement with its tests in the summary of the run. **[GK]** pytest calls one hook once it has collected the tests and another as it writes its summary, and a file `conftest.py` at the top of `tests/` holds them for every run. For mhdpy, the check sees exactly the tests that run, those multiplied by parameters included, and its list stands at the end of every run. A run of some tests alone, as §2.6 asks after every function, then lists the requirements of the others as without tests, unless the plugin tells a full run from a partial one, and the check rests on the interface of the hooks.
+
+**Option C: a script run by hand.** A script reads the tests and the requirements as in option A and prints the list, run before a requirement document is agreed or a component is judged finished. **[GK]** For mhdpy, the check stays apart from the tests and costs nothing in a run. A mistyped citation, which names a requirement that does not exist, then passes every run until the script is run.
+
+**Experiments.** None, since the options differ in when the check runs and what it sees, which the documentation of pytest and of the module `ast` settles.
+
+**Recommendation.** Option A, since a test at the top of `tests/` fails every full run, and so every commit, on a citation that is missing, unknown or withdrawn, as the check of the rule fails on a forbidden import ([B1D5](B01-strata-in-package.md#b1d5-the-check-of-the-rule)), while the requirements without tests, normal until a component is finished, show as warnings without failing. Reading the files rather than the collected tests keeps the check free of partial runs and of the hooks of pytest, and the full list remains a script away. The option serves correctness, the first priority of §1, as no test can cite a requirement that does not exist, and readability, the third, as the check takes the form of B1D5. It gives up the list in the summary of every run that option B would print.
+
+**Set aside.** Option B would return if tests came to be made at run time, which only the tests that pytest collects show, provided that the plugin tells a full run from a partial one.
 
 ## Sources
 

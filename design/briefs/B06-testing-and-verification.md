@@ -19,8 +19,7 @@ The brief builds on [B1D4](B01-strata-in-package.md#b1d4-the-place-of-the-tests)
 - [B6D5](#b6d5-conservation) Conservation: decided.
 - [B6D6](#b6d6-regression-tests) Regression tests: decided.
 - [B6D7](#b6d7-the-check-of-requirements) The check of requirements: decided.
-
-Still to be written: a guard against stale kernels.
+- [B6D8](#b6d8-a-guard-against-stale-kernels) A guard against stale kernels: decided.
 
 ## B6D1 The place of the tools
 
@@ -145,6 +144,24 @@ Still to be written: a guard against stale kernels.
 **Recommendation.** Option A, since a test at the top of `tests/` fails every full run, and so every commit, on a citation that is missing, unknown or withdrawn, as the check of the rule fails on a forbidden import ([B1D5](B01-strata-in-package.md#b1d5-the-check-of-the-rule)), while the requirements without tests, normal until a component is finished, show as warnings without failing. Reading the files rather than the collected tests keeps the check free of partial runs and of the hooks of pytest, and the full list remains a script away. The option serves correctness, the first priority of §1, as no test can cite a requirement that does not exist, and readability, the third, as the check takes the form of B1D5. It gives up the list in the summary of every run that option B would print.
 
 **Set aside.** Option B would return if tests came to be made at run time, which only the tests that pytest collects show, provided that the plugin tells a full run from a partial one.
+
+## B6D8 A guard against stale kernels
+
+**Decision.** In the context of kernels that an editable installation under setuptools keeps in their old compiled version until a new installation, facing tests run after every function that would judge code that no longer exists, a fingerprint of the sources of each kernel recorded when it is built, compared by a hook in `tests/conftest.py` before any test runs and stopping the run where it differs (option B), is chosen over no guard (A) and a rebuild before the run (C). This achieves correctness, as no test runs on a stale kernel, accepting a fingerprint in the build. Decided on 2026-11-11, as recommended.
+
+**Question.** Under setuptools, an editable installation holds each compiled kernel as it was when installed, so that an edited kernel keeps running in its old version until a new installation, without a warning ([B4D2](B04-packaging.md#b4d2-the-build-backend), [B4E1](../experiments/B04-packaging/E1-builds-of-each-backend/README.md)), as an import finds the compiled module before its source of the same name ([B2D3](B02-kernels.md#b2d3-a-simple-version-beside-the-fast-one)). In the way of working of §2.6 of CLAUDE.md, which runs the tests after every function, a test may then pass or fail on a kernel that no longer exists, in every version that [B4D3](B04-packaging.md#b4d3-when-the-physics-is-chosen) compiles from the edited source. Whether the tests guard against this, and how, is settled with the other tools of testing, while the guard is built with the first kernel. No reference compiles modules of Python in this way ([topic 35, §2.5](../topics/35-packaging-configuration-and-build.md#25-compiled-kernels-and-their-builds)).
+
+**Option A: no guard.** Every change to a kernel is followed by a new editable installation, as B4D2 accepts. For mhdpy, nothing is added, and a forgotten installation shows only by its effects, a test that passes on old code or fails for no visible cause, which a learner may take for a fault of the new code.
+
+**Option B: a guard that stops the run.** When a kernel is built, a fingerprint of its source, its file `.pxd` and the header of its version is recorded with it, and a hook in `tests/conftest.py` compares the fingerprint of every kernel with that of its present files before any test runs, stopping the run with the command of a new installation where they differ. **[GK]** pytest loads the file `conftest.py` at the top of `tests/` for every run, of a single test too, and calls a hook as the session starts. Times of modification would serve without a change to the build, but git gives each file the time of its checkout, and a file copied with its time can be older than its module, so that they warn without cause or miss a change. For mhdpy, no test runs on a stale kernel, the partial runs of §2.6 included, at the price of a fingerprint that `setup.py` writes and a check of a few lines. The same fingerprint lets a run from a checkout tell whether its kernels match the commit that [B4D6](B04-packaging.md#b4d6-the-version-and-its-record) records.
+
+**Option C: a rebuild before the run.** As option B, but where a fingerprint differs, the hook runs the new installation itself before the tests. **[GK]** For mhdpy, no step is forgotten. Every run after a change to a kernel, however, waits for the compilation of all kernels and their versions, 9 to 10 s for two kernels in B4E1 and more with every kernel and version, and the tests start an installer within the environment that runs them, which ties them to uv and can fail halfway, leaving the installation unknown.
+
+**Experiments.** None, since B4E1 measured what a change to a kernel does under setuptools, and the options differ in what the tests do about it.
+
+**Recommendation.** Option B, since a stale kernel makes a test judge code that no longer exists, which in the way of working of §2.6 can follow every edit of a kernel, and a guard that stops each run, a partial one included, with the command to reinstall, prevents it at the cost of a fingerprint and a few lines. Against option C, the installation stays a step of its own, whose time and failures show apart from the tests. The option serves correctness, the first priority of §1, and gives up some readability, the third, by a fingerprint in the build.
+
+**Set aside.** Option C would return if a new installation came to compile only the kernels that changed, as the backends set aside in B4D2 rebuild them, since a rebuild before the run would then take little time.
 
 ## Sources
 

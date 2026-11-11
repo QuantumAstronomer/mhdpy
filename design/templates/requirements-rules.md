@@ -32,7 +32,7 @@ Requirement documents follow §3.1, as the briefs do. A reason rests on the brie
 
 ## 5. Agreement and change
 
-A requirement document is agreed with the author before its tests are written (§2.5), after which its tests and code follow one piece at a time (§2.6). Once agreed, a change of wording that keeps the meaning is made in place. A change of meaning withdraws the requirement and adds a new one with the next number. The withdrawn paragraph stays and opens with "Withdrawn on {date}, replaced by RIEM09." or, where nothing replaces it, with the reason. The tests and code that cite it move to its successor. Every change is agreed with the author, and the status line records the date of the latest agreement.
+A requirement document is agreed with the author before its tests are written (§2.5), after which its tests and code follow one piece at a time (§2.6). Once agreed, a change of wording that keeps the meaning is made in place. A change of meaning withdraws the requirement and adds a new one with the next number. The withdrawn paragraph stays and opens with "Withdrawn on {date}, replaced by RIEM09." or, where nothing replaces it, with "Withdrawn on {date}," and the reason. The tests and code that cite it move to its successor. Every change is agreed with the author, and the status line records the date of the latest agreement.
 
 Which tests name which requirements is derived from the tests themselves, never kept by hand, so that no second list can drift. A small check, built with the tests of the first component, lists each requirement with its tests, the requirements that have none, and the tests that cite a withdrawn requirement.
 

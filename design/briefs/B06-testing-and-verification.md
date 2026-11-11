@@ -1,8 +1,8 @@
 # B6 Testing and verification
 
-**Status.** Open.
+**Status.** Decided on 2026-11-11.
 
-**Topics.** [Topic 28](../topics/28-verification-and-testing.md), with [topic 41, §2.4](../topics/41-vectorised-and-compiled-kernels.md#24-one-code-over-several-backends) for the comparison of kernels with their references and [topic 35, §2.5](../topics/35-packaging-configuration-and-build.md#25-compiled-kernels-and-their-builds) for the builds of compiled kernels.
+**Topics.** [Topic 28](../topics/28-verification-and-testing.md), with [topic 30, §2.2](../topics/30-shock-tubes-and-interacting-blast-waves.md#22-sods-shock-tube) for the symmetry of mirror images and [topic 35, §2.5](../topics/35-packaging-configuration-and-build.md#25-compiled-kernels-and-their-builds) for the builds of compiled kernels.
 
 **Supersedes.** None.
 

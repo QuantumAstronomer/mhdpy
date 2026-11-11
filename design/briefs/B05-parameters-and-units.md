@@ -1,8 +1,8 @@
 # B5 Parameters and units
 
-**Status.** Open.
+**Status.** Decided on 2026-11-11.
 
-**Topics.** [Topic 37, §2.5](../topics/37-driver-and-control-of-time-step.md#25-runtime-parameters-and-units), with [topic 38, §2](../topics/38-problem-setups-and-user-functions.md#2-designs) for the parameters that problems declare, [topic 39, §2.2](../topics/39-output-restarts-and-analysis.md#22-snapshots-in-hdf5) for the parameters that outputs record, and [topic 2, §2.1](../topics/02-equations-of-state.md#21-the-ideal-and-the-isothermal-gas), [topic 17, §2.1](../topics/17-thermal-conduction.md#21-the-classical-flux-and-its-suppression) and [topic 20, §2.1](../topics/20-radiative-cooling.md#21-cooling-in-the-equation-of-the-energy) for the units and constants that the temperature, conduction and cooling need.
+**Topics.** [Topic 37, §2.5](../topics/37-driver-and-control-of-time-step.md#25-runtime-parameters-and-units) and [§4](../topics/37-driver-and-control-of-time-step.md#4-assessment), with [topic 38, §2](../topics/38-problem-setups-and-user-functions.md#2-designs) and [§4](../topics/38-problem-setups-and-user-functions.md#4-assessment) for the parameters that problems declare, [topic 39, §2.2](../topics/39-output-restarts-and-analysis.md#22-snapshots-in-hdf5) and [§4](../topics/39-output-restarts-and-analysis.md#4-assessment) for the parameters that outputs record, and [topic 2, §2.1](../topics/02-equations-of-state.md#21-the-ideal-and-the-isothermal-gas) and [§2.2](../topics/02-equations-of-state.md#22-the-internal-energy-and-floors), [topic 17, §2.1](../topics/17-thermal-conduction.md#21-the-classical-flux-and-its-suppression) and [topic 20, §2.1](../topics/20-radiative-cooling.md#21-cooling-in-the-equation-of-the-energy) for the units and constants that the temperature, the floors, conduction and cooling need.
 
 **Supersedes.** None.
 

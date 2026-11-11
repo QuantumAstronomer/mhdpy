@@ -14,8 +14,7 @@ The brief settles how the parameters of a run reach the modules that use them, a
 - [B5D2](#b5d2-the-format-of-the-values) The format of the values: decided.
 - [B5D3](#b5d3-the-record) The record: revised.
 - [B5D4](#b5d4-the-system-of-units) The system of units: decided.
-
-Still to be written: the constants.
+- [B5D5](#b5d5-the-constants) The constants: decided.
 
 ## B5D1 The declaration of parameters
 
@@ -89,7 +88,29 @@ Still to be written: the constants.
 
 **Set aside.** Option B would return if keeping each value both as given and as converted proved a source of faults, as parameters in code units are kept once.
 
+## B5D5 The constants
+
+**Decision.** In the context of code units and named units that rest on values in cgs, facing references whose constants belong to releases of 1986 and 2014, a module of the infrastructure that holds each constant in cgs with the value of its current source cited beside it, the SI where it fixes a constant, CODATA 2022 for the measured ones and the IAU for the astronomical unit and the parsec, with the Julian year (option B), is chosen over the values of Athena++ (A) and the constants of a package (C). This achieves correctness, as every value can be checked against its source, accepting a module kept by hand and raised with each release of CODATA. Decided on 2026-11-11, as recommended.
+
+**Question.** The code units of [B5D4](#b5d4-the-system-of-units) rest on base units given in cgs, the constants that cooling and conduction need are converted from cgs as a run starts, and the units that a declaration may name, such as the parsec and the megayear, are defined by their values in cgs. Which values these take, and from which source, must be settled before the first module that uses them, since they set the temperature of every cell and the rates of cooling and conduction, and are what the tests of units against their constants check ([§3.1](../overview.md#31-infrastructure) of the overview). The first pass needs Boltzmann's constant, the masses of the proton, the electron and the atomic mass unit, and the parsec and the year, and later briefs add theirs, as self-gravity the gravitational constant. Which of these masses measures the mean mass of a particle is left to the brief on equations of state. To be read first are [Athena 3.1](../references/athena-synthesis.md#31-configuration-build-and-the-main-loop) and [Ulula 3.5](../references/ulula-synthesis.md#35-units). **[GK]** Since the revision of the SI in 2019, Boltzmann's constant is exact, and CODATA 2022 gives the latest values of the measured constants, such as the masses of the proton and the electron and the gravitational constant ([Mohr et al.](#mohr-et-al-2025) 2025).
+
+**Option A: the values of Athena++.** The constants are those of Athena++: Boltzmann's constant and the gravitational constant of CODATA 1986, a mass of hydrogen of $1.6733 \times 10^{-24}$ g, the Julian year and a parsec of nine digits, each held in cgs and in code units ([Athena 3.1](../references/athena-synthesis.md#31-configuration-build-and-the-main-loop)). **[GK]** For mhdpy, a run uses the values of the code whose solutions the author trusts, so that a result that departs from one of Athena++ does not depart by its constants. Boltzmann's constant then lies 6.5 parts in a million above its exact value, far below the uncertainty of any cooling function, but the values of 1986 stand in no current table, so that the tests check them against the copy of another code rather than against a source.
+
+**Option B: current values in a module of mhdpy.** A module of the infrastructure holds each constant in cgs with the value of its current source, cited beside it: the SI for the constants that it fixes, CODATA 2022 for the measured ones, the IAU for the astronomical unit, 149 597 870 700 m exactly, and for the parsec, exactly $648\,000/\pi$ astronomical units ([IAU 2012](#iau-2012-b2); [Mamajek et al.](#mamajek-et-al-2015) 2015, note 4), and the Julian year of 365.25 days. Ulula keeps its constants in a module of its own in this way, with the values of CODATA 2014 ([Ulula 3.5](../references/ulula-synthesis.md#35-units)). **[GK]** For mhdpy, every value is current and traceable, exact where the SI and the IAU make it so, and the tests check each against the digits of its source and the identities that link them, as the parsec to the astronomical unit. A later release of CODATA changes the measured values in their last digits, which a release of mhdpy takes up and the record of its version names ([B4D6](B04-packaging.md#b4d6-the-version-and-its-record)).
+
+**Option C: the constants of a package.** The constants come from a package that keeps them, as SciPy keeps those of CODATA 2022 in `scipy.constants` ([SciPy](#scipy-constants)), or Astropy, which adds those of the IAU. No reference does so, and Ulula, which depends on SciPy, keeps constants of its own ([Ulula 3.1](../references/ulula-synthesis.md#31-packaging-and-installation), [3.5](../references/ulula-synthesis.md#35-units)). **[GK]** For mhdpy, no value is kept by hand, but a package that takes some 70 MB once installed, as SciPy does, would join the dependencies at run time for some ten numbers, against [B4D4](B04-packaging.md#b4d4-the-dependencies), and the values would change with a release of the package, which the lock of B4D4 fixes for the tests but not for users.
+
+**Experiments.** None, since the sources of the values and the documentation of the packages settle what each option holds.
+
+**Recommendation.** Option B, since every constant then has a current source against which its tests check it, exact where the SI and the IAU fix it, without the dependency of some 70 MB that option C would add against B4D4 for some ten numbers, while the values of option A, of 1986, could be checked only against the copy of another code. Trusting the solutions of Athena++ does not require its constants, which differ from the current ones far less than the physics that uses them is known. The option serves correctness, the first priority of §1, and gives up none, at the price of a module whose values are kept by hand and raised with a new release of CODATA.
+
+**Set aside.** Option C would return if a later brief made SciPy a dependency at run time, as its constants would then cost nothing more.
+
 ## Sources
 
+- <a id="iau-2012-b2"></a>International Astronomical Union, Resolution B2 of the XXVIII General Assembly, on the re-definition of the astronomical unit of length, Beijing (2012), [iauarchive.eso.org/static/resolutions/IAU2012_English.pdf](https://iauarchive.eso.org/static/resolutions/IAU2012_English.pdf).
+- <a id="mamajek-et-al-2015"></a>Mamajek, E. E., Torres, G., Prša, A. et al., IAU 2015 Resolution B2 on recommended zero points for the absolute and apparent bolometric magnitude scales (2015), [arXiv:1510.06262](https://arxiv.org/abs/1510.06262), note 4 on the parsec.
+- <a id="mohr-et-al-2025"></a>Mohr, P. J., Newell, D. B., Taylor, B. N. and Tiesinga, E., CODATA recommended values of the fundamental physical constants: 2022, Reviews of Modern Physics 97, 025002 (2025), [arXiv:2409.03787](https://arxiv.org/abs/2409.03787), [doi:10.1103/RevModPhys.97.025002](https://doi.org/10.1103/RevModPhys.97.025002).
 - <a id="pep-557"></a>PEP 557, Data Classes, Python Enhancement Proposals, [peps.python.org/pep-0557](https://peps.python.org/pep-0557/).
 - <a id="pep-680"></a>PEP 680, tomllib: Support for parsing TOML in the standard library, Python Enhancement Proposals, [peps.python.org/pep-0680](https://peps.python.org/pep-0680/).
+- <a id="scipy-constants"></a>SciPy, the documentation of `scipy.constants`, release 1.18, with the values of CODATA 2022, [docs.scipy.org/doc/scipy/reference/constants.html](https://docs.scipy.org/doc/scipy/reference/constants.html).

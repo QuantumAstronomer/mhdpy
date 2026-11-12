@@ -6,8 +6,15 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mhdpy"
+## Python from 3.14 in both of its builds (B4D1), the floor rising as SPEC 0 drops versions (PACK08)
+requires-python = ">=3.14"
+## NumPy alone at run time, from the first release with wheels for 3.14 and 3.14t, without a cap (B4D4, PACK09)
+dependencies = ["numpy>=2.3.2"]
 ## the version is derived from git at each build (PACK13)
 dynamic = ["version"]
+## the BSD licence of three clauses by its SPDX expression (B4D5, PACK11)
+license = "BSD-3-Clause"
+license-files = ["LICENSE"]
 
 ## the tools of development, which the published metadata leaves out and uv.lock fixes (B4D4)
 [dependency-groups]
@@ -15,6 +22,7 @@ dev = [
     "pytest>=9.0",          ## 9.0 reads the native table [tool.pytest] and has the strict mode
     "pyright",              ## the judge of the types before each commit (CLAUDE.md §3.4)
     "import-linter>=2.16",  ## the check of the rule of imports (B1D5), with the contracts of [tool.importlinter]
+    "packaging",            ## the parser of versions and specifiers in the tests of the metadata (PACK08, PACK09)
 ]
 
 ## setuptools builds from src/ alone (PACK01), so that no stale mhdpy.egg-info appears at the root

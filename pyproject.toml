@@ -12,8 +12,9 @@ dynamic = ["version"]
 ## the tools of development, which the published metadata leaves out and uv.lock fixes (B4D4)
 [dependency-groups]
 dev = [
-    "pytest>=9.0",  ## 9.0 reads the native table [tool.pytest] and has the strict mode
-    "pyright",      ## the judge of the types before each commit (CLAUDE.md §3.4)
+    "pytest>=9.0",          ## 9.0 reads the native table [tool.pytest] and has the strict mode
+    "pyright",              ## the judge of the types before each commit (CLAUDE.md §3.4)
+    "import-linter>=2.16",  ## the check of the rule of imports (B1D5), with the contracts of [tool.importlinter]
 ]
 
 ## setuptools builds from src/ alone (PACK01), so that no stale mhdpy.egg-info appears at the root
@@ -35,3 +36,56 @@ addopts = ["--ignore=reference-works"]
 include = ["src", "tests"]
 pythonVersion = "3.14"
 typeCheckingMode = "strict"
+
+## the rule of imports (B1D2 to B1D4), each contract named after its requirement, which tests/test_package.py reads
+[tool.importlinter]
+root_packages = ["mhdpy", "tests"]
+
+[[tool.importlinter.contracts]]
+name = "The strata import none above them (PACK03)"
+type = "layers"
+layers = ["mhdpy.driver", "mhdpy.physics", "mhdpy.core", "mhdpy.mesh", "mhdpy.infrastructure"]
+
+[[tool.importlinter.contracts]]
+name = "The siblings within each stratum import each other without a cycle (PACK04)"
+type = "acyclic_siblings"
+ancestors = ["mhdpy.infrastructure", "mhdpy.mesh", "mhdpy.core", "mhdpy.physics", "mhdpy.driver"]
+
+[[tool.importlinter.contracts]]
+name = "The top package imports no stratum (PACK05)"
+type = "forbidden"
+## the top package as a module alone (as_packages below), since as a package it would hold the strata
+source_modules = ["mhdpy"]
+## each stratum with its descendants, which `**` alone leaves out
+forbidden_modules = [
+    "mhdpy.infrastructure", "mhdpy.infrastructure.**",
+    "mhdpy.mesh", "mhdpy.mesh.**",
+    "mhdpy.core", "mhdpy.core.**",
+    "mhdpy.physics", "mhdpy.physics.**",
+    "mhdpy.driver", "mhdpy.driver.**",
+]
+as_packages = false
+
+[[tool.importlinter.contracts]]
+name = "The tests of the infrastructure import no stratum above it (PACK06)"
+type = "forbidden"
+source_modules = ["tests.infrastructure"]
+forbidden_modules = ["mhdpy.mesh", "mhdpy.core", "mhdpy.physics", "mhdpy.driver"]
+
+[[tool.importlinter.contracts]]
+name = "The tests of the mesh import no stratum above it (PACK06)"
+type = "forbidden"
+source_modules = ["tests.mesh"]
+forbidden_modules = ["mhdpy.core", "mhdpy.physics", "mhdpy.driver"]
+
+[[tool.importlinter.contracts]]
+name = "The tests of the core import no stratum above it (PACK06)"
+type = "forbidden"
+source_modules = ["tests.core"]
+forbidden_modules = ["mhdpy.physics", "mhdpy.driver"]
+
+[[tool.importlinter.contracts]]
+name = "The tests of the physics import no stratum above it (PACK06)"
+type = "forbidden"
+source_modules = ["tests.physics"]
+forbidden_modules = ["mhdpy.driver"]

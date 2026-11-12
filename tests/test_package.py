@@ -1,7 +1,13 @@
 """Tests of the package as a whole: its layout, its rule of imports, its metadata and its version."""
 
+import os
 import pkgutil
+import shutil
+import subprocess
+import sys
 from pathlib import Path
+
+import pytest
 
 import mhdpy
 import tests
@@ -12,6 +18,98 @@ ROOT = Path(__file__).resolve().parents[1]
 ## the strata from the bottom up
 STRATA = ("infrastructure", "mesh", "core", "physics", "driver")
 
+
+class TestImports:
+    """Tests of the rule of imports and its check."""
+
+    ## the violations of PACK07: the requirement whose contract each breaks, and the text it adds to files of a copy
+    PLANTED = {
+        "upward-at-head": (
+            "PACK03", {
+                "src/mhdpy/mesh/planted.py": "import mhdpy.driver\n"
+                }
+            ),
+        "upward-in-function": (
+            "PACK03", {
+                "src/mhdpy/mesh/planted.py": "def late() -> None:\n    import mhdpy.driver\n"
+                }
+            ),
+        "upward-for-type-checking": (
+            "PACK03", {
+                "src/mhdpy/mesh/planted.py": "import typing\nif typing.TYPE_CHECKING:\n    import mhdpy.driver\n"
+                }
+            ),
+        "cycle-of-siblings": (
+            "PACK04", {
+                "src/mhdpy/core/first.py": "import mhdpy.core.second\n",
+                "src/mhdpy/core/second.py": "import mhdpy.core.first\n"
+                }
+            ),
+        "stratum-by-top-package": (
+            "PACK05", {
+                "src/mhdpy/__init__.py": "import mhdpy.core\n"
+                }
+            ),
+        "module-of-stratum-by-top-package": (
+            "PACK05", {
+                "src/mhdpy/core/planted.py": "", "src/mhdpy/__init__.py": "import mhdpy.core.planted\n"
+                }
+            ),
+        "upward-by-tests": (
+            "PACK06", {
+                "tests/mesh/test_planted.py": "import mhdpy.core\n"
+                }
+            ),
+    }
+
+    @staticmethod
+    def lint(root: Path) -> subprocess.CompletedProcess[str]:
+        """Run the check of imports on the package and tests below root, under the contracts of its pyproject.toml."""
+
+        command = [Path(sys.executable).with_name("lint-imports"), "--no-cache", "--no-logo"]
+
+        ## the package from src/ and the tests from root, ahead of the installed package
+        ## a report too wide for rich to wrap, so that each contract stays on one line
+        environment = os.environ | {"PYTHONPATH": f"{root / 'src'}{os.pathsep}{root}", "COLUMNS": "200"}
+        return subprocess.run(command, cwd = root, env = environment, capture_output = True, text = True)
+
+
+    @pytest.fixture
+    def copy(self, tmp_path: Path) -> Path:
+        """Return a copy of the package and its tests, with the contracts of the check."""
+
+        ignore = shutil.ignore_patterns("__pycache__", "*.egg-info")
+
+        for folder in ("src", "tests"):
+            shutil.copytree(ROOT / folder, tmp_path / folder, ignore = ignore)
+        shutil.copy(ROOT / "pyproject.toml", tmp_path)
+        return tmp_path
+
+    def test_check(self) -> None:
+        """Checks PACK03, PACK04, PACK05 and PACK06.
+
+        The check passes on the package and its tests, as every contract of the rule of imports is kept.
+        """
+        result = self.lint(ROOT)
+        assert result.returncode == 0, result.stdout + result.stderr
+
+
+    @pytest.mark.parametrize(("requirement", "files"), PLANTED.values(), ids = PLANTED.keys())
+    def test_violations(self, copy: Path, requirement: str, files: dict[str, str]) -> None:
+        """Checks PACK07.
+
+        The check fails on a copy that holds one planted violation, and reports the contract of the rule it breaks.
+        """
+        ## each text appended to its file, which it creates where the file does not yet exist
+        for name, text in files.items():
+            with open(copy / name, "a") as file:
+                file.write(text)
+
+        result = self.lint(copy)
+
+        assert result.returncode != 0
+        ## the contract named after the requirement, as pyproject.toml names each
+        assert f"({requirement}) BROKEN" in result.stdout, result.stdout + result.stderr
 
 class TestLayout:
     """Tests of the layout of the package and its tests."""

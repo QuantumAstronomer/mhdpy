@@ -1,0 +1,34 @@
+## build: setuptools (B4D2), with the version from the tags of git by setuptools-scm (B4D6)
+## setuptools finds src/ by itself (PACK01), where a table of packages would fail until src/ exists
+[build-system]
+## setuptools 80, as setuptools-scm recommends, also reads the SPDX licence of PACK11 (from 77)
+requires = ["setuptools>=80", "setuptools-scm>=8"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mhdpy"
+## the version is derived from git at each build (PACK13)
+dynamic = ["version"]
+
+## the tools of development, which the published metadata leaves out and uv.lock fixes (B4D4)
+[dependency-groups]
+dev = [
+    "pytest>=9.0",  ## 9.0 reads the native table [tool.pytest] and has the strict mode
+    "pyright",      ## the judge of the types before each commit (CLAUDE.md §3.4)
+]
+
+## setuptools-scm acts only where this table is present
+[tool.setuptools_scm]
+
+## strict mode and the default mode of imports (CLAUDE.md §3.2)
+[tool.pytest]
+testpaths = ["tests"]
+strict = true
+## the third-party tests in reference-works/ stay uncollected, as the folder is read-only (CLAUDE.md §4.1)
+addopts = ["--ignore=reference-works"]
+
+## strict checking at the oldest Python that mhdpy supports (CLAUDE.md §3.2, PACK08)
+[tool.pyright]
+include = ["src", "tests"]
+pythonVersion = "3.14"
+typeCheckingMode = "strict"

@@ -44,7 +44,7 @@ Each component is specified by its requirements before it is built. A requiremen
 
 ### 2.6 Writing code
 
-The author writes all code and tests of mhdpy, to understand them. The assistant prepares and explains each step.
+The author writes all code and tests of mhdpy, to understand them. The assistant prepares and explains each step. Configuration is the exception: the assistant writes files such as `pyproject.toml`, `.python-version`, `.gitignore` and `.vscode/settings.json`, and explains each change before the author approves its commit, while uv writes `uv.lock`.
 
 Code comes in small pieces, one test or one function at a time, each explained before the next. The test code always comes first. Code is given as plain blocks ready to type, never as diffs or patches, and a changed function is given whole. Nothing is left for the author to fill in. The assistant first tries each step in a scratch copy, so that the code is known to work, and afterwards checks the author's version against it. The scratch copy lives in `.scratch/`, which git ignores.
 
@@ -62,9 +62,11 @@ Documents use a passive, scientific voice and name neither the author nor the as
 
 ### 3.2 Code
 
-The author develops the code style as the code grows. It follows the PEPs, PEP 8 in particular, though not so strictly that the code stops feeling like the author's own. Automatic formatting and linting stay off for now, since they remove whitespace that helps legibility. The starting points are lines of at most 120 characters, `##` for comments to people and `#` for directives to tools, and strict type checking with pyright. The layout of docstrings is developed in the same way.
+The author develops the code style as the code grows. It follows the PEPs, PEP 8 in particular, though not so strictly that the code stops feeling like the author's own. The starting points are lines of at most 120 characters, `##` for comments to people and `#` for directives to tools, in Python and TOML alike, and strict type checking with pyright. Automatic formatting and linting stay off for now, since they remove whitespace that helps legibility. In VS Code, `.vscode/settings.json` keeps format on save and the linting of the Ruff extension off, and draws a ruler at 120 characters.
 
-A comment that explains how a step works is a short line, not a paragraph. Docstrings may be longer, but do not explain over several paragraphs. The reasoning belongs to the requirements the code cites.
+Types are checked by pyright in its strict mode, from one table in `pyproject.toml` that covers `src/` and `tests/` and checks against Python 3.14, the oldest version that mhdpy supports. The pyright that `uv.lock` fixes is the judge, while Pylance reads the same table with a copy of its own and guides as the code is typed. `.python-version` pins the environment of development to 3.14 as well, so that code which needs a later version fails here first. The tests run under pytest in its strict mode, which turns a misspelt option, an unregistered marker or an xfail that passes into an error, and in its default mode of imports, which keeps the package `tests` importable.
+
+Docstrings follow PEP 257 in prose. A summary in the imperative fits on one line with its quotes, or, where more is needed, is followed by a blank line, one short paragraph and the closing quotes on a line of their own. Arguments are named in the prose, without sections, as the annotations carry their types. A test opens its docstring with the requirements that it checks, and code closes its docstring with those that it implements, in the forms that [§1 of the rules of the requirements](design/templates/requirements-rules.md#1-files-and-identifiers) gives. A comment that explains how a step works is a short line, not a paragraph. The reasoning belongs to the requirements the code cites.
 
 ### 3.3 Figures
 
@@ -85,7 +87,7 @@ The templates of the decision briefs, experiments and requirement documents are 
 
 Documents cite an identifier by a link whose text is the identifier, while tests, code and commit messages cite it alone.
 
-A commit message opens with a subject in the imperative and in sentence case, without a full stop or a prefix, of at most 72 characters, as "Add the template of the experiments". The subject names the identifier where the commit concerns one brief, sub-decision, experiment or requirement, as "Decide B7D2, the solver for hydrodynamics". After a blank line, a short body states in prose the work that the commit holds, wrapped at 72 columns in the voice of §3.1, with the files, sections and identifiers concerned and the decisions of the author. It leaves the process and the results to the documents that record them. Every message ends with the Co-Authored-By line of the assistant, which prepares every step. A test and the code that makes it pass are committed together, so that every commit passes its tests.
+A commit message opens with a subject in the imperative and in sentence case, without a full stop or a prefix, of at most 72 characters, as "Add the template of the experiments". The subject names the identifier where the commit concerns one brief, sub-decision, experiment or requirement, as "Decide B7D2, the solver for hydrodynamics". After a blank line, a short body states in prose the work that the commit holds, wrapped at 72 columns in the voice of §3.1, with the files, sections and identifiers concerned and the decisions of the author. It leaves the process and the results to the documents that record them. Every message ends with the Co-Authored-By line of the assistant, which prepares every step. A test and the code that makes it pass are committed together, so that every commit passes its tests and the strict check of pyright.
 
 ## 4. Material and machine
 
@@ -99,4 +101,4 @@ A second layer in `design/topics/` condenses the knowledge on one component, suc
 
 ### 4.2 Development machine
 
-An Intel MacBook with a Core i7-9750H (6 cores, 12 threads, x86-64) and 32 GB of memory, running macOS 26.7, without a CUDA GPU or MPI. Installed are uv, with Python 3.13, 3.14 and the free-threaded 3.14t, as well as git and Docker. Docker runs Linux x86-64 containers natively and arm64 containers through emulation.
+An Intel MacBook with a Core i7-9750H (6 cores, 12 threads, x86-64) and 32 GB of memory, running macOS 26.7, without a CUDA GPU or MPI. Installed are uv, with Python 3.13, 3.14 and 3.15, the last two also as the free-threaded 3.14t and 3.15t, as well as git, Docker and VS Code with the extensions Pylance and Ruff. Docker runs Linux x86-64 containers natively and arm64 containers through emulation.

@@ -1,5 +1,4 @@
 ## build: setuptools (B4D2), with the version from the tags of git by setuptools-scm (B4D6)
-## setuptools finds src/ by itself (PACK01), where a table of packages would fail until src/ exists
 [build-system]
 ## setuptools 80, as setuptools-scm recommends, also reads the SPDX licence of PACK11 (from 77)
 requires = ["setuptools>=80", "setuptools-scm>=8"]
@@ -16,6 +15,10 @@ dev = [
     "pytest>=9.0",  ## 9.0 reads the native table [tool.pytest] and has the strict mode
     "pyright",      ## the judge of the types before each commit (CLAUDE.md §3.4)
 ]
+
+## setuptools builds from src/ alone (PACK01), so that no stale mhdpy.egg-info appears at the root
+[tool.setuptools.packages.find]
+where = ["src"]
 
 ## setuptools-scm acts only where this table is present
 [tool.setuptools_scm]

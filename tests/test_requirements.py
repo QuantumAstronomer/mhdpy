@@ -1,4 +1,9 @@
-"""The check of requirements: every test cites requirements that exist and are not withdrawn."""
+"""The check of requirements: every test cites requirements that exist and are not withdrawn.
+
+The tests of the check write a small tree of made-up test modules and requirement documents into the temporary folder
+that pytest gives each test, and run the check on that tree in place of the checkout of mhdpy. The made-up modules are
+read as text and never imported, and their identifiers, such as FOO01, are borne by no document of mhdpy.
+"""
 
 import ast
 import re
@@ -43,6 +48,7 @@ class TestReading:
         importing the module.
         """
 
+        ## modules whose functions each cite an identifier of their own, so that the result shows which are tests
         root = tree(tmp_path, {
             "tests/test_first.py": "\n".join([
                 ## a module that fails as soon as it is imported
@@ -64,16 +70,19 @@ class TestReading:
                 '    def test_inner():',
                 '        """Checks FOO08."""',
             ]),
+            ## a test module named by the other pattern, in a folder below tests/
             "tests/folder/second_test.py": "\n".join([
                 'def test_function():',
                 '    """Checks BAR01."""',
             ]),
+            ## a module whose name marks no test module
             "tests/helpers.py": "\n".join([
                 'def test_function():',
                 '    """Checks BAZ01."""',
             ]),
         })
 
+        ## the tests alone, by node id, so that FOO02, FOO05, FOO06, FOO08 and BAZ01 of the other functions are missing
         assert read_tests(root) == {
             "tests/folder/second_test.py::test_function": ["BAR01"],
             "tests/test_first.py::test_function": ["FOO01"],
@@ -89,6 +98,7 @@ class TestReading:
         followed by whitespace, which a dotted name does not end.
         """
 
+        ## a module of tests whose docstrings each open in another way
         root = tree(tmp_path, {
             "tests/test_first.py": "\n".join([
                 'def test_dotted():',
@@ -108,6 +118,7 @@ class TestReading:
             ]),
         })
 
+        ## the identifiers of the opening sentence alone, and none where it is no citation
         assert read_tests(root) == {
             "tests/test_first.py::test_dotted": ["FOO01", "FOO02"],
             "tests/test_first.py::test_lines": ["FOO04", "FOO05"],
@@ -124,6 +135,7 @@ class TestReading:
         read with whether each is withdrawn from every document below design/requirements/.
         """
 
+        ## documents at three depths below design/requirements/ and one outside, with paragraphs that are no requirement
         root = tree(tmp_path, {
             "design/requirements/infrastructure/first.md": "\n".join([
                 '# First',
@@ -147,6 +159,7 @@ class TestReading:
             ]),
         })
 
+        ## the requirements in the order of their paths, without FOO04, whose anchor is not its identifier, and QUX01
         assert read_requirements(root) == [
             Requirement("BAR01", "design/requirements/core/second.md", False),
             Requirement("FOO01", "design/requirements/infrastructure/first.md", False),
@@ -189,6 +202,7 @@ class TestFaults:
         The check passes on the tree of the other tests before a fault is added to it.
         """
 
+        ## the tree of FILES alone, on which the check returns rather than fails
         check(tree(tmp_path, self.FILES))
 
 
@@ -198,6 +212,7 @@ class TestFaults:
         The check fails on tests whose docstring opens with no citation, and names each.
         """
 
+        ## the tree of FILES, with a second module of two tests that cite nothing
         root = tree(tmp_path, self.FILES | {
             "tests/test_second.py": "\n".join([
                 'def test_other_word():',
@@ -208,10 +223,13 @@ class TestFaults:
             ]),
         })
 
+        ## the lines of the message with which the check fails on that tree
         lines = self.failure(root)
+        ## one line names each of the two tests, and none names the test of FILES
         assert any("tests/test_second.py::test_other_word" in line for line in lines), lines
         assert any("tests/test_second.py::TestGroup::test_no_docstring" in line for line in lines), lines
         assert not any("tests/test_first.py" in line for line in lines), lines
+
 
     def test_unknown(self, tmp_path: Path) -> None:
         """Checks CITE04.
@@ -219,6 +237,7 @@ class TestFaults:
         The check fails on a test that cites an identifier that no requirement bears, and names the test with it.
         """
 
+        ## the tree of FILES, with a test that cites FOO01, which the document holds, and FOO09, which it does not
         root = tree(tmp_path, self.FILES | {
             "tests/test_second.py": "\n".join([
                 'def test_function():',
@@ -226,7 +245,9 @@ class TestFaults:
             ]),
         })
 
+        ## the lines of the message with which the check fails on that tree
         lines = self.failure(root)
+        ## one line names the test with FOO09, and none names FOO01
         assert any("tests/test_second.py::test_function" in line and "FOO09" in line for line in lines), lines
         assert not any("FOO01" in line for line in lines), lines
 
@@ -237,6 +258,7 @@ class TestFaults:
         The check fails on a test that cites a withdrawn requirement, and names the test with the requirement.
         """
 
+        ## the tree of FILES, with a test that cites FOO02, which the document holds as withdrawn
         root = tree(tmp_path, self.FILES | {
             "tests/test_second.py": "\n".join([
                 'def test_function():',
@@ -244,7 +266,9 @@ class TestFaults:
             ]),
         })
 
+        ## the lines of the message with which the check fails on that tree
         lines = self.failure(root)
+        ## one line names the test with FOO02
         assert any("tests/test_second.py::test_function" in line and "FOO02" in line for line in lines), lines
 
 
@@ -254,13 +278,16 @@ class TestFaults:
         The check fails on two requirements that bear the same identifier, and names the document of each.
         """
 
+        ## the tree of FILES, with a second document whose requirement bears FOO03, as one in the first already does
         root = tree(tmp_path, self.FILES | {
             "design/requirements/core/second.md": "\n".join([
                 '<a id="foo03"></a>**FOO03** The second shall hold.',
             ]),
         })
 
+        ## the lines of the message with which the check fails on that tree
         lines = self.failure(root)
+        ## one line names FOO03 with both documents
         assert any(
             "FOO03" in line and "design/requirements/first.md" in line and "design/requirements/core/second.md" in line
             for line in lines

@@ -3,4 +3,5 @@
 import importlib.metadata
 
 
-__version__ = importlib.metadata.version("mhdpy")  ## PACK12
+## the version in the metadata of the installation (PACK12)
+__version__ = importlib.metadata.version("mhdpy")

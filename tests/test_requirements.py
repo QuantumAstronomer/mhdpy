@@ -5,6 +5,8 @@ import re
 from pathlib import Path
 from typing import NamedTuple
 
+import pytest
+
 
 ## an identifier, a word of capitals followed by two digits, as RIEM04
 IDENTIFIER = re.compile(r"\b[A-Z]+[0-9]{2}\b")
@@ -21,9 +23,8 @@ class Requirement(NamedTuple):
     document: str
     withdrawn: bool
 
-
 class TestReading:
-    """Tests of the reading of the tests and the requirements."""
+    """Tests that the check finds every test with its citation, and every requirement with whether it is withdrawn."""
 
     def test_tests(self, tmp_path: Path) -> None:
         """Checks CITE01.
@@ -145,6 +146,132 @@ class TestReading:
         ]
 
 
+class TestFaults:
+    """Tests that the check fails on a missing, unknown or withdrawn citation, and on an identifier borne twice."""
+
+    ## a tree that the check passes, to which each test below adds one fault
+    FILES = {
+        "design/requirements/first.md": "\n".join([
+            '<a id="foo01"></a>**FOO01** The first shall hold.',
+            '',
+            '<a id="foo02"></a>**FOO02** Withdrawn on 2026-11-13, replaced by FOO03. The first shall hold.',
+            '',
+            '<a id="foo03"></a>**FOO03** The first shall hold.',
+        ]),
+        "tests/test_first.py": "\n".join([
+            'def test_function():',
+            '    """Checks FOO01 and FOO03."""',
+        ]),
+    }
+
+    @staticmethod
+    def failure(root: Path) -> list[str]:
+        """Return the lines of the message with which the check fails on the tree at root."""
+
+        with pytest.raises(AssertionError) as error:
+            check(root)
+        return str(error.value).splitlines()
+
+
+    def test_files(self, tmp_path: Path) -> None:
+        """Checks CITE03, CITE04, CITE05 and CITE06.
+
+        The check passes on the tree of the other tests before a fault is added to it.
+        """
+
+        check(tree(tmp_path, self.FILES))
+
+
+    def test_no_citation(self, tmp_path: Path) -> None:
+        """Checks CITE03.
+
+        The check fails on tests whose docstring opens with no citation, and names each.
+        """
+
+        root = tree(tmp_path, self.FILES | {
+            "tests/test_second.py": "\n".join([
+                'def test_other_word():',
+                '    """Tests FOO01."""',
+                'class TestGroup:',
+                '    def test_no_docstring(self):',
+                '        pass',
+            ]),
+        })
+
+        lines = self.failure(root)
+        assert any("tests/test_second.py::test_other_word" in line for line in lines), lines
+        assert any("tests/test_second.py::TestGroup::test_no_docstring" in line for line in lines), lines
+        assert not any("tests/test_first.py" in line for line in lines), lines
+
+    def test_unknown(self, tmp_path: Path) -> None:
+        """Checks CITE04.
+
+        The check fails on a test that cites an identifier that no requirement bears, and names the test with it.
+        """
+
+        root = tree(tmp_path, self.FILES | {
+            "tests/test_second.py": "\n".join([
+                'def test_function():',
+                '    """Checks FOO01 and FOO09."""',
+            ]),
+        })
+
+        lines = self.failure(root)
+        assert any("tests/test_second.py::test_function" in line and "FOO09" in line for line in lines), lines
+        assert not any("FOO01" in line for line in lines), lines
+
+
+    def test_withdrawn(self, tmp_path: Path) -> None:
+        """Checks CITE05.
+
+        The check fails on a test that cites a withdrawn requirement, and names the test with the requirement.
+        """
+
+        root = tree(tmp_path, self.FILES | {
+            "tests/test_second.py": "\n".join([
+                'def test_function():',
+                '    """Checks FOO02."""',
+            ]),
+        })
+
+        lines = self.failure(root)
+        assert any("tests/test_second.py::test_function" in line and "FOO02" in line for line in lines), lines
+
+
+    def test_duplicate(self, tmp_path: Path) -> None:
+        """Checks CITE06.
+
+        The check fails on two requirements that bear the same identifier, and names the document of each.
+        """
+
+        root = tree(tmp_path, self.FILES | {
+            "design/requirements/core/second.md": "\n".join([
+                '<a id="foo03"></a>**FOO03** The second shall hold.',
+            ]),
+        })
+
+        lines = self.failure(root)
+        assert any(
+            "FOO03" in line and "design/requirements/first.md" in line and "design/requirements/core/second.md" in line
+            for line in lines
+        ), lines
+
+
+def check(root: Path) -> None:
+    """Fail on each fault of the tests and requirements below root, naming where it lies."""
+
+    tests = read_tests(root)
+    requirements = read_requirements(root)
+
+    faults = [
+        *uncited_tests(tests),
+        *unknown_citations(tests, requirements),
+        *withdrawn_citations(tests, requirements),
+        *duplicate_identifiers(requirements)
+    ]
+    assert not faults, "\n".join(faults)
+
+
 def citation(function: ast.FunctionDef) -> list[str]:
     """Return the identifiers that the opening sentence of the docstring of function cites, none without a citation."""
 
@@ -152,6 +279,24 @@ def citation(function: ast.FunctionDef) -> list[str]:
     if sentence.split()[:1] != ["Checks"]:
         return []
     return IDENTIFIER.findall(sentence)
+
+
+def duplicate_identifiers(requirements: list[Requirement]) -> list[str]:
+    """Return a fault for each identifier that two requirements or more bear, naming the document of each.
+
+    Implements CITE06.
+    """
+
+    ## the documents that hold each identifier
+    documents: dict[str, list[str]] = {}
+    for requirement in requirements:
+        documents.setdefault(requirement.identifier, []).append(requirement.document)
+
+    return [
+        f"{identifier} is borne in {' and '.join(names)}"
+        for identifier, names in documents.items()
+        if len(names) > 1
+    ]
 
 
 def read_requirements(root: Path) -> list[Requirement]:
@@ -203,3 +348,41 @@ def tree(root: Path, files: dict[str, str]) -> Path:
         (root / name).write_text(text)
     return root
 
+
+def uncited_tests(tests: dict[str, list[str]]) -> list[str]:
+    """Return a fault for each test whose docstring opens with no citation, naming the test.
+
+    Implements CITE03.
+    """
+
+    return [f"{test} cites no requirement" for test, identifiers in tests.items() if not identifiers]
+
+
+def unknown_citations(tests: dict[str, list[str]], requirements: list[Requirement]) -> list[str]:
+    """Return a fault for each identifier that a test cites and no requirement bears, naming the test with it.
+
+    Implements CITE04.
+    """
+
+    known = {requirement.identifier for requirement in requirements}
+    return [
+        f"{test} cites {identifier}, which no requirement bears"
+        for test, identifiers in tests.items()
+        for identifier in identifiers
+        if identifier not in known
+    ]
+
+
+def withdrawn_citations(tests: dict[str, list[str]], requirements: list[Requirement]) -> list[str]:
+    """Return a fault for each withdrawn requirement that a test cites, naming the test with it.
+
+    Implements CITE05.
+    """
+
+    withdrawn = {requirement.identifier for requirement in requirements if requirement.withdrawn}
+    return [
+        f"{test} cites {identifier}, which is withdrawn"
+        for test, identifiers in tests.items()
+        for identifier in identifiers
+        if identifier in withdrawn
+    ]

@@ -366,6 +366,20 @@ class TestList:
         assert result.stdout == listing(ROOT) + "\n"
 
 
+class TestMhdpy:
+    """Tests that the tests and requirement documents of mhdpy give the check none of its faults."""
+
+    def test_citations(self) -> None:
+        """Checks CITE09.
+
+        The check passes on this checkout, as every test cites requirements that exist and are not withdrawn, and no
+        identifier is borne twice.
+        """
+
+        ## the check run on this checkout rather than on a small tree, warning of the requirements still without tests
+        check(ROOT)
+
+
 def check(root: Path) -> None:
     """Fail on each fault of the tests and requirements below root, and warn of the requirements without tests."""
 

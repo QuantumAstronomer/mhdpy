@@ -48,7 +48,7 @@ The author writes all code and tests of mhdpy, to understand them. The assistant
 
 Code comes in small pieces, one test or one function at a time, each explained before the next. The test code always comes first. Code is given as plain blocks ready to type, never as diffs or patches, and a changed function is given whole. Nothing is left for the author to fill in. The assistant first tries each step in a scratch copy, so that the code is known to work, and afterwards checks the author's version against it. The scratch copy lives in `.scratch/`, which git ignores.
 
-Once a component is finished, and before the next one starts, the author explains it in a few sentences. The assistant then points out any gaps in that explanation.
+Once a component is finished, and before the next one starts, the author explains it in a few sentences. The assistant then points out any gaps in that explanation. Once the gaps are closed, the assistant writes the explanation out as the document of the component in `docs/` (§3.4), for a reader new to the repository.
 
 ### 2.7 Text
 
@@ -84,6 +84,7 @@ The templates of the decision briefs, experiments and requirement documents are 
 | Sub-decision | B7D2 | a section of its brief |
 | Experiment | B7E1 | `design/experiments/B07-riemann-solvers/E1-cost-of-hllc/README.md` |
 | Requirement | RIEM04 | `design/requirements/core/riemann-solvers.md`, in the folder of its stratum |
+| Document of a component | — | `docs/riemann-solvers.md`, named as the requirement document of its component |
 
 Documents cite an identifier by a link whose text is the identifier, while tests, code and commit messages cite it alone.
 

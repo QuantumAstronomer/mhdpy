@@ -2,6 +2,8 @@
 
 import ast
 import re
+import subprocess
+import sys
 import warnings
 from pathlib import Path
 from typing import NamedTuple
@@ -9,6 +11,8 @@ from typing import NamedTuple
 import pytest
 
 
+## the root of the checkout, the folder above tests/
+ROOT = Path(__file__).resolve().parents[1]
 ## an identifier, a word of capitals followed by two digits, as RIEM04
 IDENTIFIER = re.compile(r"\b[A-Z]+[0-9]{2}\b")
 ## the opening of a requirement: its anchor, its identifier in bold, and the rest of the line
@@ -300,6 +304,68 @@ class TestUntested:
         assert set(IDENTIFIER.findall(str(record[0].message))) == {"FOO02", "BAR01"}
 
 
+class TestList:
+    """Tests that the module, run as a script, prints every requirement with the tests that cite it."""
+
+    def test_listing(self, tmp_path: Path) -> None:
+        """Checks CITE08.
+
+        The list gives each requirement with the node ids of the tests that cite it, and marks those that no test cites
+        and those withdrawn.
+        """
+
+        ## a small checkout in tmp_path: two tests cite FOO01, one of them the withdrawn FOO03 too, and none the rest
+        root = tree(tmp_path, {
+            "design/requirements/first.md": "\n".join([
+                '<a id="foo01"></a>**FOO01** The first shall hold.',
+                '',
+                '<a id="foo02"></a>**FOO02** The first shall hold.',
+                '',
+                '<a id="foo03"></a>**FOO03** Withdrawn on 2026-11-13, replaced by FOO02. The first shall hold.',
+                '',
+                '<a id="foo04"></a>**FOO04** Withdrawn on 2026-11-13. The first shall hold.',
+            ]),
+            "design/requirements/core/second.md": "\n".join([
+                '<a id="bar01"></a>**BAR01** The second shall hold.',
+            ]),
+            "tests/test_first.py": "\n".join([
+                'def test_function():',
+                '    """Checks FOO01 and FOO03."""',
+                'class TestGroup:',
+                '    def test_method(self):',
+                '        """Checks FOO01."""',
+            ]),
+        })
+
+        ## each document by its path, each of its requirements below it with its marks, and each test below that
+        assert listing(root) == "\n".join([
+            "design/requirements/core/second.md",
+            "    BAR01 (no test)",
+            "design/requirements/first.md",
+            "    FOO01",
+            "        tests/test_first.py::test_function",
+            "        tests/test_first.py::TestGroup::test_method",
+            "    FOO02 (no test)",
+            "    FOO03 (withdrawn)",
+            "        tests/test_first.py::test_function",
+            "    FOO04 (withdrawn) (no test)",
+        ])
+
+    def test_script(self) -> None:
+        """Checks CITE08.
+
+        Run as a script, the module prints the list of the requirements and tests of mhdpy.
+        """
+
+        ## this module run by the Python of the tests, as `uv run python tests/test_requirements.py` runs it
+        command = [sys.executable, Path(__file__)]
+        result = subprocess.run(command, capture_output = True, text = True)
+        assert result.returncode == 0, result.stderr
+
+        ## what it prints is the list of this checkout, with the newline that print adds
+        assert result.stdout == listing(ROOT) + "\n"
+
+
 def check(root: Path) -> None:
     """Fail on each fault of the tests and requirements below root, and warn of the requirements without tests."""
 
@@ -345,6 +411,35 @@ def duplicate_identifiers(requirements: list[Requirement]) -> list[str]:
         for identifier, names in documents.items()
         if len(names) > 1
     ]
+
+
+def listing(root: Path) -> str:
+    """Return each requirement below root, by document, with the node ids of the tests that cite it.
+
+    Implements CITE08.
+    """
+
+    tests = read_tests(root)
+    lines: list[str] = []
+    document = ""
+    for requirement in read_requirements(root):
+
+        ## the path of each document, above its requirements
+        if requirement.document != document:
+            document = requirement.document
+            lines.append(document)
+
+        ## the identifier with its marks, then each test that cites it on a line of its own
+        citing = [test for test, identifiers in tests.items() if requirement.identifier in identifiers]
+        marks = ""
+        if requirement.withdrawn:
+            marks += " (withdrawn)"
+        if not citing:
+            marks += " (no test)"
+        lines.append(f"    {requirement.identifier}{marks}")
+        lines.extend(f"        {test}" for test in citing)
+
+    return "\n".join(lines)
 
 
 def read_requirements(root: Path) -> list[Requirement]:
@@ -448,3 +543,7 @@ def withdrawn_citations(tests: dict[str, list[str]], requirements: list[Requirem
         for identifier in identifiers
         if identifier in withdrawn
     ]
+
+
+if __name__ == "__main__":
+    print(listing(ROOT))

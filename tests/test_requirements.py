@@ -2,6 +2,7 @@
 
 import ast
 import re
+import warnings
 from pathlib import Path
 from typing import NamedTuple
 
@@ -22,6 +23,11 @@ class Requirement(NamedTuple):
     identifier: str
     document: str
     withdrawn: bool
+
+
+class UntestedRequirementWarning(UserWarning):
+    """A warning of the requirements in force that no test cites."""
+
 
 class TestReading:
     """Tests that the check finds every test with its citation, and every requirement with whether it is withdrawn."""
@@ -257,11 +263,53 @@ class TestFaults:
         ), lines
 
 
+class TestUntested:
+    """Tests that the check warns of the requirements that no test cites, without failing."""
+
+    def test_warning(self, tmp_path: Path) -> None:
+        """Checks CITE07.
+
+        The check names every requirement in force that no test cites in one warning of its own category, and passes.
+        """
+
+        ## a small checkout in tmp_path: of its three requirements in force, the test cites FOO01 alone
+        root = tree(tmp_path, {
+            "design/requirements/first.md": "\n".join([
+                '<a id="foo01"></a>**FOO01** The first shall hold.',
+                '',
+                '<a id="foo02"></a>**FOO02** The first shall hold.',
+                '',
+                '<a id="foo03"></a>**FOO03** Withdrawn on 2026-11-13, replaced by FOO02. The first shall hold.',
+            ]),
+            "design/requirements/core/second.md": "\n".join([
+                '<a id="bar01"></a>**BAR01** The second shall hold.',
+            ]),
+            "tests/test_first.py": "\n".join([
+                'def test_function():',
+                '    """Checks FOO01."""',
+            ]),
+        })
+
+        ## the check returns, rather than fails, and each warning that it gives is recorded
+        with pytest.warns(UntestedRequirementWarning) as record:
+            check(root)
+
+        ## one warning, of a subclass of UserWarning, that names FOO02 and BAR01 but not the withdrawn FOO03
+        assert issubclass(UntestedRequirementWarning, UserWarning)
+        assert len(record) == 1
+        assert set(IDENTIFIER.findall(str(record[0].message))) == {"FOO02", "BAR01"}
+
+
 def check(root: Path) -> None:
-    """Fail on each fault of the tests and requirements below root, naming where it lies."""
+    """Fail on each fault of the tests and requirements below root, and warn of the requirements without tests."""
 
     tests = read_tests(root)
     requirements = read_requirements(root)
+
+    ## the requirements in force that no test cites, in one warning (CITE07)
+    untested = untested_requirements(tests, requirements)
+    if untested:
+        warnings.warn(UntestedRequirementWarning(f"no test cites {', '.join(untested)}"))
 
     faults = [
         *uncited_tests(tests),
@@ -370,6 +418,20 @@ def unknown_citations(tests: dict[str, list[str]], requirements: list[Requiremen
         for test, identifiers in tests.items()
         for identifier in identifiers
         if identifier not in known
+    ]
+
+
+def untested_requirements(tests: dict[str, list[str]], requirements: list[Requirement]) -> list[str]:
+    """Return the identifiers of the requirements in force that no test cites, in the order of their documents.
+
+    Implements CITE07.
+    """
+
+    cited = {identifier for identifiers in tests.values() for identifier in identifiers}
+    return [
+        requirement.identifier
+        for requirement in requirements
+        if not requirement.withdrawn and requirement.identifier not in cited
     ]
 
 

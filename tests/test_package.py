@@ -5,12 +5,13 @@ import pkgutil
 import shutil
 import subprocess
 import sys
-from importlib.metadata import distribution, metadata
+from importlib.metadata import distribution, metadata, version
 from pathlib import Path
 
 import pytest
 from packaging.requirements import Requirement
 from packaging.specifiers import SpecifierSet
+from packaging.utils import parse_sdist_filename
 from packaging.version import Version
 
 import mhdpy
@@ -208,3 +209,77 @@ class TestMetadata:
         
         ## the copy shipped in the licenses/ folder of the metadata, identical to LICENSE in the checkout
         assert distribution("mhdpy").read_text("licenses/LICENSE") == (ROOT / "LICENSE").read_text()
+
+
+class TestVersion:
+    """Tests of the version and its record."""
+
+    @staticmethod
+    def git(root: Path, *arguments: str) -> str:
+        """Run git in the repository at root, under an identity of its own, and return what it prints."""
+
+        command = ["git", "-c", "user.name=mhdpy", "-c", "user.email=mhdpy@example.invalid", *arguments]
+        return subprocess.run(command, cwd = root, capture_output = True, text = True, check = True).stdout.strip()
+
+
+    @staticmethod
+    def build(root: Path) -> Version:
+        """Build the source distribution of the repository at root, and return its version."""
+
+        ## the uv that runs the tests, else the one on the path
+        command = [os.environ.get("UV", "uv"), "build", "--sdist", "--out-dir", "dist"]
+        result = subprocess.run(command, cwd = root, capture_output = True, text = True)
+        assert result.returncode == 0, result.stderr
+
+        ## the one archive, whose name holds the version
+        [archive] = (root / "dist").glob("*.tar.gz")
+        return parse_sdist_filename(archive.name)[1]
+
+
+    @pytest.fixture
+    def repository(self, tmp_path: Path) -> Path:
+        """Return a repository of git whose one commit holds a copy of the package and its configuration."""
+
+        ignore = shutil.ignore_patterns("__pycache__", "*.egg-info")
+        shutil.copytree(ROOT / "src", tmp_path / "src", ignore = ignore)
+
+        for name in ("pyproject.toml", "LICENSE"):
+            shutil.copy(ROOT / name, tmp_path)
+
+        self.git(tmp_path, "init")
+        self.git(tmp_path, "add", ".")
+        self.git(tmp_path, "commit", "-m", "Copy the package")
+        return tmp_path
+
+
+    def test_version(self) -> None:
+        """Checks PACK12.
+
+        The version of the top package is the version in the metadata of the installation.
+        """
+        assert mhdpy.__version__ == version("mhdpy")
+
+    def test_build_at_tag(self, repository: Path) -> None:
+        """Checks PACK13.
+
+        A build at a commit that a tag marks takes the version of the tag.
+        """
+        
+        self.git(repository, "tag", "0.2.0")
+        assert self.build(repository) == Version("0.2.0")
+
+
+    def test_build_after_tag(self, repository: Path) -> None:
+        """Checks PACK13.
+
+        A build at a commit that no tag marks takes a version whose local part names the commit.
+        """
+
+        self.git(repository, "tag", "0.2.0")
+        self.git(repository, "commit", "--allow-empty", "-m", "Commit after the tag")
+        built = self.build(repository)
+        
+        ## g and an abbreviation of the hash, which git resolves to the commit, as in 0.2.1.dev1+g1a2b3c4d5
+        local = built.local or ""
+        assert local.startswith("g"), repr(built)
+        assert self.git(repository, "rev-parse", local[1:]) == self.git(repository, "rev-parse", "HEAD")

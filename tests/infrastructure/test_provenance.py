@@ -13,21 +13,21 @@ import mhdpy
 from mhdpy.infrastructure.provenance import CodeProvenance
 
 
-## the root of the checkout, two folders above this file
+## the root of the checkout, the folder above tests/
 ROOT = Path(__file__).resolve().parents[2]
 
 
 class TestVersion:
-    """Tests of the version and its record."""
+    """Tests that the record gives the version and, from a checkout, the commit and whether its tree is modified."""
 
     ## the files changed after the commit, and whether each marks the tree as modified
     CHANGES = {
         "tracked": (
-            "src/mhdpy/core/__init__.py", 
+            "src/mhdpy/core/__init__.py",
             True,
         ),
         "untracked": (
-            "note.txt", 
+            "note.txt",
             False,
         ),
     }
@@ -103,7 +103,7 @@ class TestVersion:
 
     def test_no_repository(self, copy: Path) -> None:
         """Checks PACK15.
-        
+
         A run from a copy outside any repository of git records its version alone.
         """
 
@@ -112,7 +112,7 @@ class TestVersion:
 
     def test_untracked_package(self, copy: Path) -> None:
         """Checks PACK15.
-        
+
         A run from a copy that a repository around it leaves untracked, as a wheel in .venv/, records its version alone.
         """
 
@@ -129,7 +129,7 @@ class TestVersion:
 
         A run from a checkout on a machine without git records its version alone.
         """
-        
+
         ## a path of programs that holds no git
         (checkout / "bin").mkdir()
         assert self.provenance(checkout, PATH = str(checkout / "bin")) == CodeProvenance(mhdpy.__version__, None, None)

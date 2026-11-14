@@ -14,12 +14,11 @@ class CodeProvenance:
     Implements PACK14 and PACK15.
     """
 
-    ## The version of the package.
+    ## the version of the package
     version: str
-    ## The commit of the checkout, or None if not in a checkout.
+    ## the commit of the checkout, or None if not in a checkout
     commit: str | None
-    ## The state of the tree, True if the tracked files differ from the commit, False if they do not, and 
-    ## None if not in a checkout.
+    ## whether the tracked files differ from the commit, or None if not in a checkout
     modified: bool | None
 
 
@@ -42,6 +41,7 @@ def code_provenance() -> CodeProvenance:
     ## the tracked files that differ from the commit, untracked files left out
     modified = _git(top.parent, "status", "--porcelain", "--untracked-files=no") != ""
     return CodeProvenance(version = mhdpy.__version__, commit = commit, modified = modified)
+
 
 def _git(folder: Path, *arguments: str) -> str:
     """Run git in folder and return what it prints."""

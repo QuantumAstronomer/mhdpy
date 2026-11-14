@@ -2,5 +2,6 @@
     "editor.rulers": [120],
     "editor.formatOnSave": false,
     "files.insertFinalNewline": true,
+    "files.trimTrailingWhitespace": true,
     "ruff.lint.enable": false
 }

@@ -24,47 +24,77 @@ ROOT = Path(__file__).resolve().parents[1]
 STRATA = ("infrastructure", "mesh", "core", "physics", "driver")
 
 
+class TestLayout:
+    """Tests that the package lies in src/mhdpy/ and its tests in tests/, each with a subpackage for every stratum."""
+
+    def test_package(self) -> None:
+        """Checks PACK01.
+
+        The installed package lies in src/mhdpy/ of this checkout, and its subpackages are exactly the five strata.
+        """
+
+        ## the file that Python ran for `import mhdpy`, which the editable installation finds in src/
+        assert Path(mhdpy.__file__).resolve() == ROOT / "src" / "mhdpy" / "__init__.py"
+
+        ## the modules directly below mhdpy, of which ispkg keeps the folders that hold an __init__.py
+        assert {module.name for module in pkgutil.iter_modules(mhdpy.__path__) if module.ispkg} == set(STRATA)
+
+
+    def test_tests(self) -> None:
+        """Checks PACK02.
+
+        The package of the tests lies in tests/ of this checkout, and its subpackages are exactly the five strata.
+        """
+
+        ## the file that Python ran for `import tests`, from the root of the checkout that pytest puts on the path
+        assert Path(tests.__file__).resolve() == ROOT / "tests" / "__init__.py"
+
+        ## the modules directly below tests, of which ispkg keeps the folders that hold an __init__.py
+        assert {module.name for module in pkgutil.iter_modules(tests.__path__) if module.ispkg} == set(STRATA)
+
+
 class TestImports:
-    """Tests of the rule of imports and its check."""
+    """Tests that the package and its tests keep the rule of imports, and that its check fails on each violation."""
 
     ## the violations of PACK07: the requirement whose contract each breaks, and the text it adds to files of a copy
     PLANTED = {
         "upward-at-head": (
             "PACK03", {
-                "src/mhdpy/mesh/planted.py": "import mhdpy.driver\n"
-                }
-            ),
+                "src/mhdpy/mesh/planted.py": "import mhdpy.driver\n",
+            },
+        ),
         "upward-in-function": (
             "PACK03", {
-                "src/mhdpy/mesh/planted.py": "def late() -> None:\n    import mhdpy.driver\n"
-                }
-            ),
+                "src/mhdpy/mesh/planted.py": "def late() -> None:\n    import mhdpy.driver\n",
+            },
+        ),
         "upward-for-type-checking": (
             "PACK03", {
-                "src/mhdpy/mesh/planted.py": "import typing\nif typing.TYPE_CHECKING:\n    import mhdpy.driver\n"
-                }
-            ),
+                "src/mhdpy/mesh/planted.py": "import typing\nif typing.TYPE_CHECKING:\n    import mhdpy.driver\n",
+            },
+        ),
         "cycle-of-siblings": (
             "PACK04", {
                 "src/mhdpy/core/first.py": "import mhdpy.core.second\n",
-                "src/mhdpy/core/second.py": "import mhdpy.core.first\n"
-                }
-            ),
+                "src/mhdpy/core/second.py": "import mhdpy.core.first\n",
+            },
+        ),
         "stratum-by-top-package": (
             "PACK05", {
-                "src/mhdpy/__init__.py": "import mhdpy.core\n"
-                }
-            ),
+                "src/mhdpy/__init__.py": "import mhdpy.core\n",
+            },
+        ),
         "module-of-stratum-by-top-package": (
             "PACK05", {
-                "src/mhdpy/core/planted.py": "", "src/mhdpy/__init__.py": "import mhdpy.core.planted\n"
-                }
-            ),
+                "src/mhdpy/core/planted.py": "",
+                "src/mhdpy/__init__.py": "import mhdpy.core.planted\n",
+            },
+        ),
         "upward-by-tests": (
             "PACK06", {
-                "tests/mesh/test_planted.py": "import mhdpy.core\n"
-                }
-            ),
+                "tests/mesh/test_planted.py": "import mhdpy.core\n",
+            },
+        ),
     }
 
     @staticmethod
@@ -89,6 +119,7 @@ class TestImports:
             shutil.copytree(ROOT / folder, tmp_path / folder, ignore = ignore)
         shutil.copy(ROOT / "pyproject.toml", tmp_path)
         return tmp_path
+
 
     def test_check(self) -> None:
         """Checks PACK03, PACK04, PACK05 and PACK06.
@@ -119,37 +150,8 @@ class TestImports:
         assert f"({requirement}) BROKEN" in result.stdout, result.stdout + result.stderr
 
 
-class TestLayout:
-    """Tests of the layout of the package and its tests."""
-
-    def test_package(self) -> None:
-        """Checks PACK01.
-
-        The installed package lies in src/mhdpy/ of this checkout, and its subpackages are exactly the five strata.
-        """
-
-        ## the file that Python ran for `import mhdpy`, which the editable installation finds in src/
-        assert Path(mhdpy.__file__).resolve() == ROOT / "src" / "mhdpy" / "__init__.py"
-
-        ## the modules directly below mhdpy, of which ispkg keeps the folders that hold an __init__.py
-        assert {module.name for module in pkgutil.iter_modules(mhdpy.__path__) if module.ispkg} == set(STRATA)
-
-
-    def test_tests(self) -> None:
-        """Checks PACK02.
-
-        The package of the tests lies in tests/ of this checkout, and its subpackages are exactly the five strata.
-        """
-
-        ## the file that Python ran for `import tests`, from the root of the checkout that pytest puts on the path
-        assert Path(tests.__file__).resolve() == ROOT / "tests" / "__init__.py"
-
-        ## the modules directly below tests, of which ispkg keeps the folders that hold an __init__.py
-        assert {module.name for module in pkgutil.iter_modules(tests.__path__) if module.ispkg} == set(STRATA)
-
-
 class TestMetadata:
-    """Tests of the metadata of the installed distribution."""
+    """Tests that the metadata admits Python from 3.14, needs NumPy alone, names no extra and states the licence."""
 
     def test_python(self) -> None:
         """Checks PACK08.
@@ -159,7 +161,7 @@ class TestMetadata:
 
         ## the specifier of Requires-Python, empty where the metadata lacks the line
         specifiers = SpecifierSet(metadata("mhdpy").get("Requires-Python", ""))
-        
+
         ## the lower bounds, each of which holds alongside every other clause and so excludes every older Python
         floors = [Version(specifier.version) for specifier in specifiers if specifier.operator == ">="]
         assert any(floor >= Version("3.14") for floor in floors), repr(specifiers)
@@ -167,7 +169,7 @@ class TestMetadata:
 
     def test_dependencies(self) -> None:
         """Checks PACK09.
-        
+
         The metadata names NumPy as its only dependency at runtime, bounded below, at 2.3.2 or later, and not above.
         """
 
@@ -206,13 +208,13 @@ class TestMetadata:
 
         ## the files named by License-File lines
         assert "LICENSE" in metadata("mhdpy").get_all("License-File", [])
-        
+
         ## the copy shipped in the licenses/ folder of the metadata, identical to LICENSE in the checkout
         assert distribution("mhdpy").read_text("licenses/LICENSE") == (ROOT / "LICENSE").read_text()
 
 
 class TestVersion:
-    """Tests of the version and its record."""
+    """Tests that the top package gives the version of its metadata, and that a build takes the version from git."""
 
     @staticmethod
     def git(root: Path, *arguments: str) -> str:
@@ -257,14 +259,16 @@ class TestVersion:
 
         The version of the top package is the version in the metadata of the installation.
         """
+
         assert mhdpy.__version__ == version("mhdpy")
+
 
     def test_build_at_tag(self, repository: Path) -> None:
         """Checks PACK13.
 
         A build at a commit that a tag marks takes the version of the tag.
         """
-        
+
         self.git(repository, "tag", "0.2.0")
         assert self.build(repository) == Version("0.2.0")
 
@@ -278,7 +282,7 @@ class TestVersion:
         self.git(repository, "tag", "0.2.0")
         self.git(repository, "commit", "--allow-empty", "-m", "Commit after the tag")
         built = self.build(repository)
-        
+
         ## g and an abbreviation of the hash, which git resolves to the commit, as in 0.2.1.dev1+g1a2b3c4d5
         local = built.local or ""
         assert local.startswith("g"), repr(built)

@@ -223,7 +223,6 @@ class TestFaults:
             ]),
         })
 
-        ## the lines of the message with which the check fails on that tree
         lines = self.failure(root)
         ## one line names each of the two tests, and none names the test of FILES
         assert any("tests/test_second.py::test_other_word" in line for line in lines), lines
@@ -245,7 +244,6 @@ class TestFaults:
             ]),
         })
 
-        ## the lines of the message with which the check fails on that tree
         lines = self.failure(root)
         ## one line names the test with FOO09, and none names FOO01
         assert any("tests/test_second.py::test_function" in line and "FOO09" in line for line in lines), lines
@@ -266,7 +264,6 @@ class TestFaults:
             ]),
         })
 
-        ## the lines of the message with which the check fails on that tree
         lines = self.failure(root)
         ## one line names the test with FOO02
         assert any("tests/test_second.py::test_function" in line and "FOO02" in line for line in lines), lines
@@ -285,7 +282,6 @@ class TestFaults:
             ]),
         })
 
-        ## the lines of the message with which the check fails on that tree
         lines = self.failure(root)
         ## one line names FOO03 with both documents
         assert any(
@@ -377,6 +373,7 @@ class TestList:
             "        tests/test_first.py::test_function",
             "    FOO04 (withdrawn) (no test)",
         ])
+
 
     def test_script(self) -> None:
         """Checks CITE08.

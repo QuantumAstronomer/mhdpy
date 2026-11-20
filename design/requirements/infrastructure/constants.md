@@ -2,7 +2,7 @@
 
 **Prefix.** CONST.
 
-**Status.** Agreed on 2026-11-11.
+**Status.** Agreed on 2026-11-18.
 
 **Briefs.** [B5D5](../../briefs/B05-parameters-and-units.md#b5d5-the-constants).
 
@@ -10,7 +10,7 @@
 
 The constants are the physical and astronomical constants that the first pass needs, each held in cgs with the value of its current source in the module `mhdpy.infrastructure.constants`: Boltzmann's constant as the SI fixes it, the masses of the proton, the electron and the atomic mass unit after CODATA 2022, the astronomical unit and the parsec as the IAU defines them, and the Julian year. Their conversion into the code units of a run, and the named units that rest on them, such as the parsec and the megayear, are left to the units, and which mass measures the mean mass of a particle to the brief on equations of state. Later briefs add the constants that they need, as self-gravity the gravitational constant.
 
-Each constant is a float of double precision, under a name in capitals after PEP 8 and typed `Final`, with its source cited in a comment beside it. A value given to round-off is bounded in terms of $\epsilon = 2^{-52}$, the machine epsilon of double precision. The module relies on the standard library alone.
+Each constant is a float of double precision, under a name in capitals after PEP 8 and typed `Final`, with its source cited in a comment above it. A value given to round-off is bounded in terms of $\epsilon = 2^{-52}$, the machine epsilon of double precision. The module relies on the standard library alone.
 
 ## Physical constants
 

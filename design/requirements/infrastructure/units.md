@@ -2,7 +2,7 @@
 
 **Prefix.** UNIT.
 
-**Status.** Agreed on 2026-11-11.
+**Status.** Agreed on 2026-11-20.
 
 **Briefs.** [B5D4](../../briefs/B05-parameters-and-units.md#b5d4-the-system-of-units).
 
@@ -33,6 +33,12 @@ The base units $M_0$, $L_0$ and $T_0$ are the code units of mass, length and tim
 ## Constants in code units
 
 <a id="unit08"></a>**UNIT08** `Units` shall give Boltzmann's constant, the mass of the proton, the mass of the electron and the atomic mass unit in code units, as its attributes `boltzmann`, `proton_mass`, `electron_mass` and `atomic_mass_unit`, each the constant in cgs divided by the code unit of its dimension. [B5D4](../../briefs/B05-parameters-and-units.md#b5d4-the-system-of-units) gives every constant in code units, so that the formulas of cooling and conduction keep their form in the code units of the run, as in Athena++, and every conversion is made once as a run starts. The astronomical constants enter as named units instead ([UNIT05](#unit05)).
+
+## The declaration
+
+<a id="unit11"></a>**UNIT11** `Units` shall name its table `units` in its class variable `table`. The parameters take as a declaration a frozen dataclass whose class variable names its table ([PARAM01](parameters.md#param01)), and read the table `units` by `Units` in every run ([PARAM07](parameters.md#param07)). A class variable is no field, so that the constructor of `Units` still takes the base units alone ([UNIT01](#unit01)). The author chose to add it with the units, as a provision that costs little, rather than reopen the units when the parameters are built.
+
+<a id="unit12"></a>**UNIT12** The fields `mass`, `length` and `time` shall be floats that name their units `g`, `cm` and `s` under the key `unit` of their metadata, and the table shall hold the named unit `g`. The record names the unit of each value in a comment taken from its declaration ([PARAM16](parameters.md#param16)), and the fields of `Units` name theirs for it, while the reader takes their values as given ([PARAM07](parameters.md#param07)). The reader refuses a declaration that names a unit outside the table, or a unit on a field that is not a float ([PARAM03](parameters.md#param03)). The table therefore holds `g` beside the units of [UNIT04](#unit04), and each default is the float 1.0. The author chose to add this with the units, for the same reason as [UNIT11](#unit11).
 
 ## Verification
 

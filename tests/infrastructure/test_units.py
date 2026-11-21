@@ -1,6 +1,7 @@
 """Tests of the code units of a run, the named units and the constants in code units."""
 
 import math
+import sys
 from dataclasses import fields
 
 import pytest
@@ -200,3 +201,50 @@ class TestDeclaration:
 
         ## the gram, the one of them that UNIT04 does not name
         assert NAMED_UNITS["g"] == NamedUnit(1.0, (1, 0, 0, 0))
+
+
+class TestVerification:
+    """Tests that the units convert without loss under cgs, and keep the temperature in kelvin under any base units."""
+
+    def test_cgs(self) -> None:
+        """Checks UNIT09.
+
+        Under the default base units, every factor and every constant in code units is its value in cgs, exactly.
+        """
+
+        units = Units()
+
+        ## every unit of the table, as later briefs add theirs
+        for name, unit in NAMED_UNITS.items():
+            assert units.factor(name) == unit.value
+
+        assert units.boltzmann == constants.BOLTZMANN
+        assert units.proton_mass == constants.PROTON_MASS
+        assert units.electron_mass == constants.ELECTRON_MASS
+        assert units.atomic_mass_unit == constants.ATOMIC_MASS_UNIT
+
+
+    ## every combination of the base units over the ranges of UNIT10, as stacked marks run each as a case of its own
+    ## the decimal logarithms of the time from -11 to 25, of the length from 0 to 25 and of the mass from -30 to 75
+    @pytest.mark.parametrize("log_time", range(-11, 26, 6))
+    @pytest.mark.parametrize("log_length", range(0, 26, 5))
+    @pytest.mark.parametrize("log_mass", range(-30, 76, 15))
+    def test_temperature(self, log_mass: int, log_length: int, log_time: int) -> None:
+        """Checks UNIT10.
+
+        The temperature m_u p / (rho k_B) in code units equals that in cgs over the ranges of base units, within 32 eps.
+        """
+
+        ## a pressure and a density of the corona of the production problem, in cgs
+        pressure, density = 3e-13, 1e-27
+        temperature = constants.ATOMIC_MASS_UNIT * pressure / (density * constants.BOLTZMANN)
+
+        units = Units(mass = 10.0**log_mass, length = 10.0**log_length, time = 10.0**log_time)
+
+        ## the same formula, from the values and the constants in code units
+        code_pressure = pressure * units.factor("erg/cm^3")
+        code_density = density * units.factor("g/cm^3")
+        code_temperature = units.atomic_mass_unit * code_pressure / (code_density * units.boltzmann)
+
+        ## within k eps with k = 2**5, relative to the larger of the two
+        assert math.isclose(code_temperature, temperature, rel_tol = 2**5 * sys.float_info.epsilon)

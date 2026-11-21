@@ -4,7 +4,8 @@ import math
 
 import pytest
 
-from mhdpy.infrastructure.units import Units
+from mhdpy.infrastructure import constants
+from mhdpy.infrastructure.units import NAMED_UNITS, Units
 
 
 class TestCodeUnits:
@@ -62,3 +63,83 @@ class TestCodeUnits:
 
         ## erg/K, the dimension of Boltzmann's constant, 2 * 4**2 / 8**2
         assert units.code_unit((1, 2, -2, -1)) == 0.5
+
+
+class TestNamedUnits:
+    """Tests that the table holds the named units with their values in cgs, and that factors convert into code units."""
+
+    def test_table(self) -> None:
+        """Checks UNIT04.
+
+        The table holds the named units of the grid, the floors, cooling, conduction and the production problem.
+        """
+
+        ## the dimension of each, by the exponents of mass, length, time and temperature
+        dimensions = {
+            "cm":           (0, 1, 0, 0),
+            "pc":           (0, 1, 0, 0),
+            "s":            (0, 0, 1, 0),
+            "yr":           (0, 0, 1, 0),
+            "Myr":          (0, 0, 1, 0),
+            "cm/s":         (0, 1, -1, 0),
+            "km/s":         (0, 1, -1, 0),
+            "g/cm^3":       (1, -3, 0, 0),
+            "cm^-3":        (0, -3, 0, 0),
+            "K":            (0, 0, 0, 1),
+            "erg/cm^3":     (1, -1, -2, 0),
+        }
+        for name, dimension in dimensions.items():
+            assert NAMED_UNITS[name].dimension == dimension
+
+        ## the value in cgs of each, the astronomical ones left to UNIT05
+        values = {"cm": 1, "s": 1, "cm/s": 1, "km/s": 1e5, "g/cm^3": 1, "cm^-3": 1, "K": 1, "erg/cm^3": 1}
+        for name, value in values.items():
+            assert NAMED_UNITS[name].value == value
+
+
+    def test_astronomical(self) -> None:
+        """Checks UNIT05.
+
+        The parsec, the year and the megayear take their values in cgs from the constants.
+        """
+
+        assert NAMED_UNITS["pc"].value == constants.PARSEC
+        assert NAMED_UNITS["yr"].value == constants.JULIAN_YEAR
+        ## a million Julian years, which the float holds exactly
+        assert NAMED_UNITS["Myr"].value == 1e6 * constants.JULIAN_YEAR
+
+
+    def test_factor(self) -> None:
+        """Checks UNIT06.
+
+        The factor of a named unit is its value in cgs divided by the code unit of its dimension.
+        """
+
+        ## powers of two, whose products and quotients are exact
+        units = Units(mass = 2.0, length = 4.0, time = 8.0)
+
+        ## the code unit of velocity is 4 / 8 cm/s, so that 1 km/s is 2e5 of them
+        assert units.factor("km/s") == 2e5
+        ## that of density 2 / 4**3 g/cm^3, so that 1 g/cm^3 is 32 of them
+        assert units.factor("g/cm^3") == 32.0
+        ## that of pressure 2 / (4 * 8**2) erg/cm^3, so that 1 erg/cm^3 is 128 of them
+        assert units.factor("erg/cm^3") == 128.0
+        ## the kelvin is the code unit of temperature
+        assert units.factor("K") == 1.0
+
+        ## a parsec in code units of a parsec is 1, as the value divided by itself
+        assert Units(length = constants.PARSEC).factor("pc") == 1.0
+
+
+    def test_unknown_unit(self) -> None:
+        """Checks UNIT07.
+
+        A name that the table does not hold is refused with a ValueError that names the units of the table.
+        """
+
+        ## a misspelt unit
+        with pytest.raises(ValueError) as error:
+            Units().factor("km/sec")
+
+        ## the message lists the units of the table
+        assert ", ".join(NAMED_UNITS) in str(error.value)

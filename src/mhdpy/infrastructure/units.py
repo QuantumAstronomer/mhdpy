@@ -2,6 +2,23 @@
 
 import math
 from dataclasses import dataclass
+from types import MappingProxyType
+from typing import Final
+
+from mhdpy.infrastructure import constants
+
+
+@dataclass(frozen = True)
+class NamedUnit:
+    """A unit that a declaration may name, by its value in cgs and its dimension.
+
+    Implements UNIT04.
+    """
+
+    ## the value in cgs
+    value: float
+    ## the exponents of mass, length, time and temperature
+    dimension: tuple[int, int, int, int]
 
 
 @dataclass(frozen = True)
@@ -45,3 +62,37 @@ class Units:
         ## temperature keeps the kelvin, so that its exponent d takes no part
         a, b, c, _ = dimension
         return self.mass**a * self.length**b * self.time**c
+
+
+    def factor(self, name: str) -> float:
+        """Return the factor that converts a value given in the named unit into code units.
+
+        The factor is the value of the unit in cgs divided by the code unit of its dimension, so that a value given in
+        the unit, multiplied by it, is the value in code units. Under base units of 2 g, 4 cm and 8 s, the code unit
+        of velocity is 4 / 8 cm/s, and the factor of km/s is 1e5 / (4 / 8) = 2e5.
+
+        Implements UNIT06 and UNIT07.
+        """
+
+        try:
+            unit = NAMED_UNITS[name]
+        except KeyError:
+            ## a ValueError in place of the KeyError, which would name the unit alone
+            raise ValueError(f"unknown unit {name!r}, the table holds {', '.join(NAMED_UNITS)}") from None
+        return unit.value / self.code_unit(unit.dimension)
+
+
+## the named units by their names, fixed in stratum 1 and read-only (UNIT04, UNIT05)
+NAMED_UNITS: Final = MappingProxyType({
+    "cm":           NamedUnit(1.0, (0, 1, 0, 0)),
+    "pc":           NamedUnit(constants.PARSEC, (0, 1, 0, 0)),
+    "s":            NamedUnit(1.0, (0, 0, 1, 0)),
+    "yr":           NamedUnit(constants.JULIAN_YEAR, (0, 0, 1, 0)),
+    "Myr":          NamedUnit(1e6 * constants.JULIAN_YEAR, (0, 0, 1, 0)),
+    "cm/s":         NamedUnit(1.0, (0, 1, -1, 0)),
+    "km/s":         NamedUnit(1e5, (0, 1, -1, 0)),
+    "g/cm^3":       NamedUnit(1.0, (1, -3, 0, 0)),
+    "cm^-3":        NamedUnit(1.0, (0, -3, 0, 0)),
+    "K":            NamedUnit(1.0, (0, 0, 0, 1)),
+    "erg/cm^3":     NamedUnit(1.0, (1, -1, -2, 0)),
+})

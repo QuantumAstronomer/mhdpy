@@ -1,4 +1,23 @@
-"""The record of the code that a run uses."""
+"""The record of the code that a run uses.
+
+Every run can name the code that produced it, by the version of mhdpy and, where it runs from a checkout, by the commit
+of the checkout and whether its tracked files differ from that commit. The version alone does not suffice there, as an
+editable installation keeps the version of its last build, however many commits follow it, which is why the record
+reads git while mhdpy runs.
+
+The record belongs to the infrastructure, stratum 1, and relies on the top package for the version, on the standard
+library, and on git where git is installed. Outside a checkout, as after an installation from a wheel or on a machine
+without git, it gives the version alone.
+
+Contents
+========================================================================================================================
+CodeProvenance
+    The code that a run uses, by its version and, from a checkout, its commit and the state of its tree.
+code_provenance
+    Return the record of the code that this run uses.
+
+Its requirements are in design/requirements/infrastructure/package.md, and docs/package.md explains it.
+"""
 
 import subprocess
 from dataclasses import dataclass

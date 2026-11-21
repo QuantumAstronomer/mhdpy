@@ -1,8 +1,58 @@
 """The check of requirements: every test cites requirements that exist and are not withdrawn.
 
-The tests of the check write a small tree of made-up test modules and requirement documents into the temporary folder
-that pytest gives each test, and run the check on that tree in place of the checkout of mhdpy. The made-up modules are
-read as text and never imported, and their identifiers, such as FOO01, are borne by no document of mhdpy.
+Every test names the requirements that it checks at the start of its docstring, and the check keeps these citations
+true. It reads the tests and the requirement documents from their source, without importing them, fails on a test that
+cites no requirement, an unknown one or a withdrawn one, and on an identifier that two requirements bear, and warns of
+the requirements in force that no test cites. Run as a script, the module prints each requirement with the tests that
+cite it.
+
+The check runs as a test on the checkout, so that every full run of the tests checks the citations. The other tests of
+the module write a small tree of made-up test modules and requirement documents into the temporary folder that pytest
+gives each test, and run the check on that tree instead. The made-up modules are read as text and never imported, and
+their identifiers, such as FOO01, are borne by no document of mhdpy.
+
+The module lies in tests/ rather than in a stratum of the package, as the check serves the tests and runs among them.
+The check relies on the standard library alone, and its tests on pytest as well.
+
+Contents
+========================================================================================================================
+ROOT
+    The root of the checkout, the folder above tests/.
+IDENTIFIER
+    An identifier, a word of capitals followed by two digits, as RIEM04.
+OPENING
+    The opening of a requirement: its anchor, its identifier in bold, and the rest of the line.
+END
+    The end of a sentence, a full stop followed by whitespace or the end of the text.
+Requirement
+    A requirement, by its identifier, the document that holds it, and whether it is withdrawn.
+UntestedRequirementWarning
+    A warning of the requirements in force that no test cites.
+check
+    Fail on each fault of the tests and requirements below root, and warn of the requirements without tests.
+citation
+    Return the identifiers that the opening sentence of the docstring of function cites, none without a citation.
+duplicate_identifiers
+    Return a fault for each identifier that two requirements or more bear, naming the document of each.
+listing
+    Return each requirement below root, by document, with the node ids of the tests that cite it.
+read_requirements
+    Return the requirements in the documents below root/design/requirements, in the order of their paths.
+read_tests
+    Return the identifiers that each test in the modules below root/tests cites, by its node id.
+tree
+    Write each text to its file below root, with the folders that it needs, and return root.
+uncited_tests
+    Return a fault for each test whose docstring opens with no citation, naming the test.
+unknown_citations
+    Return a fault for each identifier that a test cites and no requirement bears, naming the test with it.
+untested_requirements
+    Return the identifiers of the requirements in force that no test cites, in the order of their documents.
+withdrawn_citations
+    Return a fault for each withdrawn requirement that a test cites, naming the test with it.
+
+Its requirements are in design/requirements/infrastructure/check-of-requirements.md, and docs/check-of-requirements.md
+explains it.
 """
 
 import ast

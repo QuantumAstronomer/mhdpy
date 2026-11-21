@@ -1,4 +1,25 @@
-"""The code units of a run, from its base units in cgs, with the named units and the constants in code units."""
+"""The code units of a run, from its base units in cgs, with the named units and the constants in code units.
+
+A run computes in code units of its own, derived from base units of mass, length and time given in cgs, so that the
+values of its problem lie near unity, while a run without units of its own computes in cgs. Values given in the named
+units of a fixed table, such as km/s or pc, are converted into code units by their factors, and Boltzmann's constant and
+the masses of the particles are given in code units, so that the formulas of cooling and conduction keep their form.
+Temperature keeps the kelvin whatever the base units.
+
+The units belong to the infrastructure, stratum 1, and rely on the constants and the standard library alone. Units is
+also the declaration through which the parameters read the base units of a run from the table units.
+
+Contents
+========================================================================================================================
+NamedUnit
+    A unit that a declaration may name, by its value in cgs and its dimension.
+Units
+    The code units of a run, from its base units of mass, length and time in cgs.
+NAMED_UNITS
+    The named units by their names, fixed in stratum 1 and read-only.
+
+Its requirements are in design/requirements/infrastructure/units.md, and docs/units.md explains it.
+"""
 
 import math
 from dataclasses import dataclass, field

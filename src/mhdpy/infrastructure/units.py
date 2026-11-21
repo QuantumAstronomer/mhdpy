@@ -1,10 +1,10 @@
 """The code units of a run, from its base units in cgs, with the named units and the constants in code units."""
 
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import cached_property
 from types import MappingProxyType
-from typing import Final
+from typing import ClassVar, Final
 
 from mhdpy.infrastructure import constants
 
@@ -26,15 +26,18 @@ class NamedUnit:
 class Units:
     """The code units of a run, from its base units of mass, length and time in cgs.
 
-    Implements UNIT01.
+    Implements UNIT01 and UNIT12.
     """
 
+    ## the table of the inputs that holds the base units (UNIT11)
+    table: ClassVar[str] = "units"
+
     ## the code unit of mass in g
-    mass: float   = 1.0
+    mass: float   = field(default = 1.0, metadata = {"unit": "g"})
     ## the code unit of length in cm
-    length: float = 1.0
+    length: float = field(default = 1.0, metadata = {"unit": "cm"})
     ## the code unit of time in s
-    time: float   = 1.0
+    time: float   = field(default = 1.0, metadata = {"unit": "s"})
 
 
     def __post_init__(self) -> None:
@@ -123,8 +126,9 @@ class Units:
         return unit.value / self.code_unit(unit.dimension)
 
 
-## the named units by their names, fixed in stratum 1 and read-only (UNIT04, UNIT05)
+## the named units by their names, fixed in stratum 1 and read-only (UNIT04, UNIT05, UNIT12)
 NAMED_UNITS: Final = MappingProxyType({
+    "g":            NamedUnit(1.0, (1, 0, 0, 0)),
     "cm":           NamedUnit(1.0, (0, 1, 0, 0)),
     "pc":           NamedUnit(constants.PARSEC, (0, 1, 0, 0)),
     "s":            NamedUnit(1.0, (0, 0, 1, 0)),

@@ -1,11 +1,12 @@
 """Tests of the code units of a run, the named units and the constants in code units."""
 
 import math
+from dataclasses import fields
 
 import pytest
 
 from mhdpy.infrastructure import constants
-from mhdpy.infrastructure.units import NAMED_UNITS, Units
+from mhdpy.infrastructure.units import NAMED_UNITS, NamedUnit, Units
 
 
 class TestCodeUnits:
@@ -164,3 +165,38 @@ class TestConstants:
         assert units.proton_mass == constants.PROTON_MASS / 2
         assert units.electron_mass == constants.ELECTRON_MASS / 2
         assert units.atomic_mass_unit == constants.ATOMIC_MASS_UNIT / 2
+
+
+class TestDeclaration:
+    """Tests that the units are the declaration by which the parameters read the table units."""
+
+    def test_table_name(self) -> None:
+        """Checks UNIT11.
+
+        The class variable table names the table units, and is no field.
+        """
+
+        assert Units.table == "units"
+        ## a class variable, which the constructor does not take
+        assert "table" not in [field.name for field in fields(Units)]
+
+
+    def test_fields(self) -> None:
+        """Checks UNIT12.
+
+        The base units are floats that name their units in their metadata, and the table holds those units.
+        """
+
+        by_name = {field.name: field for field in fields(Units)}
+        for name, unit in [("mass", "g"), ("length", "cm"), ("time", "s")]:
+
+            ## a float, by its annotation and by its default
+            assert by_name[name].type is float
+            assert type(by_name[name].default) is float
+
+            ## a unit that the table holds
+            assert by_name[name].metadata["unit"] == unit
+            assert unit in NAMED_UNITS
+
+        ## the gram, the one of them that UNIT04 does not name
+        assert NAMED_UNITS["g"] == NamedUnit(1.0, (1, 0, 0, 0))

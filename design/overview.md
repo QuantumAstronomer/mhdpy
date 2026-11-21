@@ -2,7 +2,7 @@
 
 mhdpy is a framework in Python for simulations of astrophysical gases, in hydrodynamics and [MHD](#mhd), from standard tests to runs of the size of published studies ([§1](#1-goals)). This overview sets out what it is for, how its code is cut into five strata and how a step of a run passes through them, what the strata share, and the decision [briefs](#brief) that build each stratum, in the order in which they are taken. It serves newcomers and the author at work alike, and changes as the briefs decide.
 
-**Where the work stands.** B1 to B6, the six briefs of stratum 1, on the strata in the package, the route of the kernels, execution in parallel, the package and its installation, runtime parameters and units, and testing and verification, are decided. The requirements of stratum 1 are agreed, except those of the route of the kernels, which follow with the first kernel of stratum 3, and the tests and code of stratum 1 come next ([§6.1](#61-infrastructure)). Once the units are finished, the docstrings of all components are to be revised to hold a section Parameters, a section Returns and a section on the exceptions, named Errors, Exceptions or Raises, in place of the naming of the arguments in prose that §3.2 of [CLAUDE.md](../CLAUDE.md) asks for.
+**Where the work stands.** B1 to B6, the six briefs of stratum 1, on the strata in the package, the route of the kernels, execution in parallel, the package and its installation, runtime parameters and units, and testing and verification, are decided. The requirements of stratum 1 are agreed, except those of the route of the kernels, which follow with the first kernel of stratum 3, and the tests and code of stratum 1 come next ([§6.1](#61-infrastructure)).
 
 ## 1. Goals
 

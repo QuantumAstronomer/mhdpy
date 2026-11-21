@@ -13,12 +13,17 @@ from mhdpy.infrastructure import constants
 class NamedUnit:
     """A unit that a declaration may name, by its value in cgs and its dimension.
 
+    Parameters
+    ====================================================================================================================
+    value : float
+        The value of the unit in cgs.
+    dimension : tuple[int, int, int, int]
+        The exponents of mass, length, time and temperature, as (0, 1, -1, 0) for a velocity.
+
     Implements UNIT04.
     """
 
-    ## the value in cgs
     value: float
-    ## the exponents of mass, length, time and temperature
     dimension: tuple[int, int, int, int]
 
 
@@ -26,22 +31,38 @@ class NamedUnit:
 class Units:
     """The code units of a run, from its base units of mass, length and time in cgs.
 
+    Parameters
+    ====================================================================================================================
+    mass : float (default = 1.0)
+        The code unit of mass in grams.
+    length : float (default = 1.0)
+        The code unit of length in centimeters.
+    time : float (default = 1.0)
+        The code unit of time in seconds.
+
+    Raises
+    ====================================================================================================================
+    ValueError
+        If a base unit is not a positive and finite number.
+
     Implements UNIT01 and UNIT12.
     """
 
     ## the table of the inputs that holds the base units (UNIT11)
     table: ClassVar[str] = "units"
 
-    ## the code unit of mass in g
     mass: float   = field(default = 1.0, metadata = {"unit": "g"})
-    ## the code unit of length in cm
     length: float = field(default = 1.0, metadata = {"unit": "cm"})
-    ## the code unit of time in s
     time: float   = field(default = 1.0, metadata = {"unit": "s"})
 
 
     def __post_init__(self) -> None:
         """Refuse a base unit that is not a positive and finite number.
+
+        Raises
+        ================================================================================================================
+        ValueError
+            If a base unit is zero, negative, infinite or NaN, with a message that names the field and its value.
 
         Implements UNIT02.
         """
@@ -95,10 +116,17 @@ class Units:
     def code_unit(self, dimension: tuple[int, int, int, int]) -> float:
         """Return the code unit of a dimension in cgs.
 
-        The dimension holds the exponents (a, b, c, d) of mass, length, time and temperature, as (1, 2, -2, -1) for
-        erg/K. Its code unit is M0**a L0**b T0**c, the size in cgs of one code unit of that dimension, so that a value
-        in code units, multiplied by it, gives the value in cgs. Mass, length and time give no scale of temperature,
-        which keeps the kelvin, so that d takes no part.
+        Parameters
+        ================================================================================================================
+        dimension : tuple[int, int, int, int]
+            The exponents (a, b, c, d) of mass, length, time and temperature, as (1, 2, -2, -1) for erg per kelvin.
+
+        Returns
+        ================================================================================================================
+        float
+            M0**a L0**b T0**c, the size in cgs of one code unit of that dimension, so that a value in code units,
+            multiplied by it, gives the value in cgs. Mass, length and time give no scale of temperature, which
+            keeps the kelvin, so that d takes no part.
 
         Implements UNIT03.
         """
@@ -114,6 +142,21 @@ class Units:
         The factor is the value of the unit in cgs divided by the code unit of its dimension, so that a value given in
         the unit, multiplied by it, is the value in code units. Under base units of 2 g, 4 cm and 8 s, the code unit
         of velocity is 4 / 8 cm/s, and the factor of km/s is 1e5 / (4 / 8) = 2e5.
+
+        Parameters
+        ================================================================================================================
+        name : str
+            The name of the unit, as the table holds it, such as km/s.
+
+        Returns
+        ================================================================================================================
+        float
+            The value of the unit in cgs divided by the code unit of its dimension.
+
+        Raises
+        ================================================================================================================
+        ValueError
+            If the table holds no unit of that name, with a message that lists the units of the table.
 
         Implements UNIT06 and UNIT07.
         """

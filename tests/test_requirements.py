@@ -27,7 +27,17 @@ END = re.compile(r"\.(?:\s|$)")
 
 
 class Requirement(NamedTuple):
-    """A requirement, by its identifier, the document that holds it, and whether it is withdrawn."""
+    """A requirement, by its identifier, the document that holds it, and whether it is withdrawn.
+
+    Parameters
+    ====================================================================================================================
+    identifier : str
+        The identifier of the requirement, as RIEM04.
+    document : str
+        The path of the document that holds it below the root, as design/requirements/infrastructure/units.md.
+    withdrawn : bool
+        Whether its text opens with "Withdrawn on".
+    """
 
     identifier: str
     document: str
@@ -405,7 +415,21 @@ class TestMhdpy:
 
 
 def check(root: Path) -> None:
-    """Fail on each fault of the tests and requirements below root, and warn of the requirements without tests."""
+    """Fail on each fault of the tests and requirements below root, and warn of the requirements without tests.
+
+    The requirements in force that no test cites are named in one warning of the category UntestedRequirementWarning.
+
+    Parameters
+    ====================================================================================================================
+    root : Path
+        The root of the tree whose tests and requirements are checked, as the checkout of mhdpy.
+
+    Raises
+    ====================================================================================================================
+    AssertionError
+        If a test cites no requirement, an unknown one or a withdrawn one, or if two requirements bear one
+        identifier, with a message that names each fault on a line of its own.
+    """
 
     tests = read_tests(root)
     requirements = read_requirements(root)
@@ -425,7 +449,19 @@ def check(root: Path) -> None:
 
 
 def citation(function: ast.FunctionDef) -> list[str]:
-    """Return the identifiers that the opening sentence of the docstring of function cites, none without a citation."""
+    """Return the identifiers that the opening sentence of the docstring of function cites, none without a citation.
+
+    Parameters
+    ====================================================================================================================
+    function : ast.FunctionDef
+        A test, as ast reads it from the source of its module.
+
+    Returns
+    ====================================================================================================================
+    list[str]
+        The identifiers that the opening sentence names, in their order, or an empty list where it does not begin
+        with the word Checks. The sentence ends at a full stop followed by whitespace or by the end of the docstring.
+    """
 
     sentence = END.split(ast.get_docstring(function) or "", maxsplit = 1)[0]
     if sentence.split()[:1] != ["Checks"]:
@@ -435,6 +471,17 @@ def citation(function: ast.FunctionDef) -> list[str]:
 
 def duplicate_identifiers(requirements: list[Requirement]) -> list[str]:
     """Return a fault for each identifier that two requirements or more bear, naming the document of each.
+
+    Parameters
+    ====================================================================================================================
+    requirements : list[Requirement]
+        The requirements, as read_requirements returns them.
+
+    Returns
+    ====================================================================================================================
+    list[str]
+        The faults as lines of text, such as "FOO01 is borne in design/requirements/a.md and design/requirements/b.md",
+        and an empty list where every identifier is borne once.
 
     Implements CITE06.
     """
@@ -453,6 +500,18 @@ def duplicate_identifiers(requirements: list[Requirement]) -> list[str]:
 
 def listing(root: Path) -> str:
     """Return each requirement below root, by document, with the node ids of the tests that cite it.
+
+    Parameters
+    ====================================================================================================================
+    root : Path
+        The root of the tree whose tests and requirements are listed, as the checkout of mhdpy.
+
+    Returns
+    ====================================================================================================================
+    str
+        The lines of the list: the path of each document, below it each of its requirements, marked (withdrawn) or
+        (no test) where that holds, and below each requirement the node ids of the tests that cite it, each level
+        indented four spaces further.
 
     Implements CITE08.
     """
@@ -483,6 +542,17 @@ def listing(root: Path) -> str:
 def read_requirements(root: Path) -> list[Requirement]:
     """Return the requirements in the documents below root/design/requirements, in the order of their paths.
 
+    Parameters
+    ====================================================================================================================
+    root : Path
+        The root of the tree whose requirements are read, as the checkout of mhdpy.
+
+    Returns
+    ====================================================================================================================
+    list[Requirement]
+        One for each paragraph that opens with an anchor named by its identifier in lower case and then that
+        identifier in bold, as <a id="cite01"></a>**CITE01**, in the order of the documents and of their lines.
+
     Implements CITE02.
     """
 
@@ -500,6 +570,18 @@ def read_requirements(root: Path) -> list[Requirement]:
 
 def read_tests(root: Path) -> dict[str, list[str]]:
     """Return the identifiers that each test in the modules below root/tests cites, by its node id.
+
+    Parameters
+    ====================================================================================================================
+    root : Path
+        The root of the tree whose tests are read, as the checkout of mhdpy.
+
+    Returns
+    ====================================================================================================================
+    dict[str, list[str]]
+        The identifiers that each test cites, as citation finds them, by its node id, such as
+        tests/test_package.py::TestLayout::test_package. A test is a function at the head of a module test_*.py or
+        *_test.py whose name begins with test, or such a method of a class at its head whose name begins with Test.
 
     Implements CITE01.
     """
@@ -522,7 +604,20 @@ def read_tests(root: Path) -> dict[str, list[str]]:
 
 
 def tree(root: Path, files: dict[str, str]) -> Path:
-    """Write each text to its file below root, with the folders that it needs, and return root."""
+    """Write each text to its file below root, with the folders that it needs, and return root.
+
+    Parameters
+    ====================================================================================================================
+    root : Path
+        The folder below which the files are written, as the temporary folder that pytest gives a test.
+    files : dict[str, str]
+        The text of each file by its path below root, such as tests/test_first.py.
+
+    Returns
+    ====================================================================================================================
+    Path
+        The root, so that a test can write a tree and check it in one expression, as check(tree(tmp_path, files)).
+    """
 
     for name, text in files.items():
         (root / name).parent.mkdir(parents = True, exist_ok = True)
@@ -533,6 +628,17 @@ def tree(root: Path, files: dict[str, str]) -> Path:
 def uncited_tests(tests: dict[str, list[str]]) -> list[str]:
     """Return a fault for each test whose docstring opens with no citation, naming the test.
 
+    Parameters
+    ====================================================================================================================
+    tests : dict[str, list[str]]
+        The identifiers that each test cites, by its node id, as read_tests returns them.
+
+    Returns
+    ====================================================================================================================
+    list[str]
+        The faults as lines of text, such as "tests/test_first.py::test_function cites no requirement", and an empty
+        list where every test cites a requirement.
+
     Implements CITE03.
     """
 
@@ -541,6 +647,19 @@ def uncited_tests(tests: dict[str, list[str]]) -> list[str]:
 
 def unknown_citations(tests: dict[str, list[str]], requirements: list[Requirement]) -> list[str]:
     """Return a fault for each identifier that a test cites and no requirement bears, naming the test with it.
+
+    Parameters
+    ====================================================================================================================
+    tests : dict[str, list[str]]
+        The identifiers that each test cites, by its node id, as read_tests returns them.
+    requirements : list[Requirement]
+        The requirements, as read_requirements returns them.
+
+    Returns
+    ====================================================================================================================
+    list[str]
+        The faults as lines of text, such as "tests/test_first.py::test_function cites FOO09, which no requirement
+        bears", and an empty list where a requirement bears every identifier cited.
 
     Implements CITE04.
     """
@@ -557,6 +676,19 @@ def unknown_citations(tests: dict[str, list[str]], requirements: list[Requiremen
 def untested_requirements(tests: dict[str, list[str]], requirements: list[Requirement]) -> list[str]:
     """Return the identifiers of the requirements in force that no test cites, in the order of their documents.
 
+    Parameters
+    ====================================================================================================================
+    tests : dict[str, list[str]]
+        The identifiers that each test cites, by its node id, as read_tests returns them.
+    requirements : list[Requirement]
+        The requirements, as read_requirements returns them.
+
+    Returns
+    ====================================================================================================================
+    list[str]
+        The identifiers, such as FOO01, that check names in one warning, and an empty list where every requirement
+        in force has a test.
+
     Implements CITE07.
     """
 
@@ -570,6 +702,19 @@ def untested_requirements(tests: dict[str, list[str]], requirements: list[Requir
 
 def withdrawn_citations(tests: dict[str, list[str]], requirements: list[Requirement]) -> list[str]:
     """Return a fault for each withdrawn requirement that a test cites, naming the test with it.
+
+    Parameters
+    ====================================================================================================================
+    tests : dict[str, list[str]]
+        The identifiers that each test cites, by its node id, as read_tests returns them.
+    requirements : list[Requirement]
+        The requirements, as read_requirements returns them.
+
+    Returns
+    ====================================================================================================================
+    list[str]
+        The faults as lines of text, such as "tests/test_first.py::test_function cites FOO02, which is withdrawn",
+        and an empty list where no test cites a withdrawn requirement.
 
     Implements CITE05.
     """

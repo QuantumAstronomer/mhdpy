@@ -143,3 +143,24 @@ class TestNamedUnits:
 
         ## the message lists the units of the table
         assert ", ".join(NAMED_UNITS) in str(error.value)
+
+
+class TestConstants:
+    """Tests that Boltzmann's constant and the three masses come in code units."""
+
+    def test_constants(self) -> None:
+        """Checks UNIT08.
+
+        Each constant is its value in cgs divided by the code unit of its dimension.
+        """
+
+        ## powers of two, whose products and quotients are exact
+        units = Units(mass = 2.0, length = 4.0, time = 8.0)
+
+        ## erg/K has the code unit 2 * 4**2 / 8**2 = 1/2 erg/K
+        assert units.boltzmann == 2 * constants.BOLTZMANN
+
+        ## a mass has the code unit 2 g
+        assert units.proton_mass == constants.PROTON_MASS / 2
+        assert units.electron_mass == constants.ELECTRON_MASS / 2
+        assert units.atomic_mass_unit == constants.ATOMIC_MASS_UNIT / 2

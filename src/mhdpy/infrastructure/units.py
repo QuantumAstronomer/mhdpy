@@ -2,6 +2,7 @@
 
 import math
 from dataclasses import dataclass
+from functools import cached_property
 from types import MappingProxyType
 from typing import Final
 
@@ -46,6 +47,46 @@ class Units:
             ## a NaN fails the comparison, as every comparison with it is false
             if not (value > 0 and math.isfinite(value)):
                 raise ValueError(f"the base unit {name} must be positive and finite, not {value!r}")
+
+
+    @cached_property
+    def boltzmann(self) -> float:
+        """Return Boltzmann's constant in code units, its value in erg/K divided by the code unit of erg/K.
+
+        Implements UNIT08.
+        """
+
+        return constants.BOLTZMANN / self.code_unit((1, 2, -2, -1))
+
+
+    @cached_property
+    def proton_mass(self) -> float:
+        """Return the mass of the proton in code units, its value in g divided by the code unit of mass.
+
+        Implements UNIT08.
+        """
+
+        return constants.PROTON_MASS / self.code_unit((1, 0, 0, 0))
+
+
+    @cached_property
+    def electron_mass(self) -> float:
+        """Return the mass of the electron in code units, its value in g divided by the code unit of mass.
+
+        Implements UNIT08.
+        """
+
+        return constants.ELECTRON_MASS / self.code_unit((1, 0, 0, 0))
+
+
+    @cached_property
+    def atomic_mass_unit(self) -> float:
+        """Return the atomic mass unit in code units, its value in g divided by the code unit of mass.
+
+        Implements UNIT08.
+        """
+
+        return constants.ATOMIC_MASS_UNIT / self.code_unit((1, 0, 0, 0))
 
 
     def code_unit(self, dimension: tuple[int, int, int, int]) -> float:

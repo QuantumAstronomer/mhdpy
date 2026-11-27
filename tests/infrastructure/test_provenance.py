@@ -1,5 +1,6 @@
 """Tests of the record of the code that a run uses."""
 
+import importlib.metadata
 import json
 import os
 import shutil
@@ -9,12 +10,13 @@ from pathlib import Path
 
 import pytest
 
-import mhdpy
 from mhdpy.infrastructure.provenance import CodeProvenance
 
 
 ## the root of the checkout, the folder above tests/
 ROOT = Path(__file__).resolve().parents[2]
+## the version in the metadata of the installation, read as the record reads it
+VERSION = importlib.metadata.version("mhdpy")
 
 
 class TestVersion:
@@ -94,7 +96,7 @@ class TestVersion:
         """
 
         commit = self.git(checkout, "rev-parse", "HEAD")
-        assert self.provenance(checkout) == CodeProvenance(mhdpy.__version__, commit, False)
+        assert self.provenance(checkout) == CodeProvenance(VERSION, commit, False)
 
 
     @pytest.mark.parametrize(("name", "modified"), CHANGES.values(), ids = CHANGES.keys())
@@ -117,7 +119,7 @@ class TestVersion:
         A run from a copy outside any repository of git records its version alone.
         """
 
-        assert self.provenance(copy) == CodeProvenance(mhdpy.__version__, None, None)
+        assert self.provenance(copy) == CodeProvenance(VERSION, None, None)
 
 
     def test_untracked_package(self, copy: Path) -> None:
@@ -131,7 +133,7 @@ class TestVersion:
         self.git(copy, "init")
         self.git(copy, "add", "note.txt")
         self.git(copy, "commit", "-m", "Add a note")
-        assert self.provenance(copy) == CodeProvenance(mhdpy.__version__, None, None)
+        assert self.provenance(copy) == CodeProvenance(VERSION, None, None)
 
 
     def test_no_git(self, checkout: Path) -> None:
@@ -142,7 +144,7 @@ class TestVersion:
 
         ## a path of programs that holds no git
         (checkout / "bin").mkdir()
-        assert self.provenance(checkout, PATH = str(checkout / "bin")) == CodeProvenance(mhdpy.__version__, None, None)
+        assert self.provenance(checkout, PATH = str(checkout / "bin")) == CodeProvenance(VERSION, None, None)
 
 
     def test_index(self, checkout: Path) -> None:

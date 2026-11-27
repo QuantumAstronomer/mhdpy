@@ -5,9 +5,9 @@ of the checkout and whether its code differs from that commit. The version alone
 editable installation keeps the version of its last build, however many commits follow it, which is why the record
 reads git while mhdpy runs.
 
-The record belongs to the infrastructure, stratum 1, and relies on the top package for the version, on the standard
-library, and on git where git is installed. Outside a checkout, as after an installation from a wheel or on a machine
-without git, it gives the version alone.
+The record belongs to the infrastructure, stratum 1, and relies on the standard library and on git where git is
+installed. It reads the version from the metadata as the top package does, rather than import the top package.
+Outside a checkout, as after an installation from a wheel or on a machine without git, it gives the version alone.
 
 Contents
 ========================================================================================================================
@@ -19,11 +19,10 @@ code_provenance
 Its requirements are in design/requirements/infrastructure/package.md, and docs/package.md explains it.
 """
 
+import importlib.metadata
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
-
-import mhdpy
 
 
 @dataclass(frozen = True)
@@ -58,13 +57,15 @@ def code_provenance() -> CodeProvenance:
     Implements PACK15, PACK16 and PACK17.
     """
 
-    top = Path(mhdpy.__file__)
+    ## the version and the file of the top package, found without importing it (PACK03, PACK05)
+    version = importlib.metadata.version("mhdpy")
+    top = Path(__file__).parents[1] / "__init__.py"
     try:
         ## the file of the top package, which git tracks in a checkout and not in an installation from a wheel
         _git(top.parent, "ls-files", "--error-unmatch", top.name)
     except (OSError, subprocess.CalledProcessError):
         ## no repository, a repository that does not track the file, or no git
-        return CodeProvenance(version = mhdpy.__version__, commit = None, modified = None)
+        return CodeProvenance(version = version, commit = None, modified = None)
 
     commit = _git(top.parent, "rev-parse", "HEAD")
 
@@ -72,7 +73,7 @@ def code_provenance() -> CodeProvenance:
     changed = _git(top.parent, "--no-optional-locks", "status", "--porcelain", "--untracked-files=no") != ""
     ## the files below the package that git neither tracks nor ignores, as a module not yet committed (PACK17)
     added = _git(top.parent, "ls-files", "--others", "--exclude-standard") != ""
-    return CodeProvenance(version = mhdpy.__version__, commit = commit, modified = changed or added)
+    return CodeProvenance(version = version, commit = commit, modified = changed or added)
 
 
 def _git(folder: Path, *arguments: str) -> str:

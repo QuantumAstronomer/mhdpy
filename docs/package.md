@@ -15,7 +15,7 @@ Each stratum may use the strata below it and none above, so that it can be read 
 - The top package, `src/mhdpy/__init__.py`, imports no stratum, as Python runs it before any of them ([PACK05](../design/requirements/infrastructure/package.md#pack05)).
 - The tests of a stratum import no stratum above it ([PACK06](../design/requirements/infrastructure/package.md#pack06)).
 
-Import Linter holds the rules as contracts in `pyproject.toml`, each named after its requirement, and the class `TestImports` of `tests/test_package.py` runs it without its cache whenever the tests run ([B1D5](../design/briefs/B01-strata-in-package.md#b1d5-the-check-of-the-rule)). The same class plants seven violations in copies of the package and requires each to break its contract ([PACK07](../design/requirements/infrastructure/package.md#pack07)), so that the check is itself shown to work.
+Import Linter holds the rules as contracts in `pyproject.toml`, each named after its requirement, and the class `TestImports` of `tests/test_package.py` runs it without its cache whenever the tests run ([B1D5](../design/briefs/B01-strata-in-package.md#b1d5-the-check-of-the-rule)). The same class plants twenty-three violations in copies of the package, one in each, and requires each to break the one contract that it names ([PACK07](../design/requirements/infrastructure/package.md#pack07)): every form of an upward import, an import from each stratum to the one above it, a cycle in each stratum and one a level below, each stratum imported by the top package, and the tests of each stratum importing the one above, directly or through a helper. The check is thus itself shown to work.
 
 ## The metadata
 

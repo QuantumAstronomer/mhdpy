@@ -22,6 +22,10 @@ import tests
 ROOT = Path(__file__).resolve().parents[1]
 ## the strata from the bottom up
 STRATA = ("infrastructure", "mesh", "core", "physics", "driver")
+## the contracts of the rule of imports, by the names that pyproject.toml gives them
+LAYERS = "The strata import none above them (PACK03)"
+SIBLINGS = "The siblings within each stratum import each other without a cycle (PACK04)"
+TOP = "The top package imports no stratum (PACK05)"
 
 
 class TestLayout:
@@ -56,43 +60,78 @@ class TestLayout:
 class TestImports:
     """Tests that the package and its tests keep the rule of imports, and that its check fails on each violation."""
 
-    ## the violations of PACK07: the requirement whose contract each breaks, and the text it adds to files of a copy
+    ## the violations of PACK07: the contract that each breaks, and the text it adds to files of a copy
     PLANTED = {
+        ## an upward import in each of its three forms, from the mesh to the stratum above it
         "upward-at-head": (
-            "PACK03", {
-                "src/mhdpy/mesh/planted.py": "import mhdpy.driver\n",
+            LAYERS, {
+                "src/mhdpy/mesh/planted.py": "import mhdpy.core\n",
             },
         ),
         "upward-in-function": (
-            "PACK03", {
-                "src/mhdpy/mesh/planted.py": "def late() -> None:\n    import mhdpy.driver\n",
+            LAYERS, {
+                "src/mhdpy/mesh/planted.py": "def late() -> None:\n    import mhdpy.core\n",
             },
         ),
         "upward-for-type-checking": (
-            "PACK03", {
-                "src/mhdpy/mesh/planted.py": "import typing\nif typing.TYPE_CHECKING:\n    import mhdpy.driver\n",
+            LAYERS, {
+                "src/mhdpy/mesh/planted.py": "import typing\nif typing.TYPE_CHECKING:\n    import mhdpy.core\n",
             },
         ),
-        "cycle-of-siblings": (
-            "PACK04", {
-                "src/mhdpy/core/first.py": "import mhdpy.core.second\n",
-                "src/mhdpy/core/second.py": "import mhdpy.core.first\n",
+        ## an import from each other stratum to the one above it, which fixes the order of the layers
+        **{
+            f"upward-from-{lower}": (
+                LAYERS, {
+                    f"src/mhdpy/{lower}/planted.py": f"import mhdpy.{upper}\n",
+                },
+            )
+            for lower, upper in zip(STRATA, STRATA[1:]) if lower != "mesh"
+        },
+        ## a cycle between two siblings in each stratum, and one a level below the core
+        **{
+            f"cycle-in-{stratum}": (
+                SIBLINGS, {
+                    f"src/mhdpy/{stratum}/first.py": f"import mhdpy.{stratum}.second\n",
+                    f"src/mhdpy/{stratum}/second.py": f"import mhdpy.{stratum}.first\n",
+                },
+            )
+            for stratum in STRATA
+        },
+        "cycle-a-level-below": (
+            SIBLINGS, {
+                "src/mhdpy/core/nested/__init__.py": "",
+                "src/mhdpy/core/nested/first.py": "import mhdpy.core.nested.second\n",
+                "src/mhdpy/core/nested/second.py": "import mhdpy.core.nested.first\n",
             },
         ),
-        "stratum-by-top-package": (
-            "PACK05", {
-                "src/mhdpy/__init__.py": "import mhdpy.core\n",
-            },
-        ),
+        ## each stratum, and a module of one, imported by the top package
+        **{
+            f"{stratum}-by-top-package": (
+                TOP, {
+                    "src/mhdpy/__init__.py": f"import mhdpy.{stratum}\n",
+                },
+            )
+            for stratum in STRATA
+        },
         "module-of-stratum-by-top-package": (
-            "PACK05", {
+            TOP, {
                 "src/mhdpy/core/planted.py": "",
                 "src/mhdpy/__init__.py": "import mhdpy.core.planted\n",
             },
         ),
-        "upward-by-tests": (
-            "PACK06", {
-                "tests/mesh/test_planted.py": "import mhdpy.core\n",
+        ## the tests of each stratum below the driver importing the stratum above it, and a helper doing so for a test
+        **{
+            f"upward-by-tests-of-{lower}": (
+                f"The tests of the {lower} import no stratum above it (PACK06)", {
+                    f"tests/{lower}/test_planted.py": f"import mhdpy.{upper}\n",
+                },
+            )
+            for lower, upper in zip(STRATA, STRATA[1:])
+        },
+        "upward-through-helper": (
+            "The tests of the mesh import no stratum above it (PACK06)", {
+                "tests/helpers.py": "import mhdpy.core\n",
+                "tests/mesh/test_planted.py": "import tests.helpers\n",
             },
         ),
     }
@@ -131,23 +170,24 @@ class TestImports:
         assert result.returncode == 0, result.stdout + result.stderr
 
 
-    @pytest.mark.parametrize(("requirement", "files"), PLANTED.values(), ids = PLANTED.keys())
-    def test_planted_violations(self, copy: Path, requirement: str, files: dict[str, str]) -> None:
+    @pytest.mark.parametrize(("contract", "files"), PLANTED.values(), ids = PLANTED.keys())
+    def test_planted_violations(self, copy: Path, contract: str, files: dict[str, str]) -> None:
         """Checks PACK07.
 
-        The check fails on a copy that holds one planted violation, and reports the contract of the rule it breaks.
+        The check fails on a copy that holds one planted violation, and reports the one contract that it breaks.
         """
 
-        ## each text appended to its file, which it creates where the file does not yet exist
+        ## each text appended to its file, which it creates with its folders where the file does not yet exist
         for name, text in files.items():
+            (copy / name).parent.mkdir(parents = True, exist_ok = True)
             with open(copy / name, "a") as file:
                 file.write(text)
 
         result = self.lint(copy)
 
         assert result.returncode != 0
-        ## the contract named after the requirement, as pyproject.toml names each
-        assert f"({requirement}) BROKEN" in result.stdout, result.stdout + result.stderr
+        ## the contract by its full name, so that each of the four of PACK06 answers for its own folder
+        assert f"{contract} BROKEN" in result.stdout, result.stdout + result.stderr
 
 
 class TestMetadata:

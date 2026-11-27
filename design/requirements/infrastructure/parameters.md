@@ -2,7 +2,7 @@
 
 **Prefix.** PARAM.
 
-**Status.** Agreed on 2026-11-11.
+**Status.** Agreed on 2026-11-27.
 
 **Briefs.** [B5D1](../../briefs/B05-parameters-and-units.md#b5d1-the-declaration-of-parameters), [B5D2](../../briefs/B05-parameters-and-units.md#b5d2-the-format-of-the-values) and [B5D3](../../briefs/B05-parameters-and-units.md#b5d3-the-record), with the conversion of [B5D4](../../briefs/B05-parameters-and-units.md#b5d4-the-system-of-units).
 
@@ -45,6 +45,8 @@ A declaration is the frozen dataclass of one module, and its table is the table 
 <a id="param13"></a>**PARAM13** If a value is not among the allowed values of its field, then the reader shall raise `ParameterError`. [B5D1](../../briefs/B05-parameters-and-units.md#b5d1-the-declaration-of-parameters) declares allowed values where a parameter is limited, as for the sizes on which the loops of a kernel depend, for which a size without a compiled version must fail at once ([B4D3](../../briefs/B04-packaging.md#b4d3-when-the-physics-is-chosen)).
 
 <a id="param14"></a>**PARAM14** If the text of a file is not TOML, or a line of the command line does not set one parameter of one table in TOML, then the reader or `from_command_line` shall raise `ParameterError`, naming the line. A malformed input would otherwise surface as an error of `tomllib` without the place that a user must change, or set something other than a parameter ([B5D2](../../briefs/B05-parameters-and-units.md#b5d2-the-format-of-the-values)).
+
+<a id="param19"></a>**PARAM19** If a declaration refuses the values of its table with a `ValueError` as it is built, then the reader shall raise `ParameterError`, which names the table, carries the message of the refusal and is chained from it. A declaration may check its values beyond their types and allowed values, as `Units` refuses a base unit that is not positive and finite ([UNIT02](units.md#unit02)), and a range, such as that of the Courant number, is no finite set of allowed values ([PARAM13](#param13)). The one type of error of the scope then holds for such a fault as well, while the refusal names the parameter and its value. Each declaration is built from its values in the types of Python of its fields ([PARAM09](#param09)), so that a scalar of NumPy, such as a float of 32 bits that would overflow in a factor, reaches no declaration.
 
 ## The record
 

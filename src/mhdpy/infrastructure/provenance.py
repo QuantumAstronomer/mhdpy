@@ -1,7 +1,7 @@
 """The record of the code that a run uses.
 
 Every run can name the code that produced it, by the version of mhdpy and, where it runs from a checkout, by the commit
-of the checkout and whether its tracked files differ from that commit. The version alone does not suffice there, as an
+of the checkout and whether its code differs from that commit. The version alone does not suffice there, as an
 editable installation keeps the version of its last build, however many commits follow it, which is why the record
 reads git while mhdpy runs.
 
@@ -37,9 +37,9 @@ class CodeProvenance:
     commit : str | None
         The commit of the checkout, or None if not in a checkout.
     modified : bool | None
-        Whether the tracked files differ from the commit, or None if not in a checkout.
+        Whether the code differs from the commit, untracked files in the package included, or None outside a checkout.
 
-    Implements PACK14 and PACK15.
+    Implements PACK15 and PACK17.
     """
 
     version: str
@@ -53,9 +53,9 @@ def code_provenance() -> CodeProvenance:
     Returns
     ====================================================================================================================
     CodeProvenance
-        The version, with the commit of HEAD and whether a tracked file differs from it, both None outside a checkout.
+        The version, with the commit of HEAD and whether the code differs from it, both None outside a checkout.
 
-    Implements PACK14, PACK15 and PACK16.
+    Implements PACK15, PACK16 and PACK17.
     """
 
     top = Path(mhdpy.__file__)
@@ -68,9 +68,11 @@ def code_provenance() -> CodeProvenance:
 
     commit = _git(top.parent, "rev-parse", "HEAD")
 
-    ## the tracked files that differ from the commit, untracked files left out, without a refresh of the index (PACK16)
-    modified = _git(top.parent, "--no-optional-locks", "status", "--porcelain", "--untracked-files=no") != ""
-    return CodeProvenance(version = mhdpy.__version__, commit = commit, modified = modified)
+    ## the tracked files that differ from the commit, without a refresh of the index (PACK16)
+    changed = _git(top.parent, "--no-optional-locks", "status", "--porcelain", "--untracked-files=no") != ""
+    ## the files below the package that git neither tracks nor ignores, as a module not yet committed (PACK17)
+    added = _git(top.parent, "ls-files", "--others", "--exclude-standard") != ""
+    return CodeProvenance(version = mhdpy.__version__, commit = commit, modified = changed or added)
 
 
 def _git(folder: Path, *arguments: str) -> str:

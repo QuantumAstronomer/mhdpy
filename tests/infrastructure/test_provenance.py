@@ -23,13 +23,17 @@ class TestVersion:
     A run reads the repository without changing it.
     """
 
-    ## the files changed after the commit, and whether each marks the tree as modified
+    ## the files changed or added after the commit, and whether each marks the tree as modified
     CHANGES = {
         "tracked": (
             "src/mhdpy/core/__init__.py",
             True,
         ),
-        "untracked": (
+        "new-module": (
+            "src/mhdpy/core/new.py",
+            True,
+        ),
+        "note": (
             "note.txt",
             False,
         ),
@@ -73,8 +77,10 @@ class TestVersion:
 
     @pytest.fixture
     def checkout(self, copy: Path) -> Path:
-        """Return a repository of git whose one commit holds the copy of the package."""
+        """Return a repository of git whose one commit holds the copy of the package and the .gitignore of mhdpy."""
 
+        ## the files that mhdpy ignores, such as the __pycache__/ that a run writes into the package
+        shutil.copy(ROOT / ".gitignore", copy / ".gitignore")
         self.git(copy, "init")
         self.git(copy, "add", ".")
         self.git(copy, "commit", "-m", "Copy the package")
@@ -82,7 +88,7 @@ class TestVersion:
 
 
     def test_checkout(self, checkout: Path) -> None:
-        """Checks PACK14.
+        """Checks PACK17.
 
         A run from a clean checkout records its version, the full hash of the commit of HEAD, and an unmodified tree.
         """
@@ -93,9 +99,10 @@ class TestVersion:
 
     @pytest.mark.parametrize(("name", "modified"), CHANGES.values(), ids = CHANGES.keys())
     def test_changes(self, checkout: Path, name: str, modified: bool) -> None:
-        """Checks PACK14.
+        """Checks PACK17.
 
-        A tracked file that differs from the commit marks the tree as modified, and an untracked file does not.
+        A tracked file that differs from the commit, or a module in the package that git does not track, marks the tree
+        as modified, and a note outside the package does not.
         """
 
         ## a line appended to the file, which it creates where the file does not yet exist

@@ -18,7 +18,10 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 class TestVersion:
-    """Tests that the record gives the version and, from a checkout, the commit and whether its tree is modified."""
+    """Tests that the record gives the version and, from a checkout, the commit and whether its tree is modified.
+
+    A run reads the repository without changing it.
+    """
 
     ## the files changed after the commit, and whether each marks the tree as modified
     CHANGES = {
@@ -133,3 +136,16 @@ class TestVersion:
         ## a path of programs that holds no git
         (checkout / "bin").mkdir()
         assert self.provenance(checkout, PATH = str(checkout / "bin")) == CodeProvenance(mhdpy.__version__, None, None)
+
+
+    def test_index(self, checkout: Path) -> None:
+        """Checks PACK16.
+
+        A run from a checkout whose tracked file was touched since its commit leaves the index of git as it was.
+        """
+
+        ## a tracked file touched without a change, which a plain git status would record in the index
+        os.utime(checkout / "src/mhdpy/__init__.py", (0, 0))
+        index = (checkout / ".git" / "index").read_bytes()
+        self.provenance(checkout)
+        assert (checkout / ".git" / "index").read_bytes() == index

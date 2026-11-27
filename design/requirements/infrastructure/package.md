@@ -2,7 +2,7 @@
 
 **Prefix.** PACK.
 
-**Status.** Agreed on 2026-11-11.
+**Status.** Agreed on 2026-11-27.
 
 **Briefs.** [B1D1](../../briefs/B01-strata-in-package.md#b1d1-the-subpackages-of-the-strata), [B1D2](../../briefs/B01-strata-in-package.md#b1d2-the-rule-between-the-strata), [B1D3](../../briefs/B01-strata-in-package.md#b1d3-the-rule-within-a-stratum), [B1D4](../../briefs/B01-strata-in-package.md#b1d4-the-place-of-the-tests), [B1D5](../../briefs/B01-strata-in-package.md#b1d5-the-check-of-the-rule), [B4D1](../../briefs/B04-packaging.md#b4d1-the-versions-of-python-and-the-platforms), [B4D2](../../briefs/B04-packaging.md#b4d2-the-build-backend), [B4D4](../../briefs/B04-packaging.md#b4d4-the-dependencies), [B4D5](../../briefs/B04-packaging.md#b4d5-the-licence) and [B4D6](../../briefs/B04-packaging.md#b4d6-the-version-and-its-record).
 
@@ -49,6 +49,8 @@ The strata are ordered as infrastructure, mesh, core, physics and driver, and a 
 <a id="pack14"></a>**PACK14** While mhdpy runs from a checkout, the record of the code shall give the version of [PACK12](#pack12), the full hash of the commit of `HEAD`, and whether a file that git tracks differs from that commit. [B4D6](../../briefs/B04-packaging.md#b4d6-the-version-and-its-record) lets every run name the code that produced it. Under an editable installation, a change to a module of Python reaches a run without a new installation ([B4D2](../../briefs/B04-packaging.md#b4d2-the-build-backend)), so that the version names the commit of the last installation rather than that of the code, which git gives instead. As in the experiments ([rules of the experiments, §3](../../templates/experiment-rules.md#3-the-code)), a file that git does not track leaves the tree unchanged, so that a stray note does not mark every run. A frozen dataclass reads by attribute under strict typing, as the parameters of [B5D1](../../briefs/B05-parameters-and-units.md#b5d1-the-declaration-of-parameters) do, and the brief on outputs decides how files keep it.
 
 <a id="pack15"></a>**PACK15** While mhdpy runs from no checkout, the record of the code shall give its version alone, with neither a commit nor a state of the tree. An installation from a wheel names its code by its version, which leads to the commit of its build through a tag or names it outright ([PACK13](#pack13)), so that git is neither needed nor asked. **[GK]** uv places the environment of a project in `.venv/` within its checkout, so that a wheel installed there lies inside a repository of git. A checkout is therefore recognised by the tracked file of the top package rather than by a repository around it, lest such a wheel take the commit of its surroundings.
+
+<a id="pack16"></a>**PACK16** While mhdpy runs from a checkout, the record of the code shall leave the repository unchanged, its index included. A run only observes the code that produced it, while `git status` refreshes the index by default and writes it back under a lock, so that a run would change the checkout and could make a command of git given at the same moment fail on that lock. **[GK]** git provides `--no-optional-locks` for processes that only read, which skips the refresh and gives the same answer.
 
 ## Verification
 

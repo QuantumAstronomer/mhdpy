@@ -55,7 +55,7 @@ def code_provenance() -> CodeProvenance:
     CodeProvenance
         The version, with the commit of HEAD and whether a tracked file differs from it, both None outside a checkout.
 
-    Implements PACK14 and PACK15.
+    Implements PACK14, PACK15 and PACK16.
     """
 
     top = Path(mhdpy.__file__)
@@ -68,8 +68,8 @@ def code_provenance() -> CodeProvenance:
 
     commit = _git(top.parent, "rev-parse", "HEAD")
 
-    ## the tracked files that differ from the commit, untracked files left out
-    modified = _git(top.parent, "status", "--porcelain", "--untracked-files=no") != ""
+    ## the tracked files that differ from the commit, untracked files left out, without a refresh of the index (PACK16)
+    modified = _git(top.parent, "--no-optional-locks", "status", "--porcelain", "--untracked-files=no") != ""
     return CodeProvenance(version = mhdpy.__version__, commit = commit, modified = modified)
 
 

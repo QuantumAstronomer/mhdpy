@@ -356,7 +356,7 @@ class TestParameters:
         names each object with the names of both.
         """
 
-        ## the tree of FILES, with functions whose entries miss a parameter, add one, or swap two
+        ## the tree of FILES, with functions whose entries miss a parameter, add one, swap two, or join two in one
         root = tree(tmp_path, self.FILES | {
             "src/second.py": "\n".join([
                 'def missing(a: int, b: int) -> None:',
@@ -385,14 +385,23 @@ class TestParameters:
                 '    a : int',
                 '        The first.',
                 '    """',
+                'def joined(a: int, b: int) -> None:',
+                '    """Do something.',
+                '',
+                '    Parameters',
+                '    ==========',
+                '    a, b',
+                '        Both.',
+                '    """',
             ]),
         })
 
         lines = failure(root)
-        ## one line names each of the three functions, and none names an object of FILES
+        ## one line names each of the four functions, and none names an object of FILES
         assert any("src/second.py::missing" in line and "a, b" in line for line in lines), lines
         assert any("src/second.py::extra" in line and "a" in line for line in lines), lines
         assert any("src/second.py::swapped" in line and "b, a" in line for line in lines), lines
+        assert any("src/second.py::joined" in line for line in lines), lines
         assert not any("src/module.py" in line for line in lines), lines
 
 
@@ -403,7 +412,8 @@ class TestParameters:
         annotation, and names the object and the entry with both types.
         """
 
-        ## the tree of FILES, with a field typed otherwise, a type spaced otherwise, and a parameter without annotation
+        ## the tree of FILES, with a field typed otherwise, a type spaced otherwise, and two parameters without
+        ## annotation, one documented with a type and one without
         root = tree(tmp_path, self.FILES | {
             "src/second.py": "\n".join([
                 'from dataclasses import dataclass',
@@ -433,6 +443,14 @@ class TestParameters:
                 '    a : int',
                 '        The first.',
                 '    """',
+                'def untyped(a) -> None:',
+                '    """Do something.',
+                '',
+                '    Parameters',
+                '    ==========',
+                '    a',
+                '        The first.',
+                '    """',
             ]),
         })
 
@@ -441,6 +459,7 @@ class TestParameters:
         assert any("src/second.py::Data" in line and "'int'" in line and "'float'" in line for line in lines), lines
         assert any("src/second.py::spaced" in line and "'tuple[int,int]'" in line for line in lines), lines
         assert any("src/second.py::bare" in line and "'int'" in line and "None" in line for line in lines), lines
+        assert any("src/second.py::untyped" in line and "None" in line for line in lines), lines
 
 
     def test_defaults(self, tmp_path: Path) -> None:
@@ -767,10 +786,12 @@ def misnamed_parameters(objects: list[Documented]) -> list[str]:
 
     faults: list[str] = []
     for documented in objects:
-        documented_names = ", ".join(entry.name for entry in documented.entries)
-        names = ", ".join(parameter.name for parameter in documented.parameters)
+        ## the names as lists, so that one entry "a, b" does not pass for the two parameters a and b
+        documented_names = [entry.name for entry in documented.entries]
+        names = [parameter.name for parameter in documented.parameters]
         if documented_names != names:
-            faults.append(f"{documented.name} documents {documented_names or 'nothing'} for the parameters {names}")
+            listed = ", ".join(documented_names) or "nothing"
+            faults.append(f"{documented.name} documents {listed} for the parameters {', '.join(names)}")
     return faults
 
 
@@ -849,7 +870,8 @@ def mistyped_parameters(objects: list[Documented]) -> list[str]:
         for documented in objects
         for entry in documented.entries
         for parameter in documented.parameters
-        if entry.name == parameter.name and entry.type != parameter.type
+        ## a parameter without annotation fails, even where its entry gives no type either
+        if entry.name == parameter.name and (parameter.type is None or entry.type != parameter.type)
     ]
 
 

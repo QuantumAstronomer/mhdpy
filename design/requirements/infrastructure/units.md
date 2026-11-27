@@ -2,7 +2,7 @@
 
 **Prefix.** UNIT.
 
-**Status.** Agreed on 2026-11-20.
+**Status.** Agreed on 2026-11-27.
 
 **Briefs.** [B5D4](../../briefs/B05-parameters-and-units.md#b5d4-the-system-of-units).
 
@@ -39,6 +39,8 @@ The base units $M_0$, $L_0$ and $T_0$ are the code units of mass, length and tim
 <a id="unit11"></a>**UNIT11** `Units` shall name its table `units` in its class variable `table`. The parameters take as a declaration a frozen dataclass whose class variable names its table ([PARAM01](parameters.md#param01)), and read the table `units` by `Units` in every run ([PARAM07](parameters.md#param07)). A class variable is no field, so that the constructor of `Units` still takes the base units alone ([UNIT01](#unit01)). The author chose to add it with the units, as a provision that costs little, rather than reopen the units when the parameters are built.
 
 <a id="unit12"></a>**UNIT12** The fields `mass`, `length` and `time` shall be floats that name their units `g`, `cm` and `s` under the key `unit` of their metadata, and the table shall hold the named unit `g`. The record names the unit of each value in a comment taken from its declaration ([PARAM16](parameters.md#param16)), and the fields of `Units` name theirs for it, while the reader takes their values as given ([PARAM07](parameters.md#param07)). The reader refuses a declaration that names a unit outside the table, or a unit on a field that is not a float ([PARAM03](parameters.md#param03)). The table therefore holds `g` beside the units of [UNIT04](#unit04), and each default is the float 1.0. The author chose to add this with the units, for the same reason as [UNIT11](#unit11).
+
+<a id="unit13"></a>**UNIT13** `Units` and `NamedUnit` shall refuse every assignment to a field once built, as frozen dataclasses, and the table of named units shall refuse every change. The constants in code units are computed once and kept ([UNIT08](#unit08)), so that a base unit set again would leave them wrong without a word, while the parameters take a declaration only as a frozen dataclass ([PARAM01](parameters.md#param01), [PARAM03](parameters.md#param03)). The table is fixed in stratum 1 ([UNIT04](#unit04)), so that no module may add or change a unit while a run converts with it.
 
 ## Verification
 

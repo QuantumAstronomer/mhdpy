@@ -2,7 +2,8 @@
 
 import math
 import sys
-from dataclasses import fields
+from dataclasses import FrozenInstanceError, fields
+from typing import Any
 
 import pytest
 
@@ -169,7 +170,7 @@ class TestConstants:
 
 
 class TestDeclaration:
-    """Tests that the units are the declaration by which the parameters read the table units."""
+    """Tests that the units are the frozen declaration by which the parameters read the table units."""
 
     def test_table_name(self) -> None:
         """Checks UNIT11.
@@ -201,6 +202,24 @@ class TestDeclaration:
 
         ## the gram, the one of them that UNIT04 does not name
         assert NAMED_UNITS["g"] == NamedUnit(1.0, (1, 0, 0, 0))
+
+
+    def test_frozen(self) -> None:
+        """Checks UNIT13.
+
+        The base units, a named unit and the table refuse every change once built.
+        """
+
+        ## an assignment to a field, which a frozen dataclass refuses
+        with pytest.raises(FrozenInstanceError):
+            setattr(Units(), "mass", 2.0)
+        with pytest.raises(FrozenInstanceError):
+            setattr(NAMED_UNITS["g"], "value", 2.0)
+
+        ## a new unit in the table, which a read-only mapping refuses
+        table: Any = NAMED_UNITS
+        with pytest.raises(TypeError):
+            table["m"] = NamedUnit(100.0, (0, 1, 0, 0))
 
 
 class TestVerification:

@@ -41,7 +41,7 @@ class NamedUnit:
     dimension : tuple[int, int, int, int]
         The exponents of mass, length, time and temperature, as (0, 1, -1, 0) for a velocity.
 
-    Implements UNIT04.
+    Implements UNIT04 and UNIT13.
     """
 
     value: float
@@ -66,7 +66,7 @@ class Units:
     ValueError
         If a base unit is not a positive and finite number.
 
-    Implements UNIT01 and UNIT12.
+    Implements UNIT01, UNIT12 and UNIT13.
     """
 
     ## the table of the inputs that holds the base units (UNIT11)
@@ -190,7 +190,7 @@ class Units:
         return unit.value / self.code_unit(unit.dimension)
 
 
-## the named units by their names, fixed in stratum 1 and read-only (UNIT04, UNIT05, UNIT12)
+## the named units by their names, fixed in stratum 1 and read-only (UNIT04, UNIT05, UNIT12, UNIT13)
 NAMED_UNITS: Final = MappingProxyType({
     "g":            NamedUnit(1.0, (1, 0, 0, 0)),
     "cm":           NamedUnit(1.0, (0, 1, 0, 0)),

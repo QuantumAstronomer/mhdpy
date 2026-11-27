@@ -1,6 +1,6 @@
 # The units
 
-The units give each run the system of code units in which it computes, from three base units given in cgs. They convert into it the values that a declaration names in physical units, and give in it the constants that the physics needs. They are the module `mhdpy.infrastructure.units`, with the frozen dataclass `Units`, the table `NAMED_UNITS` and its entries `NamedUnit`. This document explains the module to a reader new to the repository. The requirements that it meets, with their reasons, are [UNIT01](../design/requirements/infrastructure/units.md#unit01) to [UNIT12](../design/requirements/infrastructure/units.md#unit12) in the [requirements of the units](../design/requirements/infrastructure/units.md), and the decision behind them is taken in [B5D4](../design/briefs/B05-parameters-and-units.md#b5d4-the-system-of-units).
+The units give each run the system of code units in which it computes, from three base units given in cgs. They convert into it the values that a declaration names in physical units, and give in it the constants that the physics needs. They are the module `mhdpy.infrastructure.units`, with the frozen dataclass `Units`, the table `NAMED_UNITS` and its entries `NamedUnit`. This document explains the module to a reader new to the repository. The requirements that it meets, with their reasons, are [UNIT01](../design/requirements/infrastructure/units.md#unit01) to [UNIT13](../design/requirements/infrastructure/units.md#unit13) in the [requirements of the units](../design/requirements/infrastructure/units.md), and the decision behind them is taken in [B5D4](../design/briefs/B05-parameters-and-units.md#b5d4-the-system-of-units).
 
 ## What the code units serve
 
@@ -53,7 +53,7 @@ Named systems of units, such as that of Athena++ for the interstellar medium, ar
 
 ## The form of the module
 
-`NamedUnit` and `Units` are frozen dataclasses, which refuse every assignment after construction, so that the code units of a run cannot change once values have been converted with them. `NamedUnit` compares equal only to another `NamedUnit`, unlike a named tuple, which would compare equal to any tuple of the same values. The class variable `table` is typed `ClassVar`, which keeps it out of the fields and the constructor, and the table is typed `Final`, as the constants are. The base units are checked in `__post_init__`, which the generated constructor calls last. The module relies on the constants and on the standard library alone.
+`NamedUnit` and `Units` are frozen dataclasses, which refuse every assignment after construction, so that the code units of a run cannot change once values have been converted with them ([UNIT13](../design/requirements/infrastructure/units.md#unit13)). `NamedUnit` compares equal only to another `NamedUnit`, unlike a named tuple, which would compare equal to any tuple of the same values. The class variable `table` is typed `ClassVar`, which keeps it out of the fields and the constructor, and the table is typed `Final`, as the constants are. The base units are checked in `__post_init__`, which the generated constructor calls last. The module relies on the constants and on the standard library alone.
 
 ## The tests
 

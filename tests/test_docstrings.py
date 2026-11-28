@@ -263,7 +263,8 @@ class TestReading:
         indentation of the title up to the first blank line, and a malformed title or rule hides its section.
         """
 
-        ## one function whose docstring holds both sections and one that is no section, and one without a docstring
+        ## one function whose docstring holds both sections, one with a malformed title and a malformed rule, and one
+        ## without a docstring
         root = tree(tmp_path, {
             "src/module.py": "\n".join([
                 'def function():',
@@ -287,6 +288,10 @@ class TestReading:
                 '    """',
                 'def malformed():',
                 '    """Do something.',
+                '',
+                '    Parameters:',
+                '    ===========',
+                '    mass : float',
                 '',
                 '    Returns',
                 '    -------',
@@ -399,7 +404,7 @@ class TestParameters:
         lines = failure(root)
         ## one line names each of the four functions, and none names an object of FILES
         assert any("src/second.py::missing" in line and "a, b" in line for line in lines), lines
-        assert any("src/second.py::extra" in line and "a" in line for line in lines), lines
+        assert any("src/second.py::extra documents a for" in line for line in lines), lines
         assert any("src/second.py::swapped" in line and "b, a" in line for line in lines), lines
         assert any("src/second.py::joined" in line for line in lines), lines
         assert not any("src/module.py" in line for line in lines), lines
@@ -412,8 +417,8 @@ class TestParameters:
         annotation, and names the object and the entry with both types.
         """
 
-        ## the tree of FILES, with a field typed otherwise, a type spaced otherwise, and two parameters without
-        ## annotation, one documented with a type and one without
+        ## the tree of FILES, with a field typed otherwise, an entry and an annotation each spaced otherwise, and two
+        ## parameters without annotation, one documented with a type and one without
         root = tree(tmp_path, self.FILES | {
             "src/second.py": "\n".join([
                 'from dataclasses import dataclass',
@@ -433,6 +438,14 @@ class TestParameters:
                 '    Parameters',
                 '    ==========',
                 '    a : tuple[int,int]',
+                '        The pair.',
+                '    """',
+                'def unspaced(a: tuple[int,int]) -> None:',
+                '    """Do something.',
+                '',
+                '    Parameters',
+                '    ==========',
+                '    a : tuple[int, int]',
                 '        The pair.',
                 '    """',
                 'def bare(a) -> None:',
@@ -458,6 +471,7 @@ class TestParameters:
         ## one line names each object with its entry and both types
         assert any("src/second.py::Data" in line and "'int'" in line and "'float'" in line for line in lines), lines
         assert any("src/second.py::spaced" in line and "'tuple[int,int]'" in line for line in lines), lines
+        assert any("src/second.py::unspaced" in line and "'tuple[int,int]'" in line for line in lines), lines
         assert any("src/second.py::bare" in line and "'int'" in line and "None" in line for line in lines), lines
         assert any("src/second.py::untyped" in line and "None" in line for line in lines), lines
 
@@ -573,7 +587,8 @@ class TestReturns:
         than one entry, and names the object with both.
         """
 
-        ## the tree of FILES, with Returns of another type, of two entries and of none
+        ## the tree of FILES, with Returns of another type, of two entries and of none, and Returns beside an annotation
+        ## spaced otherwise
         root = tree(tmp_path, self.FILES | {
             "src/second.py": "\n".join([
                 'def other() -> int:',
@@ -597,6 +612,13 @@ class TestReturns:
                 '    Returns',
                 '    =======',
                 '    """',
+                'def unspaced() -> tuple[int,int]:',
+                '    """Return something.',
+                '',
+                '    Returns',
+                '    =======',
+                '    tuple[int, int]',
+                '    """',
             ]),
         })
 
@@ -605,6 +627,7 @@ class TestReturns:
         assert any("src/second.py::other" in line and "'float'" in line and "'int'" in line for line in lines), lines
         assert any("src/second.py::two" in line and "'int', 'int'" in line for line in lines), lines
         assert any("src/second.py::empty" in line and "[]" in line for line in lines), lines
+        assert any("src/second.py::unspaced" in line and "'tuple[int,int]'" in line for line in lines), lines
 
 
 class TestMhdpy:

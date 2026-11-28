@@ -332,22 +332,30 @@ class TestFaults:
     def test_duplicate(self, tmp_path: Path) -> None:
         """Checks CITE06.
 
-        The check fails on two requirements that bear the same identifier, and names the document of each.
+        The check fails on two requirements that bear the same identifier, in two documents or in one, and names the
+        document of each.
         """
 
-        ## the tree of FILES, with a second document whose requirement bears FOO03, as one in the first already does
+        ## the tree of FILES, with a second document whose requirement bears FOO03, as one in the first already does,
+        ## and the paragraph of FOO01 copied to the end of the first document and not renumbered
         root = tree(tmp_path, self.FILES | {
             "design/requirements/core/second.md": "\n".join([
                 '<a id="foo03"></a>**FOO03** The second shall hold.',
             ]),
+            "design/requirements/first.md": "\n".join([
+                self.FILES["design/requirements/first.md"],
+                '',
+                '<a id="foo01"></a>**FOO01** The first shall hold.',
+            ]),
         })
 
         lines = self.failure(root)
-        ## one line names FOO03 with both documents
+        ## one line names FOO03 with both documents, and one names FOO01 with the first document twice
         assert any(
             "FOO03" in line and "design/requirements/first.md" in line and "design/requirements/core/second.md" in line
             for line in lines
         ), lines
+        assert any("FOO01" in line and line.count("design/requirements/first.md") == 2 for line in lines), lines
 
 
 class TestUntested:

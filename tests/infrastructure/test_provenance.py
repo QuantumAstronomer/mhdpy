@@ -63,7 +63,8 @@ class TestVersion:
         ## the package from the copy, ahead of the installed package
         environment = os.environ | {"PYTHONPATH": str(root / "src")} | changes
         command = [sys.executable, "-c", script]
-        result = subprocess.run(command, cwd = root, env = environment, capture_output = True, text = True)
+        ## a run started outside the copy, so that the record must ask git in the folder of the package
+        result = subprocess.run(command, cwd = root.parent, env = environment, capture_output = True, text = True)
         assert result.returncode == 0, result.stderr
         return CodeProvenance(**json.loads(result.stdout))
 
@@ -87,30 +88,6 @@ class TestVersion:
         self.git(copy, "add", ".")
         self.git(copy, "commit", "-m", "Copy the package")
         return copy
-
-
-    def test_checkout(self, checkout: Path) -> None:
-        """Checks PACK17.
-
-        A run from a clean checkout records its version, the full hash of the commit of HEAD, and an unmodified tree.
-        """
-
-        commit = self.git(checkout, "rev-parse", "HEAD")
-        assert self.provenance(checkout) == CodeProvenance(VERSION, commit, False)
-
-
-    @pytest.mark.parametrize(("name", "modified"), CHANGES.values(), ids = CHANGES.keys())
-    def test_changes(self, checkout: Path, name: str, modified: bool) -> None:
-        """Checks PACK17.
-
-        A tracked file that differs from the commit, or a module in the package that git does not track, marks the tree
-        as modified, and a note outside the package does not.
-        """
-
-        ## a line appended to the file, which it creates where the file does not yet exist
-        with open(checkout / name, "a") as file:
-            file.write("## a change\n")
-        assert self.provenance(checkout).modified is modified
 
 
     def test_no_repository(self, copy: Path) -> None:
@@ -158,3 +135,40 @@ class TestVersion:
         index = (checkout / ".git" / "index").read_bytes()
         self.provenance(checkout)
         assert (checkout / ".git" / "index").read_bytes() == index
+
+
+    def test_checkout(self, checkout: Path) -> None:
+        """Checks PACK17.
+
+        A run from a clean checkout records its version, the full hash of the commit of HEAD, and an unmodified tree.
+        """
+
+        commit = self.git(checkout, "rev-parse", "HEAD")
+        assert self.provenance(checkout) == CodeProvenance(VERSION, commit, False)
+
+
+    @pytest.mark.parametrize(("name", "modified"), CHANGES.values(), ids = CHANGES.keys())
+    def test_changes(self, checkout: Path, name: str, modified: bool) -> None:
+        """Checks PACK17.
+
+        A tracked file that differs from the commit, or a module in the package that git does not track, marks the tree
+        as modified, and a note outside the package does not.
+        """
+
+        ## a line appended to the file, which it creates where the file does not yet exist
+        with open(checkout / name, "a") as file:
+            file.write("## a change\n")
+        assert self.provenance(checkout).modified is modified
+
+
+    def test_staged(self, checkout: Path) -> None:
+        """Checks PACK17.
+
+        A tracked file whose change is staged for the next commit marks the tree as modified.
+        """
+
+        ## a line appended to a tracked file, and the change staged with git add
+        with open(checkout / "src/mhdpy/core/__init__.py", "a") as file:
+            file.write("## a change\n")
+        self.git(checkout, "add", "src/mhdpy/core/__init__.py")
+        assert self.provenance(checkout).modified is True

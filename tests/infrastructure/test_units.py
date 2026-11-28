@@ -42,9 +42,10 @@ class TestCodeUnits:
         with pytest.raises(ValueError) as error:
             Units(**{name: value})
 
-        ## the error message names the invalid base unit and its value
+        ## the error message names the invalid base unit and its value, and no other base unit
         assert name in str(error.value)
         assert repr(value) in str(error.value)
+        assert not any(other in str(error.value) for other in {"mass", "length", "time"} - {name})
 
 
     def test_code_units(self) -> None:
@@ -157,11 +158,11 @@ class TestConstants:
         Each constant is its value in cgs divided by the code unit of its dimension.
         """
 
-        ## powers of two, whose products and quotients are exact
-        units = Units(mass = 2.0, length = 4.0, time = 8.0)
+        ## powers of two, exact, with exponents 1, 7 and 49 that give each small dimension its own code unit
+        units = Units(mass = 2.0, length = 2.0**7, time = 2.0**49)
 
-        ## erg/K has the code unit 2 * 4**2 / 8**2 = 1/2 erg/K
-        assert units.boltzmann == 2 * constants.BOLTZMANN
+        ## erg/K has the code unit 2 * (2**7)**2 / (2**49)**2 = 2**-83 erg/K
+        assert units.boltzmann == constants.BOLTZMANN * 2**83
 
         ## a mass has the code unit 2 g
         assert units.proton_mass == constants.PROTON_MASS / 2
